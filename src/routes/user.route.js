@@ -1,7 +1,7 @@
 const express = require('express')
 const UserController = require('../controllers/user.controller');
 const router = express.Router();
-const verifyToken = require('../middlewares/auth')
+const auth = require('../middlewares/auth')
 
 
 router.post(
@@ -15,14 +15,14 @@ router.post(
 );
 
 router.get(
-    "/verify",
-    UserController.loginUser
-);
+    "/single",
+    auth.verifyToken,
+    UserController.findOneRec
+)
 
 router.get(
     "/list-user",
-    verifyToken(),
-    UserController.verifyToken
+    UserController.ListUser
 );
 
 router.get(

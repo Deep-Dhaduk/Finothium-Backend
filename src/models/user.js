@@ -82,10 +82,16 @@ class User {
         let sql = "SELECT * FROM user_master";
         return db.execute(sql)
     }
+
     static findById(id) {
         let sql = `SELECT * FROM user_master WHERE id = ${id}`;
         return db.execute(sql)
     }
+    static findOne() {
+        let sql = `SELECT * FROM user_master WHERE id`;
+        return db.execute(sql)
+    }
+
     static findByEmail(email) {
         let sql = `SELECT * FROM user_master WHERE email = '${email}'`;
         return db.execute(sql);

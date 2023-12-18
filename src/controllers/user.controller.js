@@ -1,5 +1,6 @@
 const User = require("../models/user");
 const jwt = require('jsonwebtoken');
+const db = require('../db/dbconnection')
 
 
 const CreateUser = async (req, res) => {
@@ -28,8 +29,6 @@ const CreateUser = async (req, res) => {
 const loginUser = async (req, res, next) => {
     try {
         const { email, password } = req.body;
-        // Authenticate user (validate credentials from database)
-        // Assuming you have a function like authenticateUser in your User class
         const [user, _] = await User.findByEmail(email);
 
         if (user[0]) {
@@ -64,13 +63,15 @@ const loginUser = async (req, res, next) => {
     }
 };
 
-const verifyToken = async (req, res) => {
-    res.status(200).json({
-        success: true,
-        message: "Token successfully verified!",
-        data: req.user,
-    });
-};
+const findOneRec = async (req, res) => {
+    try {
+        let checkUser = await User.findOne()
+        return res.status(200).json({ success: true, data: checkUser });
+
+    } catch (error) {
+        res.status(501).json({ success: false, error: error.message })
+    }
+}
 
 const ListUser = async (req, res, next) => {
     try {
@@ -145,5 +146,5 @@ module.exports = {
     deleteUser,
     updateUser,
     loginUser,
-    verifyToken
+    findOneRec
 }

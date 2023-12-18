@@ -1,7 +1,7 @@
 require('dotenv').config()
 const express = require("express");
 const cors = require('cors');
-const verifyToken = require('./middlewares/auth')
+const auth = require('./middlewares/auth')
 // const routes = require("./routes");
 const app = express();
 
@@ -14,7 +14,7 @@ app.use(express.json());
 
 
 app.use('/user', require("./routes/user.route"));
-app.use('/user', verifyToken, require('./routes/user.route')); // Apply middleware to user routes
+// app.use('/user', auth.verifyToken, require('./routes/user.route')); // Apply middleware to user routes
 app.use('/tenant', require("./routes/tenant.route"));
 app.use('/role', require("./routes/role.route"));
 app.use('/parentmenu', require("./routes/parentmenu.route"));

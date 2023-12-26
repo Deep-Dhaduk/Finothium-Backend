@@ -1,13 +1,18 @@
 const User = require("../models/user");
 const jwt = require('jsonwebtoken');
-const db = require('../db/dbconnection')
-
 
 const CreateUser = async (req, res) => {
     try {
 
-        let { tenantId, username, fullname, email, password, confirmpassword, profile_image, company, status, resetpassword, roleId } = req.body;
-        let user = new User(tenantId, username, fullname, email, password, confirmpassword, profile_image, company, status, resetpassword, roleId);
+        let { tenantId, username, fullname, email, password, confirmpassword, companyId, status, resetpassword, roleId } = req.body;
+
+        let user = new User(tenantId, username, fullname, email, password, confirmpassword, '', companyId, status, resetpassword, roleId);
+
+        if (req.file && req.file.buffer) {
+            const imageBase64 = req.file.buffer.toString('base64');
+            user.profile_image = imageBase64;
+            // console.log(imageBase64);
+        }
 
         user = await user.save()
 
@@ -42,7 +47,7 @@ const loginUser = async (req, res, next) => {
 
             // Create JWT token
             const token = jwt.sign(
-                { userId: user[0].id, email: user[0].email },
+                { userId: user[0].id, email: user[0].email, roleId: user[0].roleId, companyId: user[0].companyId },
                 process.env.JWT_SECRET,
                 { expiresIn: process.env.JWT_EXPIRES_IN } // Token expiry time
             );
@@ -65,13 +70,20 @@ const loginUser = async (req, res, next) => {
 
 const findOneRec = async (req, res) => {
     try {
-        let checkUser = await User.findOne()
-        return res.status(200).json({ success: true, data: checkUser });
+        // You might want to get the user based on the user ID from the token
+        const userEmail = req.user.email;
 
+        let checkUser = await User.findByEmail(userEmail);
+
+        if (!checkUser[0]) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+        return res.status(200).json({ success: true, data: checkUser });
     } catch (error) {
-        res.status(501).json({ success: false, error: error.message })
+        res.status(500).json({ success: false, error: error.message });
     }
 }
+
 
 const ListUser = async (req, res, next) => {
     try {
@@ -119,8 +131,8 @@ const deleteUser = async (req, res, next) => {
 
 const updateUser = async (req, res, next) => {
     try {
-        let { tenantId, username, fullname, email, profile_image, company, status, resetpassword, roleId } = req.body;
-        let user = new User(tenantId, username, fullname, email, profile_image, company, status, resetpassword, roleId)
+        let { tenantId, username, fullname, email, profile_image, companyId, status, resetpassword, roleId } = req.body;
+        let user = new User(tenantId, username, fullname, email, profile_image, companyId, status, resetpassword, roleId)
         let userId = req.params.id;
         let [finduser, _] = await User.findById(userId);
         if (!finduser) {
@@ -137,7 +149,7 @@ const updateUser = async (req, res, next) => {
         console.log(error);
         next(error)
     }
-}
+};
 
 module.exports = {
     CreateUser,

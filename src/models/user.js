@@ -1,8 +1,8 @@
-const db = require('../db/dbconnection')
+const db = require('../db/dbconnection');
 const bcrypt = require('bcrypt');
 
 class User {
-    constructor(tenantId, username, fullname, email, password, confirmpassword, profile_image, company, status, resetpassword, roleId) {
+    constructor(tenantId, username, fullname, email, password, confirmpassword, profile_image, companyId, status, resetpassword, roleId) {
         this.tenantId = tenantId;
         this.username = username;
         this.fullname = fullname;
@@ -10,7 +10,7 @@ class User {
         this.password = password;
         this.confirmpassword = confirmpassword;
         this.profile_image = profile_image
-        this.company = company;
+        this.companyId = companyId;
         this.status = status;
         this.resetpassword = resetpassword;
         this.roleId = roleId;
@@ -38,36 +38,37 @@ class User {
             const hashedPassword = await bcrypt.hash(this.password, 8);
 
             let sql = `
-        INSERT INTO user_master(
-            tenantId,
-            username,
-            fullname,
-            email,
-            password,
-            confirmpassword,
-            profile_image,
-            company,
-            status,
-            resetpassword,
-            createdOn,
-            updatedOn,
-            roleId
-        )
-        VALUES(
-            '${this.tenantId}',
-            '${this.username}',
-            '${this.fullname}',
-            '${this.email}',
-            '${hashedPassword}',
-            '${hashedPassword}',
-            '${this.profile_image}',
-            '${this.company}',
-            '${this.status}',
-            '${this.resetpassword}',
-            '${this.dateandtime()}',
-            '${this.dateandtime()}',
-            '${this.roleId}'
-        )`;
+            INSERT INTO user_master(
+                tenantId,
+                username,
+                fullname,
+                email,
+                password,
+                confirmpassword,
+                profile_image,
+                companyId,
+                status,
+                resetpassword,
+                createdOn,
+                updatedOn,
+                roleId
+            )
+            VALUES(
+                '${this.tenantId}',
+                '${this.username}',
+                '${this.fullname}',
+                '${this.email}',
+                '${hashedPassword}',
+                '${hashedPassword}',
+                '${this.profile_image}',
+                '${this.companyId}',
+                '${this.status}',
+                '${this.resetpassword}',
+                '${this.dateandtime()}',
+                '${this.dateandtime()}',
+                '${this.roleId}'
+            )`;
+
             return db.execute(sql)
 
         } catch (error) {
@@ -87,9 +88,10 @@ class User {
         let sql = `SELECT * FROM user_master WHERE id = ${id}`;
         return db.execute(sql)
     }
-    static findOne() {
-        let sql = `SELECT * FROM user_master WHERE id`;
-        return db.execute(sql)
+
+    static findOne(userId) {
+        let sql = `SELECT * FROM user_master WHERE id = ${userId}`;
+        return db.execute(sql);
     }
 
     static findByEmail(email) {
@@ -103,9 +105,10 @@ class User {
     }
 
     async update(id) {
-        let sql = `UPDATE user_master SET tenantId='${this.tenantId}',username='${this.username}',fullname='${this.fullname}',email='${this.email}',password='${this.password}',confirmpassword='${this.confirmpassword}',profile_image='${this.profile_image}',company='${this.company}',status='${this.status}',resetpassword='${this.resetpassword}',updatedOn='${this.dateandtime()}',roleId='${this.roleId}' WHERE id = ${id}`;
+        let sql = `UPDATE user_master SET tenantId='${this.tenantId}',username='${this.username}',fullname='${this.fullname}',email='${this.email}',password='${this.password}',confirmpassword='${this.confirmpassword}',profile_image='${this.profile_image}',companyId='${this.companyId}',status='${this.status}',resetpassword='${this.resetpassword}',updatedOn='${this.dateandtime()}',roleId='${this.roleId}' WHERE id = ${id}`;
         return db.execute(sql)
 
     };
+
 }
 module.exports = User

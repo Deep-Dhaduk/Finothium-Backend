@@ -1,5 +1,6 @@
 const User = require("../models/user");
 const jwt = require('jsonwebtoken');
+const emailService = require('../service/email.service');
 
 const CreateUser = async (req, res) => {
     try {
@@ -14,12 +15,12 @@ const CreateUser = async (req, res) => {
             // console.log(imageBase64);
         }
 
-        user = await user.save()
+        let newUser = await user.save()
 
         res.status(200).json({
             success: true,
             message: "user create successfully!",
-            record: user
+            record: newUser
         });
     } catch (error) {
         res.status(400).json({
@@ -151,6 +152,34 @@ const updateUser = async (req, res, next) => {
     }
 };
 
+const sendMail = async (req, res) => {
+
+    const { email } = req.body
+    try {
+        const oldUser = await User.findByEmail({ email })
+        if (!oldUser) {
+            return res.send("User Not Exists!!")
+        }
+        const reqBody = req.body;
+        const otp = Math.floor(100000 + Math.random() * 900000);
+        console.log(otp);
+
+        const sendEmail = await emailService.sendMail(
+            reqBody.email,
+            otp
+        );
+        if (!sendEmail) {
+            throw new Error("Something went wrong, please try again or later.");
+        }
+
+        res
+            .status(200)
+            .json({ success: true, message: "Email send successfully!" });
+    } catch (error) {
+        res.status(400).json({ success: false, message: error.message });
+    }
+};
+
 module.exports = {
     CreateUser,
     ListUser,
@@ -158,5 +187,6 @@ module.exports = {
     deleteUser,
     updateUser,
     loginUser,
-    findOneRec
+    findOneRec,
+    sendMail
 }

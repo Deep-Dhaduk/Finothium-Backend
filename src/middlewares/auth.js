@@ -14,7 +14,6 @@ const verifyToken = async (req, res, next) => {
     }
 
     try {
-        // Check for "Bearer " prefix and extract the actual token
         const tokenParts = token.split(' ');
         if (tokenParts.length !== 2 || tokenParts[0] !== 'Bearer') {
             throw new Error('Invalid token format');
@@ -22,8 +21,6 @@ const verifyToken = async (req, res, next) => {
 
         const decoded = jwt.verify(tokenParts[1], process.env.JWT_SECRET);
 
-        // You should directly use `decoded` instead of trying to find the user
-        // Also, make sure that `decoded.id` is the correct field
         const [user, _] = await User.findByEmail(decoded.email);
 
 
@@ -37,7 +34,7 @@ const verifyToken = async (req, res, next) => {
         req.user = user[0];
         next();
     } catch (error) {
-        console.log(error); // Log the actual error for debugging
+        console.log(error);
         return res.status(401).json({
             success: false,
             message: 'Invalid token',

@@ -109,6 +109,5 @@ class User {
         return db.execute(sql)
 
     };
-
 }
 module.exports = User

@@ -4,14 +4,14 @@ const router = express.Router();
 const auth = require('../middlewares/auth');
 const multer = require('multer');
 
-const storage = multer.memoryStorage(); // Store the file in memory as a Buffer
+const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
 
 router.post(
     "/create-user",
     upload.single('profile_image'),
-    auth.verifyToken,
+    // auth.verifyToken,
     UserController.CreateUser
 );
 
@@ -48,6 +48,12 @@ router.put(
     "/update-user/:id",
     auth.verifyToken,
     UserController.updateUser
+);
+
+router.post(
+    "/forgot-password",
+    auth.verifyToken,
+    UserController.sendMail
 );
 
 module.exports = router;

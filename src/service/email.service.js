@@ -24,5 +24,5 @@ const sendMail = async (to, otp) => {
 };
 
 module.exports = {
-    sendMail,
+    sendMail
 };

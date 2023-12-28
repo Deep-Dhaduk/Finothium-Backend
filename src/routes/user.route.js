@@ -1,11 +1,8 @@
-const express = require('express')
+const express = require('express');
 const UserController = require('../controllers/user.controller');
 const router = express.Router();
 const auth = require('../middlewares/auth');
-const multer = require('multer');
-
-const storage = multer.memoryStorage();
-const upload = multer({ storage: storage });
+const { upload } = require('../middlewares/upload')
 
 router.post(
     "/create-user",
@@ -51,8 +48,14 @@ router.put(
 
 router.post(
     "/forgot-password",
-    auth.verifyToken,
+    // auth.verifyToken,
     UserController.sendMail
+);
+
+router.post(
+    "/reset-password",
+    // auth.verifyToken,
+    UserController.resetPassword
 );
 
 module.exports = router;

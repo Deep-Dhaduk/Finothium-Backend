@@ -109,5 +109,10 @@ class User {
         return db.execute(sql)
 
     };
+
+    static updateOTP(email, otp) {
+        let sql = `UPDATE user_master SET resetpassword='${otp}' WHERE email='${email}'`;
+        return db.execute(sql);
+    }
 }
 module.exports = User

@@ -13,7 +13,7 @@ const CreateUser = async (req, res) => {
             const imageBase64 = req.file.buffer.toString('base64');
             user.profile_image = imageBase64;
             // console.log(imageBase64);
-        }
+        };
 
         let newUser = await user.save()
 

@@ -1,7 +1,7 @@
 const db = require('../db/dbconnection')
 
 class Tenant {
-    constructor(tenantname, personname, address, contact, email, startdate, enddate, createdBy) {
+    constructor(tenantname, personname, address, contact, email, startdate, enddate, status, createdBy, updatedBy) {
         this.tenantname = tenantname;
         this.personname = personname;
         this.address = address;
@@ -9,7 +9,9 @@ class Tenant {
         this.email = email;
         this.startdate = startdate;
         this.enddate = enddate;
+        this.status = status;
         this.createdBy = createdBy;
+        this.updatedBy = updatedBy;
     }
 
     dateandtime = () => {
@@ -36,8 +38,10 @@ class Tenant {
             email,
             startdate,
             enddate,
+            status,
             createdBy,
             createdOn,
+            updatedBy,
             updatedOn
         )
         VALUES(
@@ -48,8 +52,10 @@ class Tenant {
             '${this.email}',
             '${this.startdate}',
             '${this.enddate}',
+            '${this.status}',
             '${this.createdBy}',
             '${this.dateandtime()}',
+            '${this.updatedBy}',
             '${this.dateandtime()}'
         )`;
             return db.execute(sql)
@@ -73,7 +79,7 @@ class Tenant {
     }
 
     async update(id) {
-        let sql = `UPDATE role_master SET tenantname='${this.tenantname}',personname='${this.personname}',address='${this.address}',contact='${this.contact}',email='${this.email}',startdate='${this.startdate}',enddate='${this.enddate}',createdBy='${this.createdBy}',updatedOn='${this.dateandtime()}' WHERE id = ${id}`;
+        let sql = `UPDATE role_master SET tenantname='${this.tenantname}',personname='${this.personname}',address='${this.address}',contact='${this.contact}',email='${this.email}',startdate='${this.startdate}',enddate='${this.enddate}',status='${this.status}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}' WHERE id = ${id}`;
         return db.execute(sql)
 
     };

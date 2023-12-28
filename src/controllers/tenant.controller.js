@@ -2,8 +2,8 @@ const Tenant = require("../models/tenant");
 
 const CreateTenant = async (req, res) => {
     try {
-        let { tenantname, personname, address, contact, email, startdate, enddate, createdB } = req.body;
-        let tenant = new Tenant(tenantname, personname, address, contact, email, startdate, enddate, createdB);
+        let { tenantname, personname, address, contact, email, startdate, enddate, status, createdBy, updatedBy } = req.body;
+        let tenant = new Tenant(tenantname, personname, address, contact, email, startdate, status, enddate, createdBy, updatedBy);
 
         tenant = await tenant.save()
 

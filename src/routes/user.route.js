@@ -7,7 +7,6 @@ const multer = require('multer');
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
-
 router.post(
     "/create-user",
     upload.single('profile_image'),

@@ -1,11 +1,10 @@
 const db = require('../db/dbconnection')
 
-class Childmenu {
-    constructor(tenantId, menu_name, parent_id, display_rank, status, createdBy, updatedBy) {
+class Common {
+    constructor(tenantId, name, type, status, createdBy, updatedBy) {
         this.tenantId = tenantId;
-        this.menu_name = menu_name;
-        this.parent_id = parent_id;
-        this.display_rank = display_rank;
+        this.name = name;
+        this.type = type;
         this.status = status;
         this.createdBy = createdBy;
         this.updatedBy = updatedBy;
@@ -24,14 +23,14 @@ class Childmenu {
         return `${yyyy}-${mm}-${dd}` + " " + `${hours}:${minutes}:${seconds}`;
     }
 
+
     async save() {
         try {
             let sql = `
-            INSERT INTO childmenu_master(
+            INSERT INTO common_master(
                 tenantId,
-                menu_name,
-                parent_id,
-                display_rank,
+                name,
+                type,
                 status,
                 createdBy,
                 createdOn,
@@ -40,9 +39,8 @@ class Childmenu {
             )
             VALUES(
                 '${this.tenantId}',
-                '${this.menu_name}',
-                '${this.parent_id}',
-                '${this.display_rank}',
+                '${this.name}',
+                '${this.type}',
                 '${this.status}',
                 '${this.createdBy}',
                 '${this.dateandtime()}',
@@ -54,27 +52,26 @@ class Childmenu {
         } catch (error) {
             throw error;
         }
-    }
-
+    };
 
     static findAll() {
-        let sql = "SELECT * FROM childmenu_master";
+        let sql = "SELECT * FROM common_master";
         return db.execute(sql)
     }
     static findById(id) {
-        let sql = `SELECT * FROM childmenu_master WHERE id = ${id}`;
+        let sql = `SELECT * FROM common_master WHERE common_id = ${id}`;
         return db.execute(sql)
     }
     static delete(id) {
-        let sql = `DELETE FROM childmenu_master WHERE id = ${id}`;
+        let sql = `DELETE FROM common_master WHERE common_id = ${id}`;
         return db.execute(sql)
     }
 
     async update(id) {
-        let sql = `UPDATE childmenu_master SET tenantId='${this.tenantId}',menu_name='${this.menu_name}',parent_id='${this.parent_id}',display_rank='${this.display_rank}',status='${this.status}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}' WHERE id = ${id}`;
+        let sql = `UPDATE common_master SET tenantId='${this.tenantId}',name='${this.name}',type='${this.type}',status='${this.status}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}' WHERE common_id = ${id}`;
         return db.execute(sql)
 
     };
 }
 
-module.exports = Childmenu;
+module.exports = Common;

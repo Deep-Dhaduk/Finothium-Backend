@@ -29,6 +29,10 @@ class Tenant {
 
     async save() {
         try {
+
+            const formattedStartDate = this.formatDate(this.join_date);
+            const formattedEndDate = this.formatDate(this.exit_date);
+
             let sql = `
         INSERT INTO tenant_master(
             tenantname,
@@ -50,8 +54,8 @@ class Tenant {
             '${this.address}',
             '${this.contact}',
             '${this.email}',
-            '${this.startdate}',
-            '${this.enddate}',
+            '${formattedStartDate}',
+            '${formattedEndDate}',
             '${this.status}',
             '${this.createdBy}',
             '${this.dateandtime()}',
@@ -63,6 +67,11 @@ class Tenant {
         } catch (error) {
             throw error;
         }
+    }
+
+    formatDate(dateString) {
+        const [dd, mm, yyyy] = dateString.split('-');
+        return `${yyyy}-${mm}-${dd}`;
     }
 
     static findAll() {
@@ -79,7 +88,7 @@ class Tenant {
     }
 
     async update(id) {
-        let sql = `UPDATE role_master SET tenantname='${this.tenantname}',personname='${this.personname}',address='${this.address}',contact='${this.contact}',email='${this.email}',startdate='${this.startdate}',enddate='${this.enddate}',status='${this.status}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}' WHERE id = ${id}`;
+        let sql = `UPDATE role_master SET tenantname='${this.tenantname}',personname='${this.personname}',address='${this.address}',contact='${this.contact}',email='${this.email}',startdate='${this.startdate}',enddate='${this.enddate}',status='${this.status}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}' WHERE tenantId = ${id}`;
         return db.execute(sql)
 
     };

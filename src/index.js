@@ -17,6 +17,9 @@ app.use('/parentmenu', require("./routes/parentmenu.route"));
 app.use('/childmenu', require("./routes/childmenu.route"));
 app.use('/menu', require("./routes/menu.route"));
 app.use('/company', require("./routes/company.route"));
+app.use('/account', require("./routes/account.route"));
+app.use('/common', require("./routes/common.route"));
+app.use('/payment', require("./routes/payment.route"));
 
 app.use((req, res, next) => {
         next(new Error("Route not found!"));

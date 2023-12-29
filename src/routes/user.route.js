@@ -7,7 +7,6 @@ const { upload } = require('../middlewares/upload')
 router.post(
     "/create-user",
     upload.single('profile_image'),
-    // auth.verifyToken,
     UserController.CreateUser
 );
 

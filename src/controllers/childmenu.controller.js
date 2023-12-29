@@ -1,4 +1,4 @@
-const Childmenu = require("../models/Childmenu");
+const Childmenu = require('../models/childmenu')
 
 const CreateChildmenu = async (req, res) => {
     try {
@@ -68,8 +68,8 @@ const deleteChildmenu = async (req, res, next) => {
 
 const updateChildmenu = async (req, res, next) => {
     try {
-        let { tenantId, menu_name, display_rank, status, updatedBy } = req.body;
-        let childmenu = new Childmenu(tenantId, menu_name, display_rank, status, updatedBy)
+        let { tenantId, menu_name,parent_id, display_rank, status, updatedBy } = req.body;
+        let childmenu = new Childmenu(tenantId, menu_name, parent_id,display_rank, status, updatedBy)
         let Id = req.params.id;
         let [findchildmenu, _] = await Childmenu.findById(Id);
         if (!findchildmenu) {

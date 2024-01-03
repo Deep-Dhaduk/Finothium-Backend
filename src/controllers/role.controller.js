@@ -1,6 +1,6 @@
 const Role = require("../models/role");
 
-const CreateRole = async (req, res) => {
+const CreateRole = async (req, res, next) => {
     try {
         let { tenantId, rolename, status, createdBy } = req.body;
         let role = new Role(tenantId, rolename, status, createdBy);
@@ -28,7 +28,7 @@ const ListRole = async (req, res, next) => {
         res.status(200).json({
             success: true,
             message: "Role List Successfully!",
-            data: { role }
+            data: role[0]
         });
     } catch (error) {
         console.log(error);
@@ -44,7 +44,7 @@ const getRoleById = async (req, res, next) => {
         res.status(200).json({
             success: true,
             message: "Role Record Successfully!",
-            data: { role }
+            data: role[0]
         });
     } catch (error) {
         console.log(error);

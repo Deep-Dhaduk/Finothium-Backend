@@ -1,6 +1,6 @@
 const Parentmenu = require("../models/parentmenu");
 
-const CreateParentmenu = async (req, res) => {
+const CreateParentmenu = async (req, res, next) => {
     try {
         let { tenantId, menu_name, display_rank, status, createdBy, updatedBy } = req.body;
         let parentmenu = new Parentmenu(tenantId, menu_name, display_rank, status, createdBy, updatedBy);
@@ -28,7 +28,7 @@ const ListParentmenu = async (req, res, next) => {
         res.status(200).json({
             success: true,
             message: "ParentMenu List Successfully!",
-            data: { parentmenu }
+            data: parentmenu[0]
         });
     } catch (error) {
         console.log(error);
@@ -44,7 +44,7 @@ const getParentmenuById = async (req, res, next) => {
         res.status(200).json({
             success: true,
             message: "ParentMenu Record Successfully!",
-            data: { parentmenu }
+            data: parentmenu[0]
         });
     } catch (error) {
         console.log(error);

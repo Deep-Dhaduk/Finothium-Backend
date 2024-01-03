@@ -20,6 +20,9 @@ app.use('/company', require("./routes/company.route"));
 app.use('/account', require("./routes/account.route"));
 app.use('/common', require("./routes/common.route"));
 app.use('/payment', require("./routes/payment.route"));
+app.use('/transfer', require("./routes/transfer.route"));
+app.use('/dashboard', require("./routes/dashboard.route"));
+app.use('/report', require("./routes/reports.route"));
 
 app.use((req, res, next) => {
         next(new Error("Route not found!"));

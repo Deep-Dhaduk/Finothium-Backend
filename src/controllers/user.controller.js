@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const emailService = require('../service/email.service');
 
-const CreateUser = async (req, res) => {
+const CreateUser = async (req, res, next) => {
     try {
 
         let { tenantId, username, fullname, email, password, confirmpassword, companyId, status, resetpassword, roleId } = req.body;
@@ -35,7 +35,14 @@ const CreateUser = async (req, res) => {
 
 const loginUser = async (req, res, next) => {
     try {
-        const { email, password } = req.body;
+        const { email, password, roleId } = req.body;
+
+        if (!email || !password || !roleId) {
+            return res.status(400).json({
+                success: false,
+                message: 'Email, password, and roleId are required in the request body',
+            });
+        }
         const [user, _] = await User.findByEmail(email);
 
         if (user[0]) {
@@ -51,7 +58,7 @@ const loginUser = async (req, res, next) => {
             const token = jwt.sign(
                 { userId: user[0].id, email: user[0].email, roleId: user[0].roleId, companyId: user[0].companyId },
                 process.env.JWT_SECRET,
-                { expiresIn: process.env.JWT_EXPIRES_IN } // Token expiry time
+                { expiresIn: process.env.JWT_EXPIRES_IN }
             );
 
             res.status(200).json({
@@ -73,12 +80,12 @@ const loginUser = async (req, res, next) => {
 
 const findOneRec = async (req, res) => {
     try {
-        // You might want to get the user based on the user ID from the token
         const userEmail = req.user.email;
 
         let checkUser = await User.findByEmail(userEmail);
 
         if (!checkUser[0]) {
+            my
             return res.status(404).json({ success: false, message: 'User not found' });
         }
         return res.status(200).json({ success: true, data: checkUser[0] });
@@ -94,7 +101,7 @@ const ListUser = async (req, res, next) => {
         res.status(200).json({
             success: true,
             message: "User List Successfully!",
-            data: { user }
+            data: user[0]
         });
     } catch (error) {
         console.log(error);
@@ -110,7 +117,7 @@ const getUserById = async (req, res, next) => {
         res.status(200).json({
             success: true,
             message: "User Record Successfully!",
-            data: { user }
+            data: user[0]
         });
     } catch (error) {
         console.log(error);
@@ -154,32 +161,6 @@ const updateUser = async (req, res, next) => {
     }
 };
 
-// const sendMailll = async (req, res, email) => {
-
-//     try {
-//         const oldUser = await User.findByEmail({ email })
-//         if (!oldUser) {
-//             return res.send("User Not Exists!!")
-//         }
-//         const reqBody = req.body;
-//         const otp = Math.floor(100000 + Math.random() * 900000);
-//         console.log(otp);
-
-//         const sendEmail = await emailService.sendMail(
-//             reqBody.email,
-//             otp
-//         );
-//         if (!sendEmail) {
-//             throw new Error("Something went wrong, please try again or later.");
-//         }
-
-//         res
-//             .status(200)
-//             .json({ success: true, message: "Email send successfully!" });
-//     } catch (error) {
-//         res.status(400).json({ success: false, message: error.message });
-//     }
-// };
 
 const generateOTP = () => {
     return Math.floor(100000 + Math.random() * 900000);
@@ -243,7 +224,6 @@ const resetPassword = async (req, res) => {
                 message: 'User not found'
             });
         }
-        console.log(user[0]);
         // Check if the provided OTP matches the stored OTP in the user record
         if (user[0].resetpassword !== req.body.otp) {
             console.log(req.body.otp);

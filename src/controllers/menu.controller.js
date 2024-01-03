@@ -1,6 +1,6 @@
 const Menu = require("../models/menu");
 
-const CreateMenu = async (req, res) => {
+const CreateMenu = async (req, res, next) => {
     try {
         let { tenantId, role_id, parent_id, child_id, allow_access, allow_add, allow_edit, allow_delete, status, createdBy, updatedBy } = req.body;
         let menu = new Menu(tenantId, role_id, parent_id, child_id, allow_access, allow_add, allow_edit, allow_delete, status, createdBy, updatedBy);
@@ -28,7 +28,7 @@ const ListMenu = async (req, res, next) => {
         res.status(200).json({
             success: true,
             message: "Menu List Successfully!",
-            data: { menu }
+            data: menu[0]
         });
     } catch (error) {
         console.log(error);
@@ -44,7 +44,7 @@ const getMenuById = async (req, res, next) => {
         res.status(200).json({
             success: true,
             message: "Menu Record Successfully!",
-            data: { menu }
+            data: menu[0]
         });
     } catch (error) {
         console.log(error);

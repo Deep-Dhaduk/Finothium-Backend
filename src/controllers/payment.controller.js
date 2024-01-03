@@ -1,6 +1,6 @@
 const Payment = require("../models/payment");
 
-const CreatePayment = async (req, res) => {
+const CreatePayment = async (req, res, next) => {
     try {
         let { tenantId, transaction_date, transaction_type, payment_type, client_category_name, accountId, amount, description, createdBy, updatedBy } = req.body;
         let payment = new Payment(tenantId, transaction_date, transaction_type, payment_type, client_category_name, accountId, amount, description, createdBy, updatedBy);
@@ -28,7 +28,7 @@ const ListPayment = async (req, res, next) => {
         res.status(200).json({
             success: true,
             message: "Payment List Successfully!",
-            data: { payment }
+            data: payment[0]
         });
     } catch (error) {
         console.log(error);
@@ -44,7 +44,7 @@ const getPaymentById = async (req, res, next) => {
         res.status(200).json({
             success: true,
             message: "Payment Record Successfully!",
-            data: { payment }
+            data: payment[0]
         });
     } catch (error) {
         console.log(error);

@@ -1,9 +1,9 @@
 const Childmenu = require('../models/childmenu')
 
-const CreateChildmenu = async (req, res) => {
+const CreateChildmenu = async (req, res, next) => {
     try {
-        let { tenantId, menu_name, parent_id, display_rank, status, createdBy,updatedBy } = req.body;
-        let childmenu = new Childmenu(tenantId, menu_name, parent_id, display_rank, status, createdBy,updatedBy);
+        let { tenantId, menu_name, parent_id, display_rank, status, createdBy, updatedBy } = req.body;
+        let childmenu = new Childmenu(tenantId, menu_name, parent_id, display_rank, status, createdBy, updatedBy);
 
         childmenu = await childmenu.save()
 
@@ -28,7 +28,7 @@ const ListChildmenu = async (req, res, next) => {
         res.status(200).json({
             success: true,
             message: "Childmenu List Successfully!",
-            data: { childmenu }
+            data: childmenu[0]
         });
     } catch (error) {
         console.log(error);
@@ -44,7 +44,7 @@ const getChildmenuById = async (req, res, next) => {
         res.status(200).json({
             success: true,
             message: "Childmenu Record Successfully!",
-            data: { childmenu }
+            data: childmenu[0]
         });
     } catch (error) {
         console.log(error);
@@ -68,8 +68,8 @@ const deleteChildmenu = async (req, res, next) => {
 
 const updateChildmenu = async (req, res, next) => {
     try {
-        let { tenantId, menu_name,parent_id, display_rank, status, updatedBy } = req.body;
-        let childmenu = new Childmenu(tenantId, menu_name, parent_id,display_rank, status, updatedBy)
+        let { tenantId, menu_name, parent_id, display_rank, status, updatedBy } = req.body;
+        let childmenu = new Childmenu(tenantId, menu_name, parent_id, display_rank, status, updatedBy)
         let Id = req.params.id;
         let [findchildmenu, _] = await Childmenu.findById(Id);
         if (!findchildmenu) {

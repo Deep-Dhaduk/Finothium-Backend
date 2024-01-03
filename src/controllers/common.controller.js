@@ -1,6 +1,6 @@
 const Common = require("../models/common");
 
-const CreateCommon = async (req, res) => {
+const CreateCommon = async (req, res, next) => {
     try {
         let { tenantId, name, type, status, createdBy, updatedBy } = req.body;
         let common = new Common(tenantId, name, type, status, createdBy, updatedBy);
@@ -28,7 +28,7 @@ const ListCommon = async (req, res, next) => {
         res.status(200).json({
             success: true,
             message: "Common List Successfully!",
-            data: { common }
+            data: common[0]
         });
     } catch (error) {
         console.log(error);
@@ -44,7 +44,7 @@ const getCommonById = async (req, res, next) => {
         res.status(200).json({
             success: true,
             message: "Common Record Successfully!",
-            data: { common }
+            data: common[0]
         });
     } catch (error) {
         console.log(error);

@@ -1,11 +1,13 @@
 const Company = require("../models/company");
 
-const CreateCompany = async (req, res) => {
+const CreateCompany = async (req, res, next) => {
+
     try {
         let { tenantId, company_name, legal_name, authorize_person_name, address, contact_no, email, website, pan, gstin, status, createdBy, updatedBy } = req.body;
+
         let company = new Company(tenantId, company_name, legal_name, authorize_person_name, address, contact_no, email, website, pan, gstin, status, createdBy, updatedBy);
 
-        company = await company.save()
+        company = await company.save();
 
         res.status(200).json({
             success: true,
@@ -16,23 +18,57 @@ const CreateCompany = async (req, res) => {
         res.status(400).json({
             success: false,
             message: error.message,
-        })
+        });
         console.log(error);
-        next(error)
+        next(error);
     }
 }
 
+// const ListCompany = async (req, res, next) => {
+//     try {
+//         const company = await Company.findAll()
+//         res.status(200).json({
+//             success: true,
+//             message: "Company List Successfully!",
+//             data: company[0]
+//         });
+//     } catch (error) {
+//         console.log(error);
+//         next(error)
+//     }
+// };
+
 const ListCompany = async (req, res, next) => {
     try {
-        const company = await Company.findAll()
+        const companyResult = await Company.findAll();
+        const q = '';
+        const queryLowered = q.toLowerCase();
+
+        const filteredData = companyResult.data && companyResult.data.filter(
+            company =>
+                company.company_name.toLowerCase().includes(queryLowered) ||
+                company.legal_name.toLowerCase().includes(queryLowered) ||
+                company.authorize_person_name.toLowerCase().includes(queryLowered) ||
+                company.gstin.toString().toLowerCase().includes(queryLowered)
+        );
+
         res.status(200).json({
             success: true,
             message: "Company List Successfully!",
-            data: { company }
+            data: companyResult[0]
         });
+
+        if (filteredData) {
+            res.status(200).json({
+                allData: companyResult.data,
+                paymentTransaction: filteredData,
+                total: filteredData.length
+            });
+        }
+
     } catch (error) {
         console.log(error);
-        next(error)
+        next(error);
     }
 };
 
@@ -44,7 +80,7 @@ const getCompanyById = async (req, res, next) => {
         res.status(200).json({
             success: true,
             message: "Company Record Successfully!",
-            data: { company }
+            data: company[0]
         });
     } catch (error) {
         console.log(error);

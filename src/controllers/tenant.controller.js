@@ -1,6 +1,6 @@
 const Tenant = require("../models/tenant");
 
-const CreateTenant = async (req, res) => {
+const CreateTenant = async (req, res, next) => {
     try {
         let { tenantname, personname, address, contact, email, startdate, enddate, status, createdBy, updatedBy } = req.body;
         let tenant = new Tenant(tenantname, personname, address, contact, email, startdate, status, enddate, createdBy, updatedBy);
@@ -28,7 +28,7 @@ const ListTenant = async (req, res, next) => {
         res.status(200).json({
             success: true,
             message: "Tenant List Successfully!",
-            data: { tenant }
+            data: tenant[0]
         });
     } catch (error) {
         console.log(error);
@@ -44,7 +44,7 @@ const getTenantById = async (req, res, next) => {
         res.status(200).json({
             success: true,
             message: "tenant Record Successfully!",
-            data: { tenant }
+            data: tenant[0]
         });
     } catch (error) {
         console.log(error);

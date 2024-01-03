@@ -1,6 +1,6 @@
 const Account = require("../models/account");
 
-const CreateAccount = async (req, res) => {
+const CreateAccount = async (req, res, next) => {
     try {
         let { tenantId, account_name, group_name, join_date, exit_date, account_type, status, createdBy, updatedBy } = req.body;
         let account = new Account(tenantId, account_name, group_name, join_date, exit_date, account_type, status, createdBy, updatedBy);
@@ -28,7 +28,7 @@ const ListAccount = async (req, res, next) => {
         res.status(200).json({
             success: true,
             message: "Account List Successfully!",
-            data: { account }
+            data: account[0]
         });
     } catch (error) {
         console.log(error);
@@ -44,7 +44,7 @@ const getAccountById = async (req, res, next) => {
         res.status(200).json({
             success: true,
             message: "Account Record Successfully!",
-            data: { account }
+            data: account[0]
         });
     } catch (error) {
         console.log(error);

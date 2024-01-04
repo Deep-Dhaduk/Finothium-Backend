@@ -24,15 +24,56 @@ const CreateAccount = async (req, res) => {
 
 const ListAccount = async (req, res, next) => {
     try {
-        const account = await Account.findAll()
-        res.status(200).json({
+        const { q = '', id } = req.query;
+
+        if (id) {
+            const account = await Account.findById(id);
+
+            if (account[0].length === 0) {
+                return res.status(404).json({ success: false, message: 'Account not found' });
+            }
+
+            return res.status(200).json({ success: true, message: 'Account found', data: account[0][0] });
+        }
+
+        const accountResult = await Account.findAll();
+        let responseData = {
             success: true,
-            message: "Account List Successfully!",
-            data: account[0]
-        });
+            message: 'Account List Successfully!',
+            data: accountResult[0]
+        };
+
+        if (q) {
+            const queryLowered = q.toLowerCase();
+            const filteredData = accountResult[0].filter(
+                account =>
+                    account.account_name.toLowerCase().includes(queryLowered) ||
+                    account.group_name.toLowerCase().includes(queryLowered) ||
+                    account.account_type.toLowerCase().includes(queryLowered) ||
+                    account.status.toLowerCase().includes(queryLowered)
+            );
+
+            if (filteredData.length > 0) {
+                responseData = {
+                    ...responseData,
+                    data: filteredData,
+                    total: filteredData.length
+                };
+            } else {
+                responseData = {
+                    ...responseData,
+                    message: 'No matching account found',
+                    data: [],
+                    total: 0
+                };
+            }
+        }
+
+        res.status(200).json(responseData);
+
     } catch (error) {
         console.log(error);
-        next(error)
+        next(error);
     }
 };
 

@@ -24,15 +24,54 @@ const CreateChildmenu = async (req, res) => {
 
 const ListChildmenu = async (req, res, next) => {
     try {
-        const childmenu = await Childmenu.findAll()
-        res.status(200).json({
+        const { q = '', id } = req.query;
+
+        if (id) {
+            const childmenu = await Childmenu.findById(id);
+
+            if (childmenu[0].length === 0) {
+                return res.status(404).json({ success: false, message: 'Childmenu not found' });
+            }
+
+            return res.status(200).json({ success: true, message: 'Childmenu found', data: childmenu[0][0] });
+        }
+
+        const childmenuResult = await Childmenu.findAll();
+        let responseData = {
             success: true,
-            message: "Childmenu List Successfully!",
-            data: childmenu[0]
-        });
+            message: 'Childmenu List Successfully!',
+            data: childmenuResult[0]
+        };
+
+        if (q) {
+            const queryLowered = q.toLowerCase();
+            const filteredData = childmenuResult[0].filter(
+                childmenu =>
+                    childmenu.menu_name.toLowerCase().includes(queryLowered) ||
+                    childmenu.status.toLowerCase().includes(queryLowered)
+            );
+
+            if (filteredData.length > 0) {
+                responseData = {
+                    ...responseData,
+                    data: filteredData,
+                    total: filteredData.length
+                };
+            } else {
+                responseData = {
+                    ...responseData,
+                    message: 'No matching childmenu found',
+                    data: [],
+                    total: 0
+                };
+            }
+        }
+
+        res.status(200).json(responseData);
+
     } catch (error) {
         console.log(error);
-        next(error)
+        next(error);
     }
 };
 

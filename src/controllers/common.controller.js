@@ -24,15 +24,55 @@ const CreateCommon = async (req, res) => {
 
 const ListCommon = async (req, res, next) => {
     try {
-        const common = await Common.findAll()
-        res.status(200).json({
+        const { q = '', id } = req.query;
+
+        if (id) {
+            const common = await Common.findById(id);
+
+            if (common[0].length === 0) {
+                return res.status(404).json({ success: false, message: 'Common not found' });
+            }
+
+            return res.status(200).json({ success: true, message: 'Common found', data: common[0][0] });
+        }
+
+        const commonResult = await Common.findAll();
+        let responseData = {
             success: true,
-            message: "Common List Successfully!",
-            data: common[0]
-        });
+            message: 'Common List Successfully!',
+            data: commonResult[0]
+        };
+
+        if (q) {
+            const queryLowered = q.toLowerCase();
+            const filteredData = commonResult[0].filter(
+                common =>
+                    common.name.toLowerCase().includes(queryLowered) ||
+                    common.type.toLowerCase().includes(queryLowered) ||
+                    common.status.toLowerCase().includes(queryLowered)
+            );
+
+            if (filteredData.length > 0) {
+                responseData = {
+                    ...responseData,
+                    data: filteredData,
+                    total: filteredData.length
+                };
+            } else {
+                responseData = {
+                    ...responseData,
+                    message: 'No matching common found',
+                    data: [],
+                    total: 0
+                };
+            }
+        }
+
+        res.status(200).json(responseData);
+
     } catch (error) {
         console.log(error);
-        next(error)
+        next(error);
     }
 };
 

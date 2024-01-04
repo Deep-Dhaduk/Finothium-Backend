@@ -24,15 +24,53 @@ const CreateTransfer = async (req, res) => {
 
 const ListTransfer = async (req, res, next) => {
     try {
-        const transfer = await Transfer.findAll()
-        res.status(200).json({
+        const { q = '', id } = req.query;
+
+        if (id) {
+            const transfer = await Transfer.findById(id);
+
+            if (transfer[0].length === 0) {
+                return res.status(404).json({ success: false, message: 'Transfer not found' });
+            }
+
+            return res.status(200).json({ success: true, message: 'Transfer found', data: transfer[0][0] });
+        }
+
+        const transferResult = await Transfer.findAll();
+        let responseData = {
             success: true,
-            message: "Transfer List Successfully!",
-            data: transfer[0]
-        });
+            message: 'Transfer List Successfully!',
+            data: transferResult[0]
+        };
+
+        if (q) {
+            const queryLowered = q.toLowerCase();
+            const filteredData = transferResult[0].filter(
+                transfer =>
+                    transfer.paymentType.toLowerCase().includes(queryLowered)
+            );
+
+            if (filteredData.length > 0) {
+                responseData = {
+                    ...responseData,
+                    data: filteredData,
+                    total: filteredData.length
+                };
+            } else {
+                responseData = {
+                    ...responseData,
+                    message: 'No matching transfer found',
+                    data: [],
+                    total: 0
+                };
+            }
+        }
+
+        res.status(200).json(responseData);
+
     } catch (error) {
         console.log(error);
-        next(error)
+        next(error);
     }
 };
 

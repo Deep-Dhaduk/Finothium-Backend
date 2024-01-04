@@ -24,15 +24,53 @@ const CreateMenu = async (req, res) => {
 
 const ListMenu = async (req, res, next) => {
     try {
-        const menu = await Menu.findAll()
-        res.status(200).json({
+        const { q = '', id } = req.query;
+
+        if (id) {
+            const menu = await Menu.findById(id);
+
+            if (menu[0].length === 0) {
+                return res.status(404).json({ success: false, message: 'Menu not found' });
+            }
+
+            return res.status(200).json({ success: true, message: 'Menu found', data: menu[0][0] });
+        }
+
+        const menuResult = await Menu.findAll();
+        let responseData = {
             success: true,
-            message: "Menu List Successfully!",
-            data: menu[0]
-        });
+            message: 'Menu List Successfully!',
+            data: menuResult[0]
+        };
+
+        if (q) {
+            const queryLowered = q.toLowerCase();
+            const filteredData = menuResult[0].filter(
+                menu =>
+                    menu.status.toLowerCase().includes(queryLowered)
+            );
+
+            if (filteredData.length > 0) {
+                responseData = {
+                    ...responseData,
+                    data: filteredData,
+                    total: filteredData.length
+                };
+            } else {
+                responseData = {
+                    ...responseData,
+                    message: 'No matching menu found',
+                    data: [],
+                    total: 0
+                };
+            }
+        }
+
+        res.status(200).json(responseData);
+
     } catch (error) {
         console.log(error);
-        next(error)
+        next(error);
     }
 };
 

@@ -24,49 +24,52 @@ const CreateCompany = async (req, res) => {
     }
 }
 
-// const ListCompany = async (req, res, next) => {
-//     try {
-//         const company = await Company.findAll()
-//         res.status(200).json({
-//             success: true,
-//             message: "Company List Successfully!",
-//             data: company[0]
-//         });
-//     } catch (error) {
-//         console.log(error);
-//         next(error)
-//     }
-// };
-
 const ListCompany = async (req, res, next) => {
     try {
-        const { q } = req.query; // Extract the search query from request parameters
+        const { q = '', id } = req.query;
+
+        if (id) {
+            const company = await Company.findById(id);
+
+            if (company[0].length === 0) {
+                return res.status(404).json({ success: false, message: 'Company not found' });
+            }
+
+            return res.status(200).json({ success: true, message: 'Company found', data: company[0][0] });
+        }
 
         const companyResult = await Company.findAll();
-        console.log(companyResult);
         let responseData = {
             success: true,
-            message: "Company List Successfully!",
+            message: 'Company List Successfully!',
             data: companyResult[0]
         };
 
-        // Apply filtering only when a search keyword is provided
         if (q) {
             const queryLowered = q.toLowerCase();
-            const filteredData = companyResult[0].data && companyResult[0].data.filter(
+            const filteredData = companyResult[0].filter(
                 company =>
                     company.company_name.toLowerCase().includes(queryLowered) ||
                     company.legal_name.toLowerCase().includes(queryLowered) ||
                     company.authorize_person_name.toLowerCase().includes(queryLowered) ||
+                    company.address.toLowerCase().includes(queryLowered) ||
+                    company.pan.toLowerCase().includes(queryLowered) ||
+                    company.status.toLowerCase().includes(queryLowered) ||
                     company.gstin.toString().toLowerCase().includes(queryLowered)
             );
 
-            if (filteredData) {
+            if (filteredData.length > 0) {
                 responseData = {
                     ...responseData,
-                    allData: companyResult[0].data,
-                    paymentTransaction: filteredData,
+                    data: filteredData,
                     total: filteredData.length
+                };
+            } else {
+                responseData = {
+                    ...responseData,
+                    message: 'No matching companies found',
+                    data: [],
+                    total: 0
                 };
             }
         }

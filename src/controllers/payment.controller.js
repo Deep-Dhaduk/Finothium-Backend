@@ -24,15 +24,55 @@ const CreatePayment = async (req, res) => {
 
 const ListPayment = async (req, res, next) => {
     try {
-        const payment = await Payment.findAll()
-        res.status(200).json({
+        const { q = '', id } = req.query;
+
+        if (id) {
+            const payment = await Payment.findById(id);
+
+            if (payment[0].length === 0) {
+                return res.status(404).json({ success: false, message: 'Payment not found' });
+            }
+
+            return res.status(200).json({ success: true, message: 'Payment found', data: payment[0][0] });
+        }
+
+        const paymentResult = await Payment.findAll();
+        let responseData = {
             success: true,
-            message: "Payment List Successfully!",
-            data: payment[0]
-        });
+            message: 'Payment List Successfully!',
+            data: paymentResult[0]
+        };
+
+        if (q) {
+            const queryLowered = q.toLowerCase();
+            const filteredData = paymentResult[0].filter(
+                payment =>
+                    payment.transaction_type.toLowerCase().includes(queryLowered) ||
+                    payment.payment_type.toLowerCase().includes(queryLowered) ||
+                    payment.client_category_name.toLowerCase().includes(queryLowered)
+            );
+
+            if (filteredData.length > 0) {
+                responseData = {
+                    ...responseData,
+                    data: filteredData,
+                    total: filteredData.length
+                };
+            } else {
+                responseData = {
+                    ...responseData,
+                    message: 'No matching payment found',
+                    data: [],
+                    total: 0
+                };
+            }
+        }
+
+        res.status(200).json(responseData);
+
     } catch (error) {
         console.log(error);
-        next(error)
+        next(error);
     }
 };
 

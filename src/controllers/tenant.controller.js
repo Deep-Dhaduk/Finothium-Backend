@@ -24,15 +24,56 @@ const CreateTenant = async (req, res) => {
 
 const ListTenant = async (req, res, next) => {
     try {
-        const tenant = await Tenant.findAll()
-        res.status(200).json({
+        const { q = '', id } = req.query;
+
+        if (id) {
+            const tenant = await Tenant.findById(id);
+
+            if (tenant[0].length === 0) {
+                return res.status(404).json({ success: false, message: 'Tenant not found' });
+            }
+
+            return res.status(200).json({ success: true, message: 'Tenant found', data: tenant[0][0] });
+        }
+
+        const tenantResult = await Tenant.findAll();
+        let responseData = {
             success: true,
-            message: "Tenant List Successfully!",
-            data: tenant[0]
-        });
+            message: 'Tenant List Successfully!',
+            data: tenantResult[0]
+        };
+
+        if (q) {
+            const queryLowered = q.toLowerCase();
+            const filteredData = tenantResult[0].filter(
+                tenant =>
+                    tenant.tenantname.toLowerCase().includes(queryLowered) ||
+                    tenant.personname.toLowerCase().includes(queryLowered) ||
+                    tenant.address.toLowerCase().includes(queryLowered) ||
+                    tenant.status.toLowerCase().includes(queryLowered)
+            );
+
+            if (filteredData.length > 0) {
+                responseData = {
+                    ...responseData,
+                    data: filteredData,
+                    total: filteredData.length
+                };
+            } else {
+                responseData = {
+                    ...responseData,
+                    message: 'No matching tenant found',
+                    data: [],
+                    total: 0
+                };
+            }
+        }
+
+        res.status(200).json(responseData);
+
     } catch (error) {
         console.log(error);
-        next(error)
+        next(error);
     }
 };
 

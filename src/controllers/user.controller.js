@@ -86,22 +86,62 @@ const findOneRec = async (req, res) => {
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }
-}
-
+};
 
 const ListUser = async (req, res, next) => {
     try {
-        const user = await User.findAll()
-        res.status(200).json({
+        const { q = '', id } = req.query;
+
+        if (id) {
+            const user = await User.findById(id);
+
+            if (user[0].length === 0) {
+                return res.status(404).json({ success: false, message: 'User not found' });
+            }
+
+            return res.status(200).json({ success: true, message: 'User found', data: user[0][0] });
+        }
+
+        const userResult = await User.findAll();
+        let responseData = {
             success: true,
-            message: "User List Successfully!",
-            data: user[0]
-        });
+            message: 'User List Successfully!',
+            data: userResult[0]
+        };
+
+        if (q) {
+            const queryLowered = q.toLowerCase();
+            const filteredData = userResult[0].filter(
+                user =>
+                    user.username.toLowerCase().includes(queryLowered) ||
+                    user.fullname.toLowerCase().includes(queryLowered) ||
+                    user.status.toLowerCase().includes(queryLowered)
+            );
+
+            if (filteredData.length > 0) {
+                responseData = {
+                    ...responseData,
+                    data: filteredData,
+                    total: filteredData.length
+                };
+            } else {
+                responseData = {
+                    ...responseData,
+                    message: 'No matching user found',
+                    data: [],
+                    total: 0
+                };
+            }
+        }
+
+        res.status(200).json(responseData);
+
     } catch (error) {
         console.log(error);
-        next(error)
+        next(error);
     }
-}
+};
+
 
 const getUserById = async (req, res, next) => {
     try {

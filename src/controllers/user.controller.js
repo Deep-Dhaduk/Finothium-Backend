@@ -35,46 +35,41 @@ const CreateUser = async (req, res) => {
 
 const loginUser = async (req, res) => {
     try {
-        const { email, password, roleId } = req.body;
+        const { email, password } = req.body;
 
-        if (!email || !password || !roleId) {
-            return res.status(400).json({
-                success: false,
-                message: 'Email, password, and roleId are required in the request body',
-            });
-        }
         const [user, _] = await User.findByEmail(email);
 
-        if (user[0]) {
-            const isValidPassword = await User.comparePassword(password, user[0].password);
-
-            if (!isValidPassword) {
-                res.status(401).json({
-                    message: 'Invalid email or password'
-                })
-            }
-
-            // Create JWT token
-            const token = jwt.sign(
-                { userId: user[0].id, email: user[0].email, roleId: user[0].roleId, companyId: user[0].companyId },
-                process.env.JWT_SECRET,
-                { expiresIn: process.env.JWT_EXPIRES_IN }
-            );
-
-            res.status(200).json({
-                success: true,
-                message: 'Login successful',
-                userData: user,
-                token: token
+        if (!user[0]) {
+            return res.status(401).json({
+                message: 'Invalid email or password'
             });
         }
-        res.status(401).json({
-            message: 'Invalid email or password'
-        })
 
+        const isValidPassword = await User.comparePassword(password, user[0].password);
+
+        if (!isValidPassword) {
+            return res.status(401).json({
+                message: 'Invalid email or password'
+            });
+        }
+
+        const token = jwt.sign(
+            { userId: user[0].id, email: user[0].email },
+            process.env.JWT_SECRET,
+            { expiresIn: process.env.JWT_EXPIRES_IN }
+        );
+
+        return res.status(200).json({
+            success: true,
+            message: 'Login successful',
+            userData: user,
+            token: token
+        });
     } catch (error) {
         console.log(error);
-        next(error);
+        return res.status(500).json({
+            message: 'Internal server error'
+        });
     }
 };
 

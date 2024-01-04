@@ -9,20 +9,21 @@ let transport = nodemailer.createTransport({
     },
 });
 
-/** Send mail */
-const sendMail = async (to, otp) => {
+const sendEmail = async (to, data, subject) => {
     try {
-        return transport.sendMail({
+        const info = await transport.sendMail({
             from: process.env.EMAIL_FROM,
             to,
-            subject: "OTP for Your Application",
-            html: `Your OTP is: ${otp}`,
+            subject,
+            html: data,
         });
+        return info;
     } catch (error) {
+        console.error("Error sending email: ", error);
         return false;
     }
 };
 
 module.exports = {
-    sendMail
+    sendEmail,
 };

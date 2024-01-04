@@ -98,10 +98,10 @@ class Company {
                 contact_no='${this.contact_no}',
                 email='${this.email}',
                 website='${this.website}',
-                website='${this.pan}',
-                website='${this.gstin}',
+                pan='${this.pan}',
+                gstin='${this.gstin}',
                 status='${this.status}',
-                updatedBy='${this.createdBy}',
+                createdBy='${this.createdBy}',
                 updatedBy='${this.updatedBy}',
                 updatedOn='${this.dateandtime()}'
                 WHERE id = ${id}`;

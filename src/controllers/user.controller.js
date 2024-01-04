@@ -200,85 +200,23 @@ const generateOTP = () => {
     return Math.floor(100000 + Math.random() * 900000);
 };
 
-const sendResetPasswordMail = async (email, otp) => {
+const sendMail = async (req, res) => {
     try {
-        const sendEmail = await emailService.sendMail(
-            email,
-            `Your OTP for password reset is: ${otp}`
-        );
-        if (!sendEmail) {
+        const { email } = req.body;
+        const user = await User.findByEmail(email);
+        if (!user) {
             throw new Error("Something went wrong, please try again or later.");
         }
-    } catch (error) {
-        throw error;
-    }
-};
-
-const sendMail = async (req, res) => {
-    const { email } = req.body;
-    try {
-        const user = await User.findByEmail(email);
-
-        if (!user[0]) {
-            return res.status(404).json({
-                success: false,
-                message: 'User not found'
-            });
-        }
-
-        const otp = generateOTP();
-        console.log(otp);
-
-        const updateOTP = await User.updateOTP(email, otp);
-
-        if (!updateOTP) {
-            throw new Error("Failed to update OTP in the user record");
-        }
-
-        // Send the OTP via email
-        await sendResetPasswordMail(email, otp);
-
-        res.status(200).json({
-            success: true,
-            message: "Email send successfully!",
-        });
+        const OTP = generateOTP().toString(); // Convert OTP to string
+        await emailService.sendEmail(email, OTP);
+        res
+            .status(200)
+            .json({ success: true, message: "Email send successfully!" });
     } catch (error) {
         res.status(400).json({ success: false, message: error.message });
     }
 };
 
-const resetPassword = async (req, res) => {
-    const { email, otp, resetpassword } = req.body;
-    try {
-        const user = await User.findByEmail(email);
-
-        if (!user[0]) {
-            return res.status(404).json({
-                success: false,
-                message: 'User not found'
-            });
-        }
-        // Check if the provided OTP matches the stored OTP in the user record
-        if (user[0].resetpassword !== req.body.otp) {
-            console.log(req.body.otp);
-            return res.status(401).json({
-                success: false,
-                message: 'Invalid OTP'
-            });
-        }
-
-        // Reset the password and clear the OTP
-        const hashedPassword = await bcrypt.hash(resetpassword, 8);
-        await User.resetPassword(email, hashedPassword);
-
-        res.status(200).json({
-            success: true,
-            message: 'Password reset successfully',
-        });
-    } catch (error) {
-        res.status(400).json({ success: false, message: error.message });
-    }
-};
 
 module.exports = {
     CreateUser,
@@ -288,6 +226,5 @@ module.exports = {
     updateUser,
     loginUser,
     findOneRec,
-    sendMail,
-    resetPassword
+    sendMail
 }

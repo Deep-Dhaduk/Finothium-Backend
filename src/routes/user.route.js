@@ -47,14 +47,7 @@ router.put(
 
 router.post(
     "/forgot-password",
-    // auth.verifyToken,
     UserController.sendMail
-);
-
-router.post(
-    "/reset-password",
-    // auth.verifyToken,
-    UserController.resetPassword
 );
 
 module.exports = router;

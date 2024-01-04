@@ -1,6 +1,6 @@
 const Common = require("../models/common");
 
-const CreateCommon = async (req, res, next) => {
+const CreateCommon = async (req, res) => {
     try {
         let { tenantId, name, type, status, createdBy, updatedBy } = req.body;
         let common = new Common(tenantId, name, type, status, createdBy, updatedBy);

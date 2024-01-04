@@ -1,6 +1,6 @@
 const Account = require("../models/account");
 
-const CreateAccount = async (req, res, next) => {
+const CreateAccount = async (req, res) => {
     try {
         let { tenantId, account_name, group_name, join_date, exit_date, account_type, status, createdBy, updatedBy } = req.body;
         let account = new Account(tenantId, account_name, group_name, join_date, exit_date, account_type, status, createdBy, updatedBy);

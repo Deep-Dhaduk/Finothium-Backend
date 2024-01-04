@@ -1,6 +1,6 @@
 const Menu = require("../models/menu");
 
-const CreateMenu = async (req, res, next) => {
+const CreateMenu = async (req, res) => {
     try {
         let { tenantId, role_id, parent_id, child_id, allow_access, allow_add, allow_edit, allow_delete, status, createdBy, updatedBy } = req.body;
         let menu = new Menu(tenantId, role_id, parent_id, child_id, allow_access, allow_add, allow_edit, allow_delete, status, createdBy, updatedBy);

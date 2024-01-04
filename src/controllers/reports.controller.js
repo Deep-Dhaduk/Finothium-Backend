@@ -1,6 +1,6 @@
 const Report = require("../models/reports");
 
-const CreateReport = async (req, res, next) => {
+const CreateReport = async (req, res) => {
     try {
         let { tenantId, company_wise_statement, group_wise_statement, account_wise_statement, payment_type_wise_statement, client_wise_statement, category_wise_statement, createdBy, updatedBy } = req.body;
         let report = new Report(tenantId, company_wise_statement, group_wise_statement, account_wise_statement, payment_type_wise_statement, client_wise_statement, category_wise_statement, createdBy, updatedBy);

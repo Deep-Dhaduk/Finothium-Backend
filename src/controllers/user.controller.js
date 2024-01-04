@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const emailService = require('../service/email.service');
 
-const CreateUser = async (req, res, next) => {
+const CreateUser = async (req, res) => {
     try {
 
         let { tenantId, username, fullname, email, password, confirmpassword, companyId, status, resetpassword, roleId } = req.body;
@@ -33,7 +33,7 @@ const CreateUser = async (req, res, next) => {
     }
 };
 
-const loginUser = async (req, res, next) => {
+const loginUser = async (req, res) => {
     try {
         const { email, password, roleId } = req.body;
 
@@ -85,7 +85,6 @@ const findOneRec = async (req, res) => {
         let checkUser = await User.findByEmail(userEmail);
 
         if (!checkUser[0]) {
-            my
             return res.status(404).json({ success: false, message: 'User not found' });
         }
         return res.status(200).json({ success: true, data: checkUser[0] });

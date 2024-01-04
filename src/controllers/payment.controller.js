@@ -1,6 +1,6 @@
 const Payment = require("../models/payment");
 
-const CreatePayment = async (req, res, next) => {
+const CreatePayment = async (req, res) => {
     try {
         let { tenantId, transaction_date, transaction_type, payment_type, client_category_name, accountId, amount, description, createdBy, updatedBy } = req.body;
         let payment = new Payment(tenantId, transaction_date, transaction_type, payment_type, client_category_name, accountId, amount, description, createdBy, updatedBy);

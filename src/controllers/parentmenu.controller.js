@@ -1,6 +1,6 @@
 const Parentmenu = require("../models/parentmenu");
 
-const CreateParentmenu = async (req, res, next) => {
+const CreateParentmenu = async (req, res) => {
     try {
         let { tenantId, menu_name, display_rank, status, createdBy, updatedBy } = req.body;
         let parentmenu = new Parentmenu(tenantId, menu_name, display_rank, status, createdBy, updatedBy);

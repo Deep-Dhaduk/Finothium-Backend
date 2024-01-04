@@ -1,6 +1,6 @@
 const Dashboard = require("../models/dashboard");
 
-const CreateDashboard = async (req, res, next) => {
+const CreateDashboard = async (req, res) => {
     try {
         let { tenantId, totalReceive, totalPaid, balance, groupwiseReceive, groupwisePaid, groupwiseBalance,accountwiseReceive,accountwisePaid,accountwiseBalance, createdBy, updatedBy } = req.body;
         let dashboard = new Dashboard(tenantId, totalReceive, totalPaid, balance, groupwiseReceive, groupwisePaid, groupwiseBalance,accountwiseReceive,accountwisePaid,accountwiseBalance, createdBy, updatedBy);

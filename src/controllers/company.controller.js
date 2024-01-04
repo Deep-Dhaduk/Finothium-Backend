@@ -1,6 +1,6 @@
 const Company = require("../models/company");
 
-const CreateCompany = async (req, res, next) => {
+const CreateCompany = async (req, res) => {
 
     try {
         let { tenantId, company_name, legal_name, authorize_person_name, address, contact_no, email, website, pan, gstin, status, createdBy, updatedBy } = req.body;
@@ -40,37 +40,49 @@ const CreateCompany = async (req, res, next) => {
 
 const ListCompany = async (req, res, next) => {
     try {
+        const { q } = req.query; // Extract the search query from request parameters
+
         const companyResult = await Company.findAll();
-        const q = '';
-        const queryLowered = q.toLowerCase();
-
-        const filteredData = companyResult.data && companyResult.data.filter(
-            company =>
-                company.company_name.toLowerCase().includes(queryLowered) ||
-                company.legal_name.toLowerCase().includes(queryLowered) ||
-                company.authorize_person_name.toLowerCase().includes(queryLowered) ||
-                company.gstin.toString().toLowerCase().includes(queryLowered)
-        );
-
-        res.status(200).json({
+        console.log(companyResult);
+        let responseData = {
             success: true,
             message: "Company List Successfully!",
             data: companyResult[0]
-        });
+        };
 
-        if (filteredData) {
-            res.status(200).json({
-                allData: companyResult.data,
-                paymentTransaction: filteredData,
-                total: filteredData.length
-            });
+        // Apply filtering only when a search keyword is provided
+        if (q) {
+            const queryLowered = q.toLowerCase();
+            const filteredData = companyResult[0].data && companyResult[0].data.filter(
+                company =>
+                    company.company_name.toLowerCase().includes(queryLowered) ||
+                    company.legal_name.toLowerCase().includes(queryLowered) ||
+                    company.authorize_person_name.toLowerCase().includes(queryLowered) ||
+                    company.gstin.toString().toLowerCase().includes(queryLowered)
+            );
+
+            if (filteredData) {
+                responseData = {
+                    ...responseData,
+                    allData: companyResult[0].data,
+                    paymentTransaction: filteredData,
+                    total: filteredData.length
+                };
+            }
         }
+
+        res.status(200).json(responseData);
 
     } catch (error) {
         console.log(error);
         next(error);
     }
 };
+
+module.exports = {
+    ListCompany,
+};
+
 
 const getCompanyById = async (req, res, next) => {
     try {

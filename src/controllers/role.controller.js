@@ -1,6 +1,6 @@
 const Role = require("../models/role");
 
-const CreateRole = async (req, res, next) => {
+const CreateRole = async (req, res) => {
     try {
         let { tenantId, rolename, status, createdBy } = req.body;
         let role = new Role(tenantId, rolename, status, createdBy);

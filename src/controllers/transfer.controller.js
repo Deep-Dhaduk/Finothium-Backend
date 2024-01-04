@@ -1,6 +1,6 @@
 const Transfer = require("../models/transfer");
 
-const CreateTransfer = async (req, res, next) => {
+const CreateTransfer = async (req, res) => {
     try {
         let { tenantId, transactionDate, paymentType, fromAccount, toAccount, amount, description, createdBy, updatedBy } = req.body;
         let transfer = new Transfer(tenantId, transactionDate, paymentType, fromAccount, toAccount, amount, description, createdBy, updatedBy);

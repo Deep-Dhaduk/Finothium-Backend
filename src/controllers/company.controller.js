@@ -4,9 +4,9 @@ const { getDecodeToken } = require('../middlewares/decoded');
 const CreateCompany = async (req, res) => {
 
     try {
-        let { tenantId, company_name, legal_name, authorize_person_name, address, contact_no, email, website, pan, gstin, status, createdBy } = req.body;
+        let { tenantId, company_name, legal_name, authorize_person_name, address, contact_no, email, website, pan, gstin, status, createdBy, updatedBy } = req.body;
 
-        let company = new Company(tenantId, company_name, legal_name, authorize_person_name, address, contact_no, email, website, pan, gstin, status, createdBy);
+        let company = new Company(tenantId, company_name, legal_name, authorize_person_name, address, contact_no, email, website, pan, gstin, status, createdBy, updatedBy);
 
         company = await company.save();
 
@@ -55,7 +55,7 @@ const ListCompany = async (req, res, next) => {
                     company.authorize_person_name.toLowerCase().includes(queryLowered) ||
                     company.address.toLowerCase().includes(queryLowered) ||
                     company.pan.toLowerCase().includes(queryLowered) ||
-                    company.status.toLowerCase().includes(queryLowered) ||
+                    (company.status.toLowerCase() === "active" && "active".includes(queryLowered)) ||
                     company.gstin.toString().toLowerCase().includes(queryLowered)
             );
 
@@ -82,11 +82,6 @@ const ListCompany = async (req, res, next) => {
         next(error);
     }
 };
-
-module.exports = {
-    ListCompany,
-};
-
 
 const getCompanyById = async (req, res, next) => {
     try {
@@ -120,8 +115,8 @@ const deleteCompany = async (req, res, next) => {
 
 const updateCompany = async (req, res, next) => {
     try {
-        let { tenantId, company_name, legal_name, authorize_person_name, address, contact_no, email, website, pan, gstin, status, updatedBy } = req.body;
-        let company = new Company(tenantId, company_name, legal_name, authorize_person_name, address, contact_no, email, website, pan, gstin, status, updatedBy)
+        let { tenantId, company_name, legal_name, authorize_person_name, address, contact_no, email, website, pan, gstin, status, createdBy, updatedBy } = req.body;
+        let company = new Company(tenantId, company_name, legal_name, authorize_person_name, address, contact_no, email, website, pan, gstin, status, createdBy, updatedBy)
         let Id = req.params.id;
         let [findcompany, _] = await Company.findById(Id);
         if (!findcompany) {

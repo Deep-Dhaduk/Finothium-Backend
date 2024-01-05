@@ -51,7 +51,8 @@ const ListAccount = async (req, res, next) => {
                     account.account_name.toLowerCase().includes(queryLowered) ||
                     account.group_name.toLowerCase().includes(queryLowered) ||
                     account.account_type.toLowerCase().includes(queryLowered) ||
-                    account.status.toLowerCase().includes(queryLowered)
+                    (account.status.toLowerCase() === "active" && "active".includes(queryLowered))
+
             );
 
             if (filteredData.length > 0) {

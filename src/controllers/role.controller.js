@@ -49,7 +49,7 @@ const ListRole = async (req, res, next) => {
             const filteredData = roleResult[0].filter(
                 role =>
                     role.rolename.toLowerCase().includes(queryLowered) ||
-                    role.status.toLowerCase().includes(queryLowered)
+                    (role.status.toLowerCase() === "active" && "active".includes(queryLowered))
             );
 
             if (filteredData.length > 0) {

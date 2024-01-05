@@ -52,7 +52,8 @@ const ListCommon = async (req, res, next) => {
                 common =>
                     common.name.toLowerCase().includes(queryLowered) ||
                     common.type.toLowerCase().includes(queryLowered) ||
-                    common.status.toLowerCase().includes(queryLowered)
+                    (common.status.toLowerCase() === "active" && "active".includes(queryLowered))
+
             );
 
             if (filteredData.length > 0) {

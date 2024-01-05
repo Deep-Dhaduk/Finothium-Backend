@@ -48,7 +48,7 @@ const ListMenu = async (req, res, next) => {
             const queryLowered = q.toLowerCase();
             const filteredData = menuResult[0].filter(
                 menu =>
-                    menu.status.toLowerCase().includes(queryLowered)
+                    (menu.status.toLowerCase() === "active" && "active".includes(queryLowered))
             );
 
             if (filteredData.length > 0) {

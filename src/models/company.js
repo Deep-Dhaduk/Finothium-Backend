@@ -47,6 +47,7 @@ class Company {
                 status,
                 createdBy,
                 createdOn,
+                updatedBy,
                 updatedOn
             )
             VALUES(
@@ -63,6 +64,7 @@ class Company {
                 '${this.status}',
                 '${this.createdBy}',
                 '${this.dateandtime()}',
+                '${this.updatedBy}',
                 '${this.dateandtime()}'
             )`;
             return db.execute(sql)
@@ -102,6 +104,7 @@ class Company {
                 pan='${this.pan}',
                 gstin='${this.gstin}',
                 status='${this.status}',
+                updatedBy='${this.createdBy}',
                 updatedBy='${this.updatedBy}',
                 updatedOn='${this.dateandtime()}'
                 WHERE id = ${id}`;

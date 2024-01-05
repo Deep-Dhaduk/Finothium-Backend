@@ -49,7 +49,7 @@ const ListTenant = async (req, res, next) => {
                     tenant.tenantname.toLowerCase().includes(queryLowered) ||
                     tenant.personname.toLowerCase().includes(queryLowered) ||
                     tenant.address.toLowerCase().includes(queryLowered) ||
-                    tenant.status.toLowerCase().includes(queryLowered)
+                    (tenant.status.toLowerCase() === "active" && "active".includes(queryLowered))
             );
 
             if (filteredData.length > 0) {

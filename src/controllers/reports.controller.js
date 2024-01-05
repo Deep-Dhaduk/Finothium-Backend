@@ -19,7 +19,6 @@ const CreateReport = async (req, res) => {
             message: error.message,
         })
         console.log(error);
-        next(error)
     }
 }
 

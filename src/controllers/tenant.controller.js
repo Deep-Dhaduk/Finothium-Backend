@@ -18,7 +18,6 @@ const CreateTenant = async (req, res) => {
             message: error.message,
         })
         console.log(error);
-        next(error)
     }
 }
 

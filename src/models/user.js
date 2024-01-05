@@ -83,8 +83,11 @@ class User {
         return bcrypt.compare(password, hashedPassword);
     }
 
-    static findAll() {
+    static findAll(tenantId) {
         let sql = "SELECT * FROM user_master";
+        if (tenantId) {
+            sql += ` WHERE tenantId = '${tenantId}'`;
+        }
         return db.execute(sql)
     }
 

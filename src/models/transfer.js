@@ -69,8 +69,11 @@ class Transfer {
         return `${yyyy}-${mm}-${dd}`;
     }
 
-    static findAll() {
+    static findAll(tenantId) {
         let sql = "SELECT * FROM transfer";
+        if (tenantId) {
+            sql += ` WHERE tenantId = '${tenantId}'`;
+        }
         return db.execute(sql)
     }
     static findById(id) {

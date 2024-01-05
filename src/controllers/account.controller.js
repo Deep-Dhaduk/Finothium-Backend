@@ -1,4 +1,5 @@
 const Account = require("../models/account");
+const { getDecodeToken } = require('../middlewares/decoded');
 
 const CreateAccount = async (req, res) => {
     try {
@@ -23,6 +24,7 @@ const CreateAccount = async (req, res) => {
 }
 
 const ListAccount = async (req, res, next) => {
+    const token = getDecodeToken(req)
     try {
         const { q = '', id } = req.query;
 
@@ -36,7 +38,7 @@ const ListAccount = async (req, res, next) => {
             return res.status(200).json({ success: true, message: 'Account found', data: account[0][0] });
         }
 
-        const accountResult = await Account.findAll();
+        const accountResult = await Account.findAll(token.tenantId);
         let responseData = {
             success: true,
             message: 'Account List Successfully!',

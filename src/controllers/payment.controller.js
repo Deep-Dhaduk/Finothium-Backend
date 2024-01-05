@@ -1,4 +1,5 @@
 const Payment = require("../models/payment");
+const { getDecodeToken } = require('../middlewares/decoded');
 
 const CreatePayment = async (req, res) => {
     try {
@@ -23,6 +24,7 @@ const CreatePayment = async (req, res) => {
 }
 
 const ListPayment = async (req, res, next) => {
+    const token = getDecodeToken(req)
     try {
         const { q = '', id } = req.query;
 
@@ -36,7 +38,7 @@ const ListPayment = async (req, res, next) => {
             return res.status(200).json({ success: true, message: 'Payment found', data: payment[0][0] });
         }
 
-        const paymentResult = await Payment.findAll();
+        const paymentResult = await Payment.findAll(token.tenantId);
         let responseData = {
             success: true,
             message: 'Payment List Successfully!',

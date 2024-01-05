@@ -73,8 +73,11 @@ class Company {
     }
 
 
-    static findAll() {
+    static findAll(tenantId) {
         let sql = "SELECT * FROM company_master";
+        if (tenantId) {
+            sql += ` WHERE tenantId = '${tenantId}'`;
+        }
         return db.execute(sql)
     }
     static findById(id) {

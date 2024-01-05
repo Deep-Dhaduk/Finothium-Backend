@@ -1,4 +1,5 @@
 const Role = require("../models/role");
+const { getDecodeToken } = require('../middlewares/decoded');
 
 const CreateRole = async (req, res) => {
     try {
@@ -23,6 +24,7 @@ const CreateRole = async (req, res) => {
 }
 
 const ListRole = async (req, res, next) => {
+    const token = getDecodeToken(req)
     try {
         const { q = '', id } = req.query;
 
@@ -36,7 +38,7 @@ const ListRole = async (req, res, next) => {
             return res.status(200).json({ success: true, message: 'Role found', data: role[0][0] });
         }
 
-        const roleResult = await Role.findAll();
+        const roleResult = await Role.findAll(token.tenantId);
         let responseData = {
             success: true,
             message: 'Role List Successfully!',

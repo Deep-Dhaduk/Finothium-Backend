@@ -1,4 +1,5 @@
 const Common = require("../models/common");
+const { getDecodeToken } = require('../middlewares/decoded');
 
 const CreateCommon = async (req, res) => {
     try {
@@ -23,11 +24,14 @@ const CreateCommon = async (req, res) => {
 }
 
 const ListCommon = async (req, res, next) => {
+    const token = getDecodeToken(req)
+    console.log(token, "Decoded token");
     try {
         const { q = '', id } = req.query;
 
         if (id) {
-            const common = await Common.findById(id);
+            const common = await Common.findById(id)
+                ;
 
             if (common[0].length === 0) {
                 return res.status(404).json({ success: false, message: 'Common not found' });
@@ -36,7 +40,7 @@ const ListCommon = async (req, res, next) => {
             return res.status(200).json({ success: true, message: 'Common found', data: common[0][0] });
         }
 
-        const commonResult = await Common.findAll();
+        const commonResult = await Common.findAll(token.tenantId);
         let responseData = {
             success: true,
             message: 'Common List Successfully!',
@@ -79,7 +83,8 @@ const ListCommon = async (req, res, next) => {
 const getCommonById = async (req, res, next) => {
     try {
         let Id = req.params.id;
-        let [common, _] = await Common.findById(Id);
+        let [common, _] = await Common.findById(Id)
+            ;
 
         res.status(200).json({
             success: true,
@@ -96,6 +101,7 @@ const deleteCommon = async (req, res, next) => {
     try {
         let Id = req.params.id;
         await Common.delete(Id)
+
         res.status(200).json({
             success: true,
             message: "Common Delete Successfully!"
@@ -111,11 +117,13 @@ const updateCommon = async (req, res, next) => {
         let { tenantId, name, type, status, updatedBy } = req.body;
         let common = new Common(tenantId, name, type, status, updatedBy)
         let Id = req.params.id;
-        let [findcommon, _] = await Common.findById(Id);
+        let [findcommon, _] = await Common.findById(Id)
+            ;
         if (!findcommon) {
             throw new Error("Common not found!")
         }
         await common.update(Id)
+
         res.status(200).json({
             success: true,
             message: "Common Successfully Updated",

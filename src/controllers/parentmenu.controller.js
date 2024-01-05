@@ -1,4 +1,5 @@
 const Parentmenu = require("../models/parentmenu");
+const { getDecodeToken } = require('../middlewares/decoded');
 
 const CreateParentmenu = async (req, res) => {
     try {
@@ -23,6 +24,7 @@ const CreateParentmenu = async (req, res) => {
 }
 
 const ListParentmenu = async (req, res, next) => {
+    const token = getDecodeToken(req)
     try {
         const { q = '', id } = req.query;
 
@@ -36,7 +38,7 @@ const ListParentmenu = async (req, res, next) => {
             return res.status(200).json({ success: true, message: 'parentmenu found', data: parentmenu[0][0] });
         }
 
-        const parentmenuResult = await Parentmenu.findAll();
+        const parentmenuResult = await Parentmenu.findAll(token.tenantId);
         let responseData = {
             success: true,
             message: 'Parentmenu List Successfully!',

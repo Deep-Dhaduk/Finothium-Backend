@@ -1,7 +1,7 @@
 const User = require("../models/user");
 const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
 const emailService = require('../service/email.service');
+const { getDecodeToken } = require('../middlewares/decoded');
 
 const CreateUser = async (req, res) => {
     try {
@@ -54,7 +54,7 @@ const loginUser = async (req, res) => {
         }
 
         const token = jwt.sign(
-            { userId: user[0].id, email: user[0].email },
+            { userId: user[0].id, email: user[0].email, tenantId: user[0].tenantId },
             process.env.JWT_SECRET,
             { expiresIn: process.env.JWT_EXPIRES_IN }
         );
@@ -89,6 +89,7 @@ const findOneRec = async (req, res) => {
 };
 
 const ListUser = async (req, res, next) => {
+    const token = getDecodeToken(req)
     try {
         const { q = '', id } = req.query;
 
@@ -102,7 +103,7 @@ const ListUser = async (req, res, next) => {
             return res.status(200).json({ success: true, message: 'User found', data: user[0][0] });
         }
 
-        const userResult = await User.findAll();
+        const userResult = await User.findAll(token.tenantId);
         let responseData = {
             success: true,
             message: 'User List Successfully!',

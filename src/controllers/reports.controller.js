@@ -1,4 +1,5 @@
 const Report = require("../models/reports");
+const { getDecodeToken } = require('../middlewares/decoded');
 
 const CreateReport = async (req, res) => {
     try {
@@ -23,8 +24,9 @@ const CreateReport = async (req, res) => {
 }
 
 const ListReport = async (req, res, next) => {
+    const token = getDecodeToken(req)
     try {
-        const report = await Report.findAll()
+        const report = await Report.findAll(token.tenantId)
         res.status(200).json({
             success: true,
             message: "Report List Successfully!",

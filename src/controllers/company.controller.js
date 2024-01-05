@@ -1,4 +1,5 @@
 const Company = require("../models/company");
+const { getDecodeToken } = require('../middlewares/decoded');
 
 const CreateCompany = async (req, res) => {
 
@@ -25,6 +26,7 @@ const CreateCompany = async (req, res) => {
 }
 
 const ListCompany = async (req, res, next) => {
+    const token = getDecodeToken(req)
     try {
         const { q = '', id } = req.query;
 
@@ -38,7 +40,7 @@ const ListCompany = async (req, res, next) => {
             return res.status(200).json({ success: true, message: 'Company found', data: company[0][0] });
         }
 
-        const companyResult = await Company.findAll();
+        const companyResult = await Company.findAll(token.tenantId);
         let responseData = {
             success: true,
             message: 'Company List Successfully!',

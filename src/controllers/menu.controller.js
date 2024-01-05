@@ -1,4 +1,5 @@
 const Menu = require("../models/menu");
+const { getDecodeToken } = require('../middlewares/decoded');
 
 const CreateMenu = async (req, res) => {
     try {
@@ -23,6 +24,7 @@ const CreateMenu = async (req, res) => {
 }
 
 const ListMenu = async (req, res, next) => {
+    const token = getDecodeToken(req)
     try {
         const { q = '', id } = req.query;
 
@@ -36,7 +38,7 @@ const ListMenu = async (req, res, next) => {
             return res.status(200).json({ success: true, message: 'Menu found', data: menu[0][0] });
         }
 
-        const menuResult = await Menu.findAll();
+        const menuResult = await Menu.findAll(token.tenantId);
         let responseData = {
             success: true,
             message: 'Menu List Successfully!',

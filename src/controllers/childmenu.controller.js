@@ -1,4 +1,5 @@
-const Childmenu = require('../models/childmenu')
+const Childmenu = require('../models/childmenu');
+const { getDecodeToken } = require('../middlewares/decoded');
 
 const CreateChildmenu = async (req, res) => {
     try {
@@ -23,6 +24,7 @@ const CreateChildmenu = async (req, res) => {
 }
 
 const ListChildmenu = async (req, res, next) => {
+    const token = getDecodeToken(req)
     try {
         const { q = '', id } = req.query;
 
@@ -36,7 +38,7 @@ const ListChildmenu = async (req, res, next) => {
             return res.status(200).json({ success: true, message: 'Childmenu found', data: childmenu[0][0] });
         }
 
-        const childmenuResult = await Childmenu.findAll();
+        const childmenuResult = await Childmenu.findAll(token.tenantId);
         let responseData = {
             success: true,
             message: 'Childmenu List Successfully!',

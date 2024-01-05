@@ -61,8 +61,11 @@ class reports {
         }
     };
 
-    static findAll() {
+    static findAll(tenantId) {
         let sql = "SELECT * FROM reports";
+        if (tenantId) {
+            sql += ` WHERE tenantId = '${tenantId}'`;
+        }
         return db.execute(sql)
     }
     static findById(id) {

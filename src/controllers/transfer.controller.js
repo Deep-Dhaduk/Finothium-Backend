@@ -1,4 +1,5 @@
 const Transfer = require("../models/transfer");
+const { getDecodeToken } = require('../middlewares/decoded');
 
 const CreateTransfer = async (req, res) => {
     try {
@@ -23,6 +24,8 @@ const CreateTransfer = async (req, res) => {
 }
 
 const ListTransfer = async (req, res, next) => {
+    const token = getDecodeToken(req)
+
     try {
         const { q = '', id } = req.query;
 
@@ -36,7 +39,7 @@ const ListTransfer = async (req, res, next) => {
             return res.status(200).json({ success: true, message: 'Transfer found', data: transfer[0][0] });
         }
 
-        const transferResult = await Transfer.findAll();
+        const transferResult = await Transfer.findAll(token.tenantId);
         let responseData = {
             success: true,
             message: 'Transfer List Successfully!',

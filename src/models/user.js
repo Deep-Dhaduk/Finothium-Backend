@@ -2,7 +2,7 @@ const db = require('../db/dbconnection');
 const bcrypt = require('bcrypt');
 
 class User {
-    constructor(tenantId, username, fullname, email, password, confirmpassword, profile_image, companyId, status, resetpassword, roleId) {
+    constructor(tenantId, username, fullname, email, password, confirmpassword, profile_image, companyId, status, resetpassword, roleId, createdBy, updatedBy) {
         this.tenantId = tenantId;
         this.username = username;
         this.fullname = fullname;
@@ -14,6 +14,8 @@ class User {
         this.status = status;
         this.resetpassword = resetpassword;
         this.roleId = roleId;
+        this.createdBy = createdBy
+        this.updatedBy = updatedBy
     }
 
     dateandtime = () => {
@@ -49,6 +51,7 @@ class User {
                 companyId,
                 status,
                 resetpassword,
+                createdBy,
                 createdOn,
                 updatedOn,
                 roleId
@@ -64,6 +67,7 @@ class User {
                 '${this.companyId}',
                 '${this.status}',
                 '${this.resetpassword}',
+                '${this.createdBy}',
                 '${this.dateandtime()}',
                 '${this.dateandtime()}',
                 '${this.roleId}'
@@ -105,7 +109,7 @@ class User {
     }
 
     async update(id) {
-        let sql = `UPDATE user_master SET tenantId='${this.tenantId}',username='${this.username}',fullname='${this.fullname}',email='${this.email}',password='${this.password}',confirmpassword='${this.confirmpassword}',profile_image='${this.profile_image}',companyId='${this.companyId}',status='${this.status}',resetpassword='${this.resetpassword}',updatedOn='${this.dateandtime()}',roleId='${this.roleId}' WHERE id = ${id}`;
+        let sql = `UPDATE user_master SET tenantId='${this.tenantId}',username='${this.username}',fullname='${this.fullname}',email='${this.email}',password='${this.password}',confirmpassword='${this.confirmpassword}',profile_image='${this.profile_image}',companyId='${this.companyId}',status='${this.status}',resetpassword='${this.resetpassword}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}',roleId='${this.roleId}' WHERE id = ${id}`;
         return db.execute(sql)
 
     };

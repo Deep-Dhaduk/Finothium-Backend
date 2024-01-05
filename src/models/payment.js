@@ -45,7 +45,6 @@ class Payment {
                 description,
                 createdBy,
                 createdOn,
-                updatedBy,
                 updatedOn
             )
             VALUES(
@@ -59,7 +58,6 @@ class Payment {
                 '${this.description}',
                 '${this.createdBy}',
                 '${this.dateandtime()}',
-                '${this.updatedBy}',
                 '${this.dateandtime()}'
             )`;
             return db.execute(sql)

@@ -40,7 +40,6 @@ class reports {
                 category_wise_statement,
                 createdBy,
                 createdOn,
-                updatedBy,
                 updatedOn
             )
             VALUES(
@@ -53,7 +52,6 @@ class reports {
                 '${this.category_wise_statement}',
                 '${this.createdBy}',
                 '${this.dateandtime()}',
-                '${this.updatedBy}',
                 '${this.dateandtime()}'
             )`;
             return db.execute(sql)

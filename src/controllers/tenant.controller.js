@@ -2,8 +2,8 @@ const Tenant = require("../models/tenant");
 
 const CreateTenant = async (req, res) => {
     try {
-        let { tenantname, personname, address, contact, email, startdate, enddate, status, createdBy, updatedBy } = req.body;
-        let tenant = new Tenant(tenantname, personname, address, contact, email, startdate, status, enddate, createdBy, updatedBy);
+        let { tenantname, personname, address, contact, email, startdate, enddate, status, createdBy } = req.body;
+        let tenant = new Tenant(tenantname, personname, address, contact, email, startdate, status, enddate, createdBy);
 
         tenant = await tenant.save()
 
@@ -109,8 +109,8 @@ const deleteTenant = async (req, res, next) => {
 
 const updateTenant = async (req, res, next) => {
     try {
-        let { tenantname, personname, address, contact, email, startdate, enddate, created } = req.body;
-        let tenant = new Tenant(tenantname, personname, address, contact, email, startdate, enddate, created)
+        let { tenantname, personname, address, contact, email, startdate, enddate, updatedBy } = req.body;
+        let tenant = new Tenant(tenantname, personname, address, contact, email, startdate, enddate, updatedBy)
         let Id = req.params.id;
         let [findtenant, _] = await Tenant.findById(Id);
         if (!findtenant) {

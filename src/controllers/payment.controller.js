@@ -2,8 +2,8 @@ const Payment = require("../models/payment");
 
 const CreatePayment = async (req, res) => {
     try {
-        let { tenantId, transaction_date, transaction_type, payment_type, client_category_name, accountId, amount, description, createdBy, updatedBy } = req.body;
-        let payment = new Payment(tenantId, transaction_date, transaction_type, payment_type, client_category_name, accountId, amount, description, createdBy, updatedBy);
+        let { tenantId, transaction_date, transaction_type, payment_type, client_category_name, accountId, amount, description, createdBy } = req.body;
+        let payment = new Payment(tenantId, transaction_date, transaction_type, payment_type, client_category_name, accountId, amount, description, createdBy);
 
         payment = await payment.save()
 
@@ -108,8 +108,8 @@ const deletePayment = async (req, res, next) => {
 
 const updatePayment = async (req, res, next) => {
     try {
-        let { tenantId, transaction_date, transaction_type, payment_type, client_category_name, accountId, amount, description, createdBy, updatedBy } = req.body;
-        let payment = new Payment(tenantId, transaction_date, transaction_type, payment_type, client_category_name, accountId, amount, description, createdBy, updatedBy)
+        let { tenantId, transaction_date, transaction_type, payment_type, client_category_name, accountId, amount, description, updatedBy } = req.body;
+        let payment = new Payment(tenantId, transaction_date, transaction_type, payment_type, client_category_name, accountId, amount, description, updatedBy)
         let Id = req.params.id;
         let [findpayment, _] = await Payment.findById(Id);
         if (!findpayment) {

@@ -2,8 +2,8 @@ const Transfer = require("../models/transfer");
 
 const CreateTransfer = async (req, res) => {
     try {
-        let { tenantId, transactionDate, paymentType, fromAccount, toAccount, amount, description, createdBy, updatedBy } = req.body;
-        let transfer = new Transfer(tenantId, transactionDate, paymentType, fromAccount, toAccount, amount, description, createdBy, updatedBy);
+        let { tenantId, transactionDate, paymentType, fromAccount, toAccount, amount, description, createdBy } = req.body;
+        let transfer = new Transfer(tenantId, transactionDate, paymentType, fromAccount, toAccount, amount, description, createdBy);
 
         transfer = await transfer.save()
 
@@ -106,8 +106,8 @@ const deleteTransfer = async (req, res, next) => {
 
 const updateTransfer = async (req, res, next) => {
     try {
-        let { tenantId, transactionDate, paymentType, fromAccount, toAccount, amount, description, createdBy, updatedBy } = req.body;
-        let transfer = new Transfer(tenantId, transactionDate, paymentType, fromAccount, toAccount, amount, description, createdBy, updatedBy)
+        let { tenantId, transactionDate, paymentType, fromAccount, toAccount, amount, description, updatedBy } = req.body;
+        let transfer = new Transfer(tenantId, transactionDate, paymentType, fromAccount, toAccount, amount, description, updatedBy)
         let Id = req.params.id;
         let [findtransfer, _] = await Transfer.findById(Id);
         if (!findtransfer) {

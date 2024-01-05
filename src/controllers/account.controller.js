@@ -2,8 +2,8 @@ const Account = require("../models/account");
 
 const CreateAccount = async (req, res) => {
     try {
-        let { tenantId, account_name, group_name, join_date, exit_date, account_type, status, createdBy, updatedBy } = req.body;
-        let account = new Account(tenantId, account_name, group_name, join_date, exit_date, account_type, status, createdBy, updatedBy);
+        let { tenantId, account_name, group_name, join_date, exit_date, account_type, status, createdBy } = req.body;
+        let account = new Account(tenantId, account_name, group_name, join_date, exit_date, account_type, status, createdBy);
 
         account = await account.save()
 
@@ -109,8 +109,8 @@ const deleteAccount = async (req, res, next) => {
 
 const updateAccount = async (req, res, next) => {
     try {
-        let { tenantId, account_name, group_name, join_date, exit_date, account_type, status, createdBy, updatedBy } = req.body;
-        let account = new Account(tenantId, account_name, group_name, join_date, exit_date, account_type, status, createdBy, updatedBy)
+        let { tenantId, account_name, group_name, join_date, exit_date, account_type, status, updatedBy } = req.body;
+        let account = new Account(tenantId, account_name, group_name, join_date, exit_date, account_type, status, updatedBy)
         let Id = req.params.id;
         let [findaccount, _] = await Account.findById(Id);
         if (!findaccount) {

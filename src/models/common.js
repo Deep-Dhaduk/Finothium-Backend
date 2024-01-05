@@ -34,7 +34,6 @@ class Common {
                 status,
                 createdBy,
                 createdOn,
-                updatedBy,
                 updatedOn
             )
             VALUES(
@@ -44,7 +43,6 @@ class Common {
                 '${this.status}',
                 '${this.createdBy}',
                 '${this.dateandtime()}',
-                '${this.updatedBy}',
                 '${this.dateandtime()}'
             )`;
             return db.execute(sql)
@@ -54,8 +52,11 @@ class Common {
         }
     };
 
-    static findAll() {
+    static findAll(tenantId) {
         let sql = "SELECT * FROM common_master";
+        if (tenantId) {
+            sql += ` WHERE tenantId = '${tenantId}'`;
+        }
         return db.execute(sql)
     }
     static findById(id) {

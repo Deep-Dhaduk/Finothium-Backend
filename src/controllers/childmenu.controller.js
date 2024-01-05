@@ -2,8 +2,8 @@ const Childmenu = require('../models/childmenu')
 
 const CreateChildmenu = async (req, res) => {
     try {
-        let { tenantId, menu_name, parent_id, display_rank, status, createdBy, updatedBy } = req.body;
-        let childmenu = new Childmenu(tenantId, menu_name, parent_id, display_rank, status, createdBy, updatedBy);
+        let { tenantId, menu_name, parent_id, display_rank, status, createdBy } = req.body;
+        let childmenu = new Childmenu(tenantId, menu_name, parent_id, display_rank, status, createdBy);
 
         childmenu = await childmenu.save()
 

@@ -43,7 +43,6 @@ class Transfer {
                 description,
                 createdBy,
                 createdOn,
-                updatedBy,
                 updatedOn
             )
             VALUES(
@@ -56,7 +55,6 @@ class Transfer {
                 '${this.description}',
                 '${this.createdBy}',
                 '${this.dateandtime()}',
-                '${this.updatedBy}',
                 '${this.dateandtime()}'
             )`;
             return db.execute(sql)

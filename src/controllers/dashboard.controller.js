@@ -2,8 +2,8 @@ const Dashboard = require("../models/dashboard");
 
 const CreateDashboard = async (req, res) => {
     try {
-        let { tenantId, totalReceive, totalPaid, balance, groupwiseReceive, groupwisePaid, groupwiseBalance,accountwiseReceive,accountwisePaid,accountwiseBalance, createdBy, updatedBy } = req.body;
-        let dashboard = new Dashboard(tenantId, totalReceive, totalPaid, balance, groupwiseReceive, groupwisePaid, groupwiseBalance,accountwiseReceive,accountwisePaid,accountwiseBalance, createdBy, updatedBy);
+        let { tenantId, totalReceive, totalPaid, balance, groupwiseReceive, groupwisePaid, groupwiseBalance,accountwiseReceive,accountwisePaid,accountwiseBalance, createdBy } = req.body;
+        let dashboard = new Dashboard(tenantId, totalReceive, totalPaid, balance, groupwiseReceive, groupwisePaid, groupwiseBalance,accountwiseReceive,accountwisePaid,accountwiseBalance, createdBy);
 
         dashboard = await dashboard.save()
 
@@ -68,9 +68,9 @@ const deleteDashboard = async (req, res, next) => {
 
 const updateDashboard = async (req, res, next) => {
     try {
-        let { tenantId, totalReceive, totalPaid, balance, groupwiseReceive, groupwisePaid, groupwiseBalance,accountwiseReceive,accountwisePaid,accountwiseBalance, createdBy, updatedBy
+        let { tenantId, totalReceive, totalPaid, balance, groupwiseReceive, groupwisePaid, groupwiseBalance,accountwiseReceive,accountwisePaid,accountwiseBalance, updatedBy
          } = req.body;
-        let dashboard = new Dashboard(tenantId, totalReceive, totalPaid, balance, groupwiseReceive, groupwisePaid, groupwiseBalance,accountwiseReceive,accountwisePaid,accountwiseBalance, createdBy, updatedBy
+        let dashboard = new Dashboard(tenantId, totalReceive, totalPaid, balance, groupwiseReceive, groupwisePaid, groupwiseBalance,accountwiseReceive,accountwisePaid,accountwiseBalance, updatedBy
             )
         let Id = req.params.id;
         let [finddashboard, _] = await Dashboard.findById(Id);

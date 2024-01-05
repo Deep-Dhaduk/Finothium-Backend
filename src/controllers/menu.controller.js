@@ -2,8 +2,8 @@ const Menu = require("../models/menu");
 
 const CreateMenu = async (req, res) => {
     try {
-        let { tenantId, role_id, parent_id, child_id, allow_access, allow_add, allow_edit, allow_delete, status, createdBy, updatedBy } = req.body;
-        let menu = new Menu(tenantId, role_id, parent_id, child_id, allow_access, allow_add, allow_edit, allow_delete, status, createdBy, updatedBy);
+        let { tenantId, role_id, parent_id, child_id, allow_access, allow_add, allow_edit, allow_delete, status, createdBy } = req.body;
+        let menu = new Menu(tenantId, role_id, parent_id, child_id, allow_access, allow_add, allow_edit, allow_delete, status, createdBy);
 
         menu = await menu.save()
 
@@ -106,8 +106,8 @@ const deleteMenu = async (req, res, next) => {
 
 const updateMenu = async (req, res, next) => {
     try {
-        let { tenantId, role_id, parent_id, child_id, allow_access, allow_add, allow_edit, allow_delete, status, createdBy, updatedBy } = req.body;
-        let menu = new Menu(tenantId, role_id, parent_id, child_id, allow_access, allow_add, allow_edit, allow_delete, status, createdBy, updatedBy)
+        let { tenantId, role_id, parent_id, child_id, allow_access, allow_add, allow_edit, allow_delete, status, updatedBy } = req.body;
+        let menu = new Menu(tenantId, role_id, parent_id, child_id, allow_access, allow_add, allow_edit, allow_delete, status, updatedBy)
         let Id = req.params.id;
         let [findmenu, _] = await Menu.findById(Id);
         if (!findmenu) {

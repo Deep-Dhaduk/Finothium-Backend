@@ -45,7 +45,6 @@ class Tenant {
             status,
             createdBy,
             createdOn,
-            updatedBy,
             updatedOn
         )
         VALUES(
@@ -59,7 +58,6 @@ class Tenant {
             '${this.status}',
             '${this.createdBy}',
             '${this.dateandtime()}',
-            '${this.updatedBy}',
             '${this.dateandtime()}'
         )`;
             return db.execute(sql)

@@ -1,11 +1,12 @@
 const db = require('../db/dbconnection')
 
 class Role {
-    constructor(tenantId, rolename, status, createdBy) {
+    constructor(tenantId, rolename, status, createdBy, updatedBy) {
         this.tenantId = tenantId;
         this.rolename = rolename;
         this.status = status;
         this.createdBy = createdBy;
+        this.updatedBy = updatedBy;
     }
 
     dateandtime = () => {
@@ -61,7 +62,7 @@ class Role {
     }
 
     async update(id) {
-        let sql = `UPDATE role_master SET tenantId='${this.tenantId}',rolename='${this.rolename}',status='${this.status}',updatedOn='${this.dateandtime()}' WHERE id = ${id}`;
+        let sql = `UPDATE role_master SET tenantId='${this.tenantId}',rolename='${this.rolename}',status='${this.status}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}' WHERE id = ${id}`;
         return db.execute(sql)
 
     };

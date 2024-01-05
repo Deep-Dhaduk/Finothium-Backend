@@ -44,7 +44,6 @@ class Account {
                 status,
                 createdBy,
                 createdOn,
-                updatedBy,
                 updatedOn
             )
             VALUES(
@@ -57,7 +56,6 @@ class Account {
                 '${this.status}',
                 '${this.createdBy}',
                 '${this.dateandtime()}',
-                '${this.updatedBy}',
                 '${this.dateandtime()}'
             )`;
             return db.execute(sql)
@@ -72,8 +70,11 @@ class Account {
         return `${yyyy}-${mm}-${dd}`;
     }
 
-    static findAll() {
+    static findAll(tenantId) {
         let sql = "SELECT * FROM account_master";
+        if (tenantId) {
+            sql += ` WHERE tenantId = '${tenantId}'`;
+        }
         return db.execute(sql)
     }
     static findById(id) {

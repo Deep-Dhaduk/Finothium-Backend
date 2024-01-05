@@ -33,7 +33,6 @@ class Parentmenu {
                 status,
                 createdBy,
                 createdOn,
-                updatedBy,
                 updatedOn
             )
             VALUES(
@@ -43,7 +42,6 @@ class Parentmenu {
                 '${this.status}',
                 '${this.createdBy}',
                 '${this.dateandtime()}',
-                '${this.updatedBy}',
                 '${this.dateandtime()}'
             )`;
             return db.execute(sql)

@@ -6,9 +6,9 @@ const emailService = require('../service/email.service');
 const CreateUser = async (req, res) => {
     try {
 
-        let { tenantId, username, fullname, email, password, confirmpassword, companyId, status, resetpassword, roleId } = req.body;
+        let { tenantId, username, fullname, email, password, confirmpassword, companyId, status, resetpassword, roleId, createdBy } = req.body;
 
-        let user = new User(tenantId, username, fullname, email, password, confirmpassword, '', companyId, status, resetpassword, roleId);
+        let user = new User(tenantId, username, fullname, email, password, confirmpassword, '', companyId, status, resetpassword, roleId, createdBy);
 
         if (req.file && req.file.buffer) {
             const imageBase64 = req.file.buffer.toString('base64');
@@ -175,8 +175,8 @@ const deleteUser = async (req, res, next) => {
 
 const updateUser = async (req, res, next) => {
     try {
-        let { tenantId, username, fullname, email, profile_image, companyId, status, resetpassword, roleId } = req.body;
-        let user = new User(tenantId, username, fullname, email, profile_image, companyId, status, resetpassword, roleId)
+        let { tenantId, username, fullname, email, profile_image, companyId, status, resetpassword, roleId, updatedBy } = req.body;
+        let user = new User(tenantId, username, fullname, email, profile_image, companyId, status, resetpassword, roleId, updatedBy)
         let userId = req.params.id;
         let [finduser, _] = await User.findById(userId);
         if (!finduser) {

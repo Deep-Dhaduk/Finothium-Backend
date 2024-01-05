@@ -2,8 +2,8 @@ const Report = require("../models/reports");
 
 const CreateReport = async (req, res) => {
     try {
-        let { tenantId, company_wise_statement, group_wise_statement, account_wise_statement, payment_type_wise_statement, client_wise_statement, category_wise_statement, createdBy, updatedBy } = req.body;
-        let report = new Report(tenantId, company_wise_statement, group_wise_statement, account_wise_statement, payment_type_wise_statement, client_wise_statement, category_wise_statement, createdBy, updatedBy);
+        let { tenantId, company_wise_statement, group_wise_statement, account_wise_statement, payment_type_wise_statement, client_wise_statement, category_wise_statement, createdBy } = req.body;
+        let report = new Report(tenantId, company_wise_statement, group_wise_statement, account_wise_statement, payment_type_wise_statement, client_wise_statement, category_wise_statement, createdBy);
 
         report = await report.save()
 
@@ -68,9 +68,9 @@ const deleteReport = async (req, res, next) => {
 
 const updateReport = async (req, res, next) => {
     try {
-        let { tenantId, company_wise_statement, group_wise_statement, account_wise_statement, payment_type_wise_statement, client_wise_statement, category_wise_statement, createdBy, updatedBy
+        let { tenantId, company_wise_statement, group_wise_statement, account_wise_statement, payment_type_wise_statement, client_wise_statement, category_wise_statement, updatedBy
         } = req.body;
-        let report = new Report(tenantId, company_wise_statement, group_wise_statement, account_wise_statement, payment_type_wise_statement, client_wise_statement, category_wise_statement, createdBy, updatedBy
+        let report = new Report(tenantId, company_wise_statement, group_wise_statement, account_wise_statement, payment_type_wise_statement, client_wise_statement, category_wise_statement, updatedBy
         )
         let Id = req.params.id;
         let [findreport, _] = await Report.findById(Id);

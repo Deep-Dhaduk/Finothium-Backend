@@ -2,8 +2,8 @@ const Common = require("../models/common");
 
 const CreateCommon = async (req, res) => {
     try {
-        let { tenantId, name, type, status, createdBy, updatedBy } = req.body;
-        let common = new Common(tenantId, name, type, status, createdBy, updatedBy);
+        let { tenantId, name, type, status, createdBy } = req.body;
+        let common = new Common(tenantId, name, type, status, createdBy);
 
         common = await common.save()
 
@@ -108,8 +108,8 @@ const deleteCommon = async (req, res, next) => {
 
 const updateCommon = async (req, res, next) => {
     try {
-        let { tenantId, name, type, status, createdBy, updatedBy } = req.body;
-        let common = new Common(tenantId, name, type, status, createdBy, updatedBy)
+        let { tenantId, name, type, status, updatedBy } = req.body;
+        let common = new Common(tenantId, name, type, status, updatedBy)
         let Id = req.params.id;
         let [findcommon, _] = await Common.findById(Id);
         if (!findcommon) {

@@ -32,13 +32,12 @@ class User {
 
     async save() {
         try {
-            // Check if the password and confirm password match
             if (this.password !== this.confirmpassword) {
                 throw new Error("Password and Confirm Password do not match");
             }
             const hashedPassword = await bcrypt.hash(this.password, 8);
 
-            let companyIdArray = JSON.stringify(this.companyId);
+            // let companyIdArray = JSON.stringify(this.companyId);
 
             let sql = `
             INSERT INTO user_master(
@@ -64,7 +63,7 @@ class User {
                 '${hashedPassword}',
                 '${hashedPassword}',
                 '${this.profile_image}',
-                '${companyIdArray}',
+                '${this.companyId}',
                 '${this.status}',
                 '${this.createdBy}',
                 '${this.dateandtime()}',

@@ -1,11 +1,15 @@
 const User = require("../models/user");
 const jwt = require('jsonwebtoken');
 const emailService = require('../service/email.service');
+const { createUserSchema } = require('../validation/user.validation');
 const { getDecodeToken } = require('../middlewares/decoded');
 
 const CreateUser = async (req, res) => {
     try {
-
+        const { error } = createUserSchema.validate(req.body);
+        if (error) {
+            return res.status(400).json({ success: false, message: error.message });
+        }
         let { tenantId, username, fullname, email, password, confirmpassword, companyId, status, roleId, createdBy } = req.body;
 
         // if (!Array.isArray(companyId)) {

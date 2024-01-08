@@ -1,8 +1,15 @@
 const Account = require("../models/account");
+const { createAccountSchema } = require('../validation/account.validation');
 const { getDecodeToken } = require('../middlewares/decoded');
 
 const CreateAccount = async (req, res) => {
     try {
+
+        const { error } = createAccountSchema.validate(req.body);
+        if (error) {
+            return res.status(400).json({ success: false, message: error.message });
+        }
+
         let { tenantId, account_name, group_name, join_date, exit_date, account_type, status, createdBy } = req.body;
         let account = new Account(tenantId, account_name, group_name, join_date, exit_date, account_type, status, createdBy);
 

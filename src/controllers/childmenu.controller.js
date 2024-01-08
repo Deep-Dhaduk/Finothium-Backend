@@ -1,8 +1,15 @@
 const Childmenu = require('../models/childmenu');
+const { createChildmenuSchema } = require('../validation/childmenu.validation');
 const { getDecodeToken } = require('../middlewares/decoded');
 
 const CreateChildmenu = async (req, res) => {
     try {
+
+        const { error } = createChildmenuSchema.validate(req.body);
+        if (error) {
+            return res.status(400).json({ success: false, message: error.message });
+        }
+
         let { tenantId, menu_name, parent_id, display_rank, status, createdBy } = req.body;
         let childmenu = new Childmenu(tenantId, menu_name, parent_id, display_rank, status, createdBy);
 

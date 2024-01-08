@@ -30,9 +30,6 @@ class Account {
     async save() {
         try {
 
-            const formattedJoinDate = this.formatDate(this.join_date);
-            const formattedExitDate = this.formatDate(this.exit_date);
-
             let sql = `
             INSERT INTO account_master(
                 tenantId,
@@ -50,8 +47,8 @@ class Account {
                 '${this.tenantId}',
                 '${this.account_name}',
                 '${this.group_name}',
-                '${formattedJoinDate}',
-                '${formattedExitDate}',
+                '${this.join_date}',
+                '${this.exit_date}',
                 '${this.account_type}',
                 '${this.status}',
                 '${this.createdBy}',
@@ -63,11 +60,6 @@ class Account {
         } catch (error) {
             throw error;
         }
-    }
-
-    formatDate(dateString) {
-        const [dd, mm, yyyy] = dateString.split('-');
-        return `${yyyy}-${mm}-${dd}`;
     }
 
     static findAll(tenantId) {

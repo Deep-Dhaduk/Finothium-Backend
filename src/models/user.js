@@ -2,7 +2,7 @@ const db = require('../db/dbconnection');
 const bcrypt = require('bcrypt');
 
 class User {
-    constructor(tenantId, username, fullname, email, password, confirmpassword, profile_image, companyId, status, resetpassword, roleId, createdBy, updatedBy) {
+    constructor(tenantId, username, fullname, email, password, confirmpassword, profile_image, companyId, status, roleId, createdBy, updatedBy) {
         this.tenantId = tenantId;
         this.username = username;
         this.fullname = fullname;
@@ -12,7 +12,6 @@ class User {
         this.profile_image = profile_image
         this.companyId = companyId;
         this.status = status;
-        this.resetpassword = resetpassword;
         this.roleId = roleId;
         this.createdBy = createdBy
         this.updatedBy = updatedBy
@@ -39,6 +38,8 @@ class User {
             }
             const hashedPassword = await bcrypt.hash(this.password, 8);
 
+            let companyIdArray = JSON.stringify(this.companyId);
+
             let sql = `
             INSERT INTO user_master(
                 tenantId,
@@ -50,7 +51,6 @@ class User {
                 profile_image,
                 companyId,
                 status,
-                resetpassword,
                 createdBy,
                 createdOn,
                 updatedOn,
@@ -64,9 +64,8 @@ class User {
                 '${hashedPassword}',
                 '${hashedPassword}',
                 '${this.profile_image}',
-                '${this.companyId}',
+                '${companyIdArray}',
                 '${this.status}',
-                '${this.resetpassword}',
                 '${this.createdBy}',
                 '${this.dateandtime()}',
                 '${this.dateandtime()}',
@@ -112,14 +111,11 @@ class User {
     }
 
     async update(id) {
-        let sql = `UPDATE user_master SET tenantId='${this.tenantId}',username='${this.username}',fullname='${this.fullname}',email='${this.email}',password='${this.password}',confirmpassword='${this.confirmpassword}',profile_image='${this.profile_image}',companyId='${this.companyId}',status='${this.status}',resetpassword='${this.resetpassword}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}',roleId='${this.roleId}' WHERE id = ${id}`;
+        const hashedPassword = await bcrypt.hash(this.password, 8);
+
+        let sql = `UPDATE user_master SET tenantId='${this.tenantId}',username='${this.username}',fullname='${this.fullname}',email='${this.email}',password='${hashedPassword}',confirmpassword='${hashedPassword}',profile_image='${this.profile_image}',companyId='${this.companyId}',status='${this.status}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}',roleId='${this.roleId}' WHERE id = ${id}`;
         return db.execute(sql)
 
     };
-
-    static updateOTP(email, otp) {
-        let sql = `UPDATE user_master SET resetpassword='${otp}' WHERE email='${email}'`;
-        return db.execute(sql);
-    }
 }
 module.exports = User

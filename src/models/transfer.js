@@ -29,8 +29,6 @@ class Transfer {
 
     async save() {
 
-        const transactionDate = this.formatDate(this.transactionDate);
-
         try {
             let sql = `
             INSERT INTO transfer(
@@ -47,7 +45,7 @@ class Transfer {
             )
             VALUES(
                 '${this.tenantId}',
-                '${transactionDate}',
+                '${this.transactionDate}',
                 '${this.paymentType}',
                 '${this.fromAccount}',
                 '${this.toAccount}',
@@ -63,11 +61,6 @@ class Transfer {
             throw error;
         }
     };
-
-    formatDate(dateString) {
-        const [dd, mm, yyyy] = dateString.split('-');
-        return `${yyyy}-${mm}-${dd}`;
-    }
 
     static findAll(tenantId) {
         let sql = "SELECT * FROM transfer";

@@ -30,9 +30,6 @@ class Tenant {
     async save() {
         try {
 
-            const formattedStartDate = this.formatDate(this.join_date);
-            const formattedEndDate = this.formatDate(this.exit_date);
-
             let sql = `
         INSERT INTO tenant_master(
             tenantname,
@@ -53,8 +50,8 @@ class Tenant {
             '${this.address}',
             '${this.contact}',
             '${this.email}',
-            '${formattedStartDate}',
-            '${formattedEndDate}',
+            '${this.startdate}',
+            '${this.enddate}',
             '${this.status}',
             '${this.createdBy}',
             '${this.dateandtime()}',
@@ -65,11 +62,6 @@ class Tenant {
         } catch (error) {
             throw error;
         }
-    }
-
-    formatDate(dateString) {
-        const [dd, mm, yyyy] = dateString.split('-');
-        return `${yyyy}-${mm}-${dd}`;
     }
 
     static findAll() {

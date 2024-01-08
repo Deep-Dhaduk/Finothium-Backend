@@ -6,14 +6,17 @@ const { getDecodeToken } = require('../middlewares/decoded');
 const CreateUser = async (req, res) => {
     try {
 
-        let { tenantId, username, fullname, email, password, confirmpassword, companyId, status, resetpassword, roleId, createdBy } = req.body;
+        let { tenantId, username, fullname, email, password, confirmpassword, companyId, status, roleId, createdBy } = req.body;
 
-        let user = new User(tenantId, username, fullname, email, password, confirmpassword, '', companyId, status, resetpassword, roleId, createdBy);
+        // if (!Array.isArray(companyId)) {
+        //     companyId = [companyId];
+        // }
+
+        let user = new User(tenantId, username, fullname, email, password, confirmpassword, '', companyId, status, roleId, createdBy);
 
         if (req.file && req.file.buffer) {
             const imageBase64 = req.file.buffer.toString('base64');
             user.profile_image = imageBase64;
-            // console.log(imageBase64);
         };
 
         let newUser = await user.save()
@@ -53,7 +56,7 @@ const loginUser = async (req, res) => {
         }
 
         const token = jwt.sign(
-            { userId: user[0].id, email: user[0].email, tenantId: user[0].tenantId,roleId: user[0].roleId,userId: user[0].id },
+            { userId: user[0].id, email: user[0].email, tenantId: user[0].tenantId, roleId: user[0].roleId, userId: user[0].id },
             process.env.JWT_SECRET,
             { expiresIn: process.env.JWT_EXPIRES_IN }
         );
@@ -176,8 +179,8 @@ const deleteUser = async (req, res, next) => {
 
 const updateUser = async (req, res, next) => {
     try {
-        let { tenantId, username, fullname, email, profile_image, companyId, status, resetpassword, roleId, updatedBy } = req.body;
-        let user = new User(tenantId, username, fullname, email, profile_image, companyId, status, resetpassword, roleId, updatedBy)
+        let { tenantId, username, fullname, email, password, confirmpassword, profile_image, companyId, status, roleId, updatedBy } = req.body;
+        let user = new User(tenantId, username, fullname, email, password, confirmpassword, profile_image, companyId, status, roleId, updatedBy)
         let userId = req.params.id;
         let [finduser, _] = await User.findById(userId);
         if (!finduser) {
@@ -209,6 +212,7 @@ const sendMail = async (req, res) => {
             throw new Error("Something went wrong, please try again or later.");
         }
         const OTP = generateOTP().toString(); // Convert OTP to string
+        console.log(OTP);
         await emailService.sendEmail(email, OTP);
         res
             .status(200)

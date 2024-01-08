@@ -30,8 +30,6 @@ class Payment {
 
     async save() {
 
-        const transaction_date = this.formatDate(this.transaction_date);
-
         try {
             let sql = `
             INSERT INTO payment_transaction(
@@ -49,7 +47,7 @@ class Payment {
             )
             VALUES(
                 '${this.tenantId}',
-                '${transaction_date}',
+                '${this.transaction_date}',
                 '${this.transaction_type}',
                 '${this.payment_type}',
                 '${this.client_category_name}',
@@ -66,11 +64,6 @@ class Payment {
             throw error;
         }
     };
-
-    formatDate(dateString) {
-        const [dd, mm, yyyy] = dateString.split('-');
-        return `${yyyy}-${mm}-${dd}`;
-    }
 
     static findAll(tenantId) {
         let sql = "SELECT * FROM payment_transaction";

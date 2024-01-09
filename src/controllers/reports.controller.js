@@ -1,8 +1,15 @@
 const Report = require("../models/reports");
+const { createReportSchema } = require('../validation/report.validation');
 const { getDecodeToken } = require('../middlewares/decoded');
 
 const CreateReport = async (req, res) => {
     try {
+
+        const { error } = createReportSchema.validate(req.body);
+        if (error) {
+            return res.status(400).json({ success: false, message: error.message });
+        };
+
         let { tenantId, company_wise_statement, group_wise_statement, account_wise_statement, payment_type_wise_statement, client_wise_statement, category_wise_statement, createdBy } = req.body;
         let report = new Report(tenantId, company_wise_statement, group_wise_statement, account_wise_statement, payment_type_wise_statement, client_wise_statement, category_wise_statement, createdBy);
 

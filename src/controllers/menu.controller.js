@@ -1,8 +1,15 @@
 const Menu = require("../models/menu");
+const { createMenuSchema } = require('../validation/menu.validation');
 const { getDecodeToken } = require('../middlewares/decoded');
 
 const CreateMenu = async (req, res) => {
     try {
+
+        const { error } = createMenuSchema.validate(req.body);
+        if (error) {
+            return res.status(400).json({ success: false, message: error.message });
+        };
+
         let { tenantId, role_id, parent_id, child_id, allow_access, allow_add, allow_edit, allow_delete, status, createdBy } = req.body;
         let menu = new Menu(tenantId, role_id, parent_id, child_id, allow_access, allow_add, allow_edit, allow_delete, status, createdBy);
 

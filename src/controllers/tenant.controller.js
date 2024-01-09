@@ -1,7 +1,14 @@
 const Tenant = require("../models/tenant");
+const { createTenantSchema } = require('../validation/tenant.validation');
 
 const CreateTenant = async (req, res) => {
     try {
+
+        const { error } = createTenantSchema.validate(req.body);
+        if (error) {
+            return res.status(400).json({ success: false, message: error.message });
+        };
+
         let { tenantname, personname, address, contact, email, startdate, enddate, status, createdBy,updatedBy } = req.body;
         let tenant = new Tenant(tenantname, personname, address, contact, email, startdate, enddate, status, createdBy,updatedBy);
 

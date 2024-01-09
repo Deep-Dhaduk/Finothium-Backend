@@ -1,8 +1,15 @@
 const Role = require("../models/role");
+const { createRoleSchema } = require('../validation/role.validation');
 const { getDecodeToken } = require('../middlewares/decoded');
 
 const CreateRole = async (req, res) => {
     try {
+
+        const { error } = createRoleSchema.validate(req.body);
+        if (error) {
+            return res.status(400).json({ success: false, message: error.message });
+        };
+
         let { tenantId, rolename, status, createdBy } = req.body;
         let role = new Role(tenantId, rolename, status, createdBy);
 

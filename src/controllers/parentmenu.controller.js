@@ -1,7 +1,14 @@
 const Parentmenu = require("../models/parentmenu");
+const { createParentMenuSchema } = require('../validation/parentmenu.validation');
 const { getDecodeToken } = require('../middlewares/decoded');
 
 const CreateParentmenu = async (req, res) => {
+
+    const { error } = createParentMenuSchema.validate(req.body);
+    if (error) {
+        return res.status(400).json({ success: false, message: error.message });
+    };
+
     try {
         let { tenantId, menu_name, display_rank, status, createdBy } = req.body;
         let parentmenu = new Parentmenu(tenantId, menu_name, display_rank, status, createdBy);

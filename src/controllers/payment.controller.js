@@ -1,8 +1,15 @@
 const Payment = require("../models/payment");
+const { createPaymentSchema } = require('../validation/payment.validation');
 const { getDecodeToken } = require('../middlewares/decoded');
 
 const CreatePayment = async (req, res) => {
     try {
+
+        const { error } = createPaymentSchema.validate(req.body);
+        if (error) {
+            return res.status(400).json({ success: false, message: error.message });
+        };
+
         let { tenantId, transaction_date, transaction_type, payment_type, client_category_name, accountId, amount, description, createdBy } = req.body;
         let payment = new Payment(tenantId, transaction_date, transaction_type, payment_type, client_category_name, accountId, amount, description, createdBy);
 

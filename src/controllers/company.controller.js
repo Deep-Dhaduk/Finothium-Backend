@@ -1,9 +1,15 @@
 const Company = require("../models/company");
+const { createCompanySchema } = require('../validation/company.validation');
 const { getDecodeToken } = require('../middlewares/decoded');
 
 const CreateCompany = async (req, res) => {
-
     try {
+
+        const { error } = createCompanySchema.validate(req.body);
+        if (error) {
+            return res.status(400).json({ success: false, message: error.message });
+        };
+
         let { tenantId, company_name, legal_name, authorize_person_name, address, contact_no, email, website, pan, gstin, status, createdBy, updatedBy } = req.body;
 
         let company = new Company(tenantId, company_name, legal_name, authorize_person_name, address, contact_no, email, website, pan, gstin, status, createdBy, updatedBy);

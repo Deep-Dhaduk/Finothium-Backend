@@ -37,8 +37,6 @@ class User {
             }
             const hashedPassword = await bcrypt.hash(this.password, 8);
 
-            // let companyIdArray = JSON.stringify(this.companyId);
-
             let sql = `
             INSERT INTO user_master(
                 tenantId,

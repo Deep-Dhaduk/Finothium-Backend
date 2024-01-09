@@ -1,8 +1,15 @@
 const Common = require("../models/common");
+const { createCommonSchema } = require('../validation/common.validation');
 const { getDecodeToken } = require('../middlewares/decoded');
 
 const CreateCommon = async (req, res) => {
     try {
+
+        const { error } = createCommonSchema.validate(req.body);
+        if (error) {
+            return res.status(400).json({ success: false, message: error.message });
+        }
+
         let { tenantId, name, type, status, createdBy } = req.body;
         let common = new Common(tenantId, name, type, status, createdBy);
 

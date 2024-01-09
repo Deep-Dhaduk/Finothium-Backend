@@ -12,10 +12,6 @@ const CreateUser = async (req, res) => {
         }
         let { tenantId, username, fullname, email, password, confirmpassword, companyId, status, roleId, createdBy } = req.body;
 
-        // if (!Array.isArray(companyId)) {
-        //     companyId = [companyId];
-        // }
-
         let user = new User(tenantId, username, fullname, email, password, confirmpassword, '', companyId, status, roleId, createdBy);
 
         if (req.file && req.file.buffer) {

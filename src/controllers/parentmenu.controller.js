@@ -10,8 +10,8 @@ const CreateParentmenu = async (req, res) => {
     };
 
     try {
-        let { tenantId, menu_name, display_rank, status, createdBy } = req.body;
-        let parentmenu = new Parentmenu(tenantId, menu_name, display_rank, status, createdBy);
+        let { tenantId, menu_name, display_rank, status, createdBy, updatedBy } = req.body;
+        let parentmenu = new Parentmenu(tenantId, menu_name, display_rank, status, createdBy, updatedBy);
 
         parentmenu = await parentmenu.save()
 
@@ -115,8 +115,8 @@ const deleteParentmenu = async (req, res, next) => {
 
 const updateParentmenu = async (req, res, next) => {
     try {
-        let { tenantId, menu_name, display_rank, status, updatedBy } = req.body;
-        let parentmenu = new Parentmenu(tenantId, menu_name, display_rank, status, updatedBy)
+        let { tenantId, menu_name, display_rank, status, createdBy, updatedBy } = req.body;
+        let parentmenu = new Parentmenu(tenantId, menu_name, display_rank, status, createdBy, updatedBy)
         let Id = req.params.id;
         let [findparentmenu, _] = await Parentmenu.findById(Id);
         if (!findparentmenu) {

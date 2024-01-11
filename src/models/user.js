@@ -114,5 +114,30 @@ class User {
         return db.execute(sql)
 
     };
+
+    static saveOTP(email, otp) {
+        try {
+            let sql = `
+        UPDATE user_master
+        SET otp = '${otp}'
+        WHERE email = '${email}'`;
+
+            return db.execute(sql);
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    static findOTP(email) {
+        let sql = `SELECT otp, otpExpiry FROM user_master WHERE email = '${email}'`;
+        return db.execute(sql);
+    }
+
+    static updatePassword(email, hashedPassword) {
+        let sql = `UPDATE user_master SET password='${hashedPassword}', confirmpassword='${hashedPassword}'WHERE email = '${email}'`;
+        return db.execute(sql);
+    }
+
+
 }
 module.exports = User

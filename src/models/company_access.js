@@ -35,15 +35,15 @@ class CompanyAccess {
                     continue;
                 }
 
-                const dataExistsSql = `SELECT * FROM company_access WHERE company_id = '${companyId}'`;
+                const dataExistsSql = `SELECT * FROM company_master WHERE id = '${companyId}'`;
                 const [dataExistsResult] = await db.execute(dataExistsSql);
 
                 if (dataExistsResult.length === 0) {
-                    insertionResults.push({ message: `No existing data for company ID '${companyId}'.` });
+                    insertionResults.push({ message: `No existing data for company ID '${companyId}' in company_master.` });
                     continue;
                 }
 
-                const chosenCompanyId = dataExistsResult[0].company_id;
+                const chosenCompanyId = dataExistsResult[0].id;
 
                 const chosenCompanyExistsSql = `SELECT * FROM company_access WHERE user_id = '${this.user_id}' AND company_id = '${chosenCompanyId}'`;
                 const [chosenCompanyExistsResult] = await db.execute(chosenCompanyExistsSql);

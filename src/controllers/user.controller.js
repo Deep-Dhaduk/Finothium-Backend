@@ -1,5 +1,6 @@
 const User = require("../models/user");
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt')
 const emailService = require('../service/email.service');
 const { createUserSchema } = require('../validation/user.validation');
 const { getDecodeToken } = require('../middlewares/decoded');
@@ -93,7 +94,7 @@ const findOneRec = async (req, res) => {
 const ListUser = async (req, res, next) => {
     const token = getDecodeToken(req)
     try {
-        const { q = '', id } = req.query;
+        const { q = '', id, role, status } = req.query;
 
         if (id) {
             const user = await User.findById(id);
@@ -118,10 +119,10 @@ const ListUser = async (req, res, next) => {
                 user =>
                     user.username.toLowerCase().includes(queryLowered) ||
                     user.fullname.toLowerCase().includes(queryLowered) ||
-                    (user.status.toLowerCase() === "active" && "active".includes(queryLowered))
-
+                    (user.status.toLowerCase() === "active" && "active".includes(queryLowered)) ||
+                    user.role === (role || user.role) &&
+                    user.status === (status || user.status)
             );
-
             if (filteredData.length > 0) {
                 responseData = {
                     ...responseData,
@@ -204,24 +205,66 @@ const generateOTP = () => {
     return Math.floor(100000 + Math.random() * 900000);
 };
 
-const sendMail = async (req, res) => {
+const forgotPassword = async (req, res) => {
     try {
         const { email } = req.body;
-        const user = await User.findByEmail(email);
-        if (!user) {
-            throw new Error("Something went wrong, please try again or later.");
+
+        const [user, _] = await User.findByEmail(email);
+
+        if (!user[0]) {
+            return res.status(404).json({
+                success: false,
+                message: 'Email not found'
+            });
         }
-        const OTP = generateOTP().toString(); // Convert OTP to string
-        console.log(OTP);
-        await emailService.sendEmail(email, OTP);
-        res
-            .status(200)
-            .json({ success: true, message: "Email send successfully!" });
+
+        const otp = generateOTP();
+
+        await emailService.sendEmail(email, `Your OTP for password reset is: ${otp}`, 'Password Reset OTP');
+
+        await User.saveOTP(email, otp);
+
+        return res.status(200).json({
+            success: true,
+            message: 'OTP sent to email for password reset'
+        });
     } catch (error) {
-        res.status(400).json({ success: false, message: error.message });
+        console.log(error);
+        return res.status(500).json({
+            success: false,
+            message: 'Internal server error'
+        });
     }
 };
 
+const resetPassword = async (req, res) => {
+    try {
+        const { email, otp, newPassword } = req.body;
+
+        const [storedOTP, _] = await User.findOTP(email);
+
+        if (!storedOTP[0] || storedOTP[0].otp !== otp) {
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid OTP'
+            });
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, 8);
+        await User.updatePassword(email, hashedPassword);
+
+        return res.status(200).json({
+            success: true,
+            message: 'Password reset successful'
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            success: false,
+            message: 'Internal server error'
+        });
+    }
+};
 
 module.exports = {
     CreateUser,
@@ -231,5 +274,6 @@ module.exports = {
     updateUser,
     loginUser,
     findOneRec,
-    sendMail
+    forgotPassword,
+    resetPassword
 }

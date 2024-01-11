@@ -47,7 +47,12 @@ router.put(
 
 router.post(
     "/forgot-password",
-    UserController.sendMail
+    UserController.forgotPassword
+);
+
+router.post(
+    "/reset-password",
+    UserController.resetPassword
 );
 
 module.exports = router;

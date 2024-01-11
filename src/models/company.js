@@ -111,6 +111,12 @@ class Company {
         return db.execute(sql);
     }
 
+    static async exists(id) {
+        let sql = `SELECT * FROM company_master WHERE id = ${id}`;
+        const [result] = await db.execute(sql);
+        return result.length > 0;
+    }
+
 };
 
 module.exports = Company;

@@ -33,6 +33,7 @@ class Parentmenu {
                 status,
                 createdBy,
                 createdOn,
+                updatedBy,
                 updatedOn
             )
             VALUES(
@@ -42,6 +43,7 @@ class Parentmenu {
                 '${this.status}',
                 '${this.createdBy}',
                 '${this.dateandtime()}',
+                '${this.updatedBy}',
                 '${this.dateandtime()}'
             )`;
             return db.execute(sql)
@@ -69,7 +71,7 @@ class Parentmenu {
     }
 
     async update(id) {
-        let sql = `UPDATE parentmenu_master SET tenantId='${this.tenantId}',menu_name='${this.menu_name}',display_rank='${this.display_rank}',status='${this.status}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}' WHERE id = ${id}`;
+        let sql = `UPDATE parentmenu_master SET tenantId='${this.tenantId}',menu_name='${this.menu_name}',display_rank='${this.display_rank}',status='${this.status}',createdBy='${this.createdBy}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}' WHERE id = ${id}`;
         return db.execute(sql)
 
     };

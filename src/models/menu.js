@@ -1,7 +1,7 @@
 const db = require('../db/dbconnection')
 
 class Menu {
-    constructor(tenantId, role_id, parent_id, child_id, allow_access, allow_add, allow_edit, allow_delete, status, createdBy, updatedBy) {
+    constructor(tenantId, role_id, parent_id, child_id, allow_access, allow_add, allow_edit, allow_delete, createdBy, updatedBy) {
         this.tenantId = tenantId;
         this.role_id = role_id;
         this.parent_id = parent_id;
@@ -10,7 +10,6 @@ class Menu {
         this.allow_add = allow_add;
         this.allow_edit = allow_edit;
         this.allow_delete = allow_delete;
-        this.status = status;
         this.createdBy = createdBy;
         this.updatedBy = updatedBy;
     }
@@ -40,7 +39,6 @@ class Menu {
                 allow_add,
                 allow_edit,
                 allow_delete,
-                status,
                 createdBy,
                 createdOn,
                 updatedOn
@@ -54,7 +52,6 @@ class Menu {
                 '${this.allow_add}',
                 '${this.allow_edit}',
                 '${this.allow_delete}',
-                '${this.status}',
                 '${this.createdBy}',
                 '${this.dateandtime()}',
                 '${this.dateandtime()}'
@@ -93,7 +90,6 @@ class Menu {
                 allow_add='${this.allow_add}',
                 allow_edit='${this.allow_edit}',
                 allow_delete='${this.allow_delete}',
-                status='${this.status}',
                 updatedBy='${this.updatedBy}',
                 updatedOn='${this.dateandtime()}'
                 WHERE id = ${id}`;

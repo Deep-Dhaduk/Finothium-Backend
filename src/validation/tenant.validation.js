@@ -6,10 +6,11 @@ const createTenantSchema = Joi.object({
     address: Joi.string().required(),
     contact: Joi.string().required(),
     email: Joi.string().email().required(),
-    startdate: Joi.string().required(),
-    enddate: Joi.string().required(),
+    startdate: Joi.date().required(),
+    enddate: Joi.date().required(),
     status: Joi.string().required(),
-    createdBy: Joi.required()
+    createdBy: Joi.number().integer().required(),
+    updatedBy: Joi.number().integer().required(),
 });
 
 module.exports = {

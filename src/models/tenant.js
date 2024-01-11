@@ -42,7 +42,7 @@ class Tenant {
             status,
             createdBy,
             createdOn,
-            createdBy,
+            updatedBy,
             updatedOn
         )
         VALUES(

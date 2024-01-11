@@ -1,4 +1,4 @@
-const db = require('../db/dbconnection')
+const db = require('../db/dbconnection');
 
 class CompanyAccess {
     constructor(tenantId, user_id, company_id, createdBy, updatedBy) {

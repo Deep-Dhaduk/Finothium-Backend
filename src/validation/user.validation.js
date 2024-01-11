@@ -8,7 +8,7 @@ const createUserSchema = Joi.object({
   password: Joi.string().required(),
   confirmpassword: Joi.string().valid(Joi.ref('password')).required(),
   profile_image: Joi.string().allow(''),
-  companyId: Joi.number().required(),
+  companyId: Joi.required(),
   status: Joi.string().required(),
   roleId: Joi.number().required(),
   createdBy: Joi.number().required()

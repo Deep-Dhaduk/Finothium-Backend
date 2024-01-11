@@ -86,4 +86,4 @@ class Tenant {
     };
 }
 
-module.exports = Tenant
+module.exports = Tenant;

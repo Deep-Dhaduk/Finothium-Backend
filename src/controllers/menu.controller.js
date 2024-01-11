@@ -11,7 +11,7 @@ const CreateMenu = async (req, res) => {
         };
 
         let { tenantId, role_id, parent_id, child_id, allow_access, allow_add, allow_edit, allow_delete, createdBy } = req.body;
-        let menu = new Menu(tenantId, role_id, parent_id, child_id, allow_access, allow_add, allow_edit, allow_delete, status, createdBy);
+        let menu = new Menu(tenantId, role_id, parent_id, child_id, allow_access, allow_add, allow_edit, allow_delete, createdBy);
 
         menu = await menu.save()
 

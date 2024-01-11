@@ -1,4 +1,5 @@
 const User = require("../models/user");
+const CompanyAccess = require('../models/company_access')
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt')
 const emailService = require('../service/email.service');
@@ -22,10 +23,18 @@ const CreateUser = async (req, res) => {
 
         let newUser = await user.save()
 
+        let companyAccess = new CompanyAccess(tenantId, newUser.id, companyId, createdBy);
+        let companyAccessResults = await companyAccess.save();
+
+        if (!companyAccess.user_id) {
+            companyAccessResults[0].message = `New user with ID '${newUser.id}' created.`;
+        }
+
         res.status(200).json({
             success: true,
             message: "user create successfully!",
-            record: newUser
+            record: newUser,
+            companyaccesss: companyAccessResults
         });
     } catch (error) {
         res.status(400).json({

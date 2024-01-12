@@ -22,12 +22,14 @@ const CreateUser = async (req, res) => {
         };
 
         let newUser = await user.save()
+        console.log(":::::::::::::::::",newUser[0].insertId);
+        console.log("----------------",companyId);
 
-        let companyAccess = new CompanyAccess(tenantId, newUser.id, companyId, createdBy);
+        let companyAccess = new CompanyAccess(tenantId, newUser[0].insertId, companyId, createdBy);
         let companyAccessResults = await companyAccess.save();
 
         if (!companyAccess.user_id) {
-            companyAccessResults[0].message = `New user with ID '${newUser.id}' created.`;
+            companyAccessResults[0].message = `New user with ID '${newUser[0].insertId}' created.`;
         }
 
         res.status(200).json({
@@ -189,8 +191,8 @@ const deleteUser = async (req, res, next) => {
 
 const updateUser = async (req, res, next) => {
     try {
-        let { tenantId, username, fullname, email, password, confirmpassword, profile_image, companyId, status, roleId, updatedBy } = req.body;
-        let user = new User(tenantId, username, fullname, email, password, confirmpassword, profile_image, companyId, status, roleId, updatedBy)
+        let { tenantId, username, fullname, email, password, confirmpassword, profile_image, status, updatedBy,roleId } = req.body;
+        let user = new User(tenantId, username, fullname, email, password, confirmpassword, profile_image, status, updatedBy,roleId)
         let userId = req.params.id;
         let [finduser, _] = await User.findById(userId);
         if (!finduser) {

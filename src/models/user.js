@@ -46,7 +46,6 @@ class User {
                 password,
                 confirmpassword,
                 profile_image,
-                companyId,
                 status,
                 createdBy,
                 createdOn,
@@ -61,15 +60,14 @@ class User {
                 '${hashedPassword}',
                 '${hashedPassword}',
                 '${this.profile_image}',
-                '${this.companyId}',
                 '${this.status}',
                 '${this.createdBy}',
                 '${this.dateandtime()}',
                 '${this.dateandtime()}',
                 '${this.roleId}'
             )`;
-
-            return db.execute(sql)
+            const tmp = await db.execute(sql);
+            return tmp;
 
         } catch (error) {
             throw error;
@@ -110,7 +108,7 @@ class User {
     async update(id) {
         const hashedPassword = await bcrypt.hash(this.password, 8);
 
-        let sql = `UPDATE user_master SET tenantId='${this.tenantId}',username='${this.username}',fullname='${this.fullname}',email='${this.email}',password='${hashedPassword}',confirmpassword='${hashedPassword}',profile_image='${this.profile_image}',companyId='${this.companyId}',status='${this.status}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}',roleId='${this.roleId}' WHERE id = ${id}`;
+        let sql = `UPDATE user_master SET tenantId='${this.tenantId}',username='${this.username}',fullname='${this.fullname}',email='${this.email}',password='${hashedPassword}',confirmpassword='${hashedPassword}',profile_image='${this.profile_image}',status='${this.status}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}',roleId='${this.roleId}' WHERE id = ${id}`;
         return db.execute(sql)
 
     };

@@ -1,10 +1,10 @@
 const db = require('../db/dbconnection');
 
 class CompanyAccess {
-    constructor(tenantId, user_id, company_id, createdBy, updatedBy) {
+    constructor(tenantId, user_id, companyId, createdBy, updatedBy) {
         this.tenantId = tenantId;
         this.user_id = user_id;
-        this.company_id = company_id;
+        this.company_id = companyId;
         this.createdBy = createdBy;
         this.updatedBy = updatedBy;
     }

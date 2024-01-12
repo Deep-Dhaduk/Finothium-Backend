@@ -64,15 +64,15 @@ class Menu {
             sql += ` WHERE tenantId = '${tenantId}'`;
         }
         return db.execute(sql)
-    }
+    };
     static findById(id) {
         let sql = `SELECT * FROM menu_master WHERE id = ${id}`;
         return db.execute(sql)
-    }
+    };
     static delete(id) {
         let sql = `DELETE FROM menu_master WHERE id = ${id}`;
         return db.execute(sql)
-    }
+    };
 
     async update(id) {
         let sql = `UPDATE menu_master SET
@@ -87,8 +87,7 @@ class Menu {
                 updatedOn='${this.dateandtime()}'
                 WHERE id = ${id}`;
         return db.execute(sql);
-    }
-
+    };
 };
 
 module.exports = Menu;

@@ -88,6 +88,14 @@ class CompanyAccess {
         }
         return db.execute(sql)
     }
+
+    static findAllByCompanyAccess(userId) {
+        let sql = "SELECT * FROM company_access";
+        if (userId) {
+            sql += ` WHERE user_id = '${userId}'`;
+        }
+        return db.execute(sql)
+    }
     static findById(id) {
         let sql = `SELECT * FROM company_access WHERE id = ${id}`;
         return db.execute(sql)

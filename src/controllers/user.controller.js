@@ -22,8 +22,6 @@ const CreateUser = async (req, res) => {
         };
 
         let newUser = await user.save()
-        console.log(":::::::::::::::::",newUser[0].insertId);
-        console.log("----------------",companyId);
 
         let companyAccess = new CompanyAccess(tenantId, newUser[0].insertId, companyId, createdBy);
         let companyAccessResults = await companyAccess.save();
@@ -150,7 +148,34 @@ const ListUser = async (req, res, next) => {
             }
         }
 
-        res.status(200).json(responseData);
+        const companyResult = await CompanyAccess.findAll(token.tenantId);
+        let userResponse = responseData.data;
+        let companyAccessResponse = companyResult[0]
+
+
+        const userCompaniesMap = {};
+
+        companyAccessResponse.forEach(access => {
+            const userId = access.user_id;
+
+            if (!userCompaniesMap[userId]) {
+                userCompaniesMap[userId] = [];
+            }
+
+            userCompaniesMap[userId].push(access.company_id);
+        });
+
+        userResponse.forEach(user => {
+            const userId = user.id;
+
+            if (userCompaniesMap[userId]) {
+                user.companyId = userCompaniesMap[userId];
+            } else {
+                user.companyId = [];
+            }
+        });
+
+        res.status(200).json(userResponse);
 
     } catch (error) {
         console.log(error);
@@ -191,8 +216,8 @@ const deleteUser = async (req, res, next) => {
 
 const updateUser = async (req, res, next) => {
     try {
-        let { tenantId, username, fullname, email, password, confirmpassword, profile_image, status, updatedBy,roleId } = req.body;
-        let user = new User(tenantId, username, fullname, email, password, confirmpassword, profile_image, status, updatedBy,roleId)
+        let { tenantId, username, fullname, email, password, confirmpassword, profile_image, status, updatedBy, roleId } = req.body;
+        let user = new User(tenantId, username, fullname, email, password, confirmpassword, profile_image, status, updatedBy, roleId)
         let userId = req.params.id;
         let [finduser, _] = await User.findById(userId);
         if (!finduser) {

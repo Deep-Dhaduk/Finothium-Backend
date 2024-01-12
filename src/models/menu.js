@@ -1,15 +1,10 @@
 const db = require('../db/dbconnection')
 
 class Menu {
-    constructor(tenantId, role_id, parent_id, child_id, allow_access, allow_add, allow_edit, allow_delete, createdBy, updatedBy) {
+    constructor(tenantId, role_id, menuItems, createdBy, updatedBy) {
         this.tenantId = tenantId;
         this.role_id = role_id;
-        this.parent_id = parent_id;
-        this.child_id = child_id;
-        this.allow_access = allow_access;
-        this.allow_add = allow_add;
-        this.allow_edit = allow_edit;
-        this.allow_delete = allow_delete;
+        this.menuItems = menuItems;
         this.createdBy = createdBy;
         this.updatedBy = updatedBy;
     }
@@ -29,40 +24,39 @@ class Menu {
 
     async save() {
         try {
-            let sql = `
-            INSERT INTO menu_master(
-                tenantId,
-                role_id,
-                parent_id,
-                child_id,
-                allow_access,
-                allow_add,
-                allow_edit,
-                allow_delete,
-                createdBy,
-                createdOn,
-                updatedOn
-            )
-            VALUES(
+            let values = this.menuItems.map(item => `(
                 '${this.tenantId}',
                 '${this.role_id}',
-                '${this.parent_id}',
-                '${this.child_id}',
-                '${this.allow_access}',
-                '${this.allow_add}',
-                '${this.allow_edit}',
-                '${this.allow_delete}',
+                '${item.child_id}',
+                '${item.allow_access}',
+                '${item.allow_add}',
+                '${item.allow_edit}',
+                '${item.allow_delete}',
                 '${this.createdBy}',
                 '${this.dateandtime()}',
                 '${this.dateandtime()}'
-            )`;
-            return db.execute(sql)
+            )`).join(',');
 
+            let sql = `
+                INSERT INTO menu_master(
+                    tenantId,
+                    role_id,
+                    child_id,
+                    allow_access,
+                    allow_add,
+                    allow_edit,
+                    allow_delete,
+                    createdBy,
+                    createdOn,
+                    updatedOn
+                )
+                VALUES ${values}`;
+
+            return db.execute(sql);
         } catch (error) {
             throw error;
         }
     }
-
 
     static findAll(tenantId) {
         let sql = "SELECT * FROM menu_master";
@@ -84,7 +78,6 @@ class Menu {
         let sql = `UPDATE menu_master SET
                 tenantId='${this.tenantId}',
                 role_id='${this.role_id}',
-                parent_id='${this.parent_id}',
                 child_id='${this.child_id}',
                 allow_access='${this.allow_access}',
                 allow_add='${this.allow_add}',

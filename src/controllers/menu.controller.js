@@ -10,8 +10,8 @@ const CreateMenu = async (req, res) => {
             return res.status(400).json({ success: false, message: error.message });
         };
 
-        let { tenantId, role_id, parent_id, child_id, allow_access, allow_add, allow_edit, allow_delete, createdBy } = req.body;
-        let menu = new Menu(tenantId, role_id, parent_id, child_id, allow_access, allow_add, allow_edit, allow_delete, createdBy);
+        let { tenantId, role_id, menuItems, createdBy } = req.body;
+        let menu = new Menu(tenantId, role_id, menuItems, createdBy);
 
         menu = await menu.save()
 
@@ -114,8 +114,8 @@ const deleteMenu = async (req, res, next) => {
 
 const updateMenu = async (req, res, next) => {
     try {
-        let { tenantId, role_id, parent_id, child_id, allow_access, allow_add, allow_edit, allow_delete, updatedBy } = req.body;
-        let menu = new Menu(tenantId, role_id, parent_id, child_id, allow_access, allow_add, allow_edit, allow_delete, updatedBy)
+        let { tenantId, role_id, child_id, allow_access, allow_add, allow_edit, allow_delete, updatedBy } = req.body;
+        let menu = new Menu(tenantId, role_id, child_id, allow_access, allow_add, allow_edit, allow_delete, updatedBy)
         let Id = req.params.id;
         let [findmenu, _] = await Menu.findById(Id);
         if (!findmenu) {

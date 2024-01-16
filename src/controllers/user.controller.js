@@ -12,9 +12,14 @@ const CreateUser = async (req, res) => {
         if (error) {
             return res.status(400).json({ success: false, message: error.message });
         }
-        let { tenantId, username, fullname, email, password, confirmpassword, profile_image, companyId, status, createdBy, updatedBy, roleId } = req.body;
+        let { tenantId, username, fullname, email, password, confirmpassword, profile_image, companies, status, createdBy, updatedBy, roleId } = req.body;
 
-        let user = new User(tenantId, username, fullname, email, password, confirmpassword, profile_image, companyId, status, createdBy, updatedBy, roleId);
+        const companyIds = companies.map(company => company.companyId);
+        const companyNames = companies.map(company => company.companyName);
+
+        let user = new User(tenantId, username, fullname, email, password, confirmpassword, profile_image, companyIds, status, createdBy, updatedBy, roleId);
+
+        console.log(companyNames);
 
         if (req.file && req.file.buffer) {
             const imageBase64 = req.file.buffer.toString('base64');
@@ -23,7 +28,7 @@ const CreateUser = async (req, res) => {
 
         let newUser = await user.save()
 
-        let companyAccess = new CompanyAccess(tenantId, newUser[0].insertId, companyId, createdBy);
+        let companyAccess = new CompanyAccess(tenantId, newUser[0].insertId, companyIds, createdBy);
         let companyAccessResults = await companyAccess.save();
 
         if (!companyAccess.user_id) {
@@ -33,7 +38,7 @@ const CreateUser = async (req, res) => {
         res.status(200).json({
             success: true,
             message: "user create successfully!",
-            record: newUser,
+            data: newUser,
             companyaccesss: companyAccessResults
         });
     } catch (error) {
@@ -220,12 +225,10 @@ const updateUser = async (req, res, next) => {
     try {
         let { tenantId, username, fullname, email, password, confirmpassword, profile_image, companyId, status, createdBy, updatedBy, roleId } = req.body;
 
-        // Validate companyId
         if (!companyId) {
             throw new Error("companyId is required for updating user.");
-        }
+        };
 
-        // Convert companyId to an array if it's not already
         const companyIdArray = Array.isArray(companyId) ? companyId : [companyId];
 
         console.log(companyIdArray);
@@ -274,6 +277,7 @@ const forgotPassword = async (req, res) => {
 
         await emailService.sendEmail(email, `Your OTP for password reset is: ${otp}`, 'Password Reset OTP');
 
+        // Store the OTP in the database
         await User.saveOTP(email, otp);
 
         return res.status(200).json({
@@ -289,7 +293,7 @@ const forgotPassword = async (req, res) => {
     }
 };
 
-const resetPassword = async (req, res) => {
+const verifyOTPAndUpdatePassword = async (req, res) => {
     try {
         const { email, otp, newPassword } = req.body;
 
@@ -318,6 +322,52 @@ const resetPassword = async (req, res) => {
     }
 };
 
+const resetPassword = async (req, res) => {
+    try {
+        const { oldPassword, newPassword, confirmPassword } = req.body;
+
+        const userId = req.params.id;
+        const [user, _] = await User.findById(userId);
+
+        if (!user[0]) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
+            });
+        }
+
+        const isValidPassword = await User.comparePassword(oldPassword, user[0].password);
+        if (!isValidPassword) {
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid old password'
+            });
+        }
+
+        if (newPassword !== confirmPassword) {
+            return res.status(400).json({
+                success: false,
+                message: 'New password and confirm password do not match'
+            });
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, 8);
+        await User.updatePassword(user[0].email, hashedPassword);
+
+        return res.status(200).json({
+            success: true,
+            message: 'Password reset successful'
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            success: false,
+            message: 'Internal server error'
+        });
+    }
+};
+
+
 module.exports = {
     CreateUser,
     ListUser,
@@ -327,5 +377,6 @@ module.exports = {
     loginUser,
     findOneRec,
     forgotPassword,
-    resetPassword
+    resetPassword,
+    verifyOTPAndUpdatePassword
 }

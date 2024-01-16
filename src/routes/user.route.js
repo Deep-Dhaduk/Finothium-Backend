@@ -51,7 +51,12 @@ router.post(
 );
 
 router.post(
-    "/reset-password",
+    "/verify-password",
+    UserController.verifyOTPAndUpdatePassword
+);
+
+router.post(
+    "/reset-password/:id",
     UserController.resetPassword
 );
 

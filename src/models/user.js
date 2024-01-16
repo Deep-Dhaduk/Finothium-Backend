@@ -2,7 +2,7 @@ const db = require('../db/dbconnection');
 const bcrypt = require('bcrypt');
 
 class User {
-    constructor(tenantId, username, fullname, email, password, confirmpassword, profile_image, companyId, status, createdBy, updatedBy,roleId) {
+    constructor(tenantId, username, fullname, email, password, confirmpassword, profile_image, companyIds, status, createdBy, updatedBy,roleId) {
         this.tenantId = tenantId;
         this.username = username;
         this.fullname = fullname;
@@ -10,7 +10,7 @@ class User {
         this.password = password;
         this.confirmpassword = confirmpassword;
         this.profile_image = profile_image
-        this.companyId = companyId;
+        this.companyIds = companyIds;
         this.status = status;
         this.createdBy = createdBy
         this.updatedBy = updatedBy
@@ -110,7 +110,7 @@ class User {
     async update(id) {
         const hashedPassword = await bcrypt.hash(this.password, 8);
 
-        const companyIdArray = Array.isArray(this.companyId) ? this.companyId : [this.companyId];
+        const companyIdArray = Array.isArray(this.companyIds) ? this.companyIds : [this.companyIds];
 
         const companyIdString = companyIdArray.join(',');
 
@@ -132,7 +132,7 @@ class User {
     }
 
     static findOTP(email) {
-        let sql = `SELECT otp, otpExpiry FROM user_master WHERE email = '${email}'`;
+        let sql = `SELECT otp FROM user_master WHERE email = '${email}'`;
         return db.execute(sql);
     }
 

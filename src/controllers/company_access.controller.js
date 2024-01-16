@@ -112,12 +112,10 @@ const updateCompanyAccess = async (req, res, next) => {
     try {
         let { tenantId, user_id, company_id, updatedBy } = req.body;
 
-        // Ensure company_id is always an array
         const companyIdArray = Array.isArray(company_id) ? company_id : [company_id];
 
         let companyAccess = new CompanyAccess(tenantId, user_id, companyIdArray, updatedBy);
 
-        // If company_id is an array, set values for each element
         if (Array.isArray(company_id)) {
             companyAccess.company_id = company_id.map((value, index) => companyIdArray[index]);
         }

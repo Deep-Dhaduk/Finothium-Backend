@@ -8,10 +8,16 @@ const createUserSchema = Joi.object({
   password: Joi.string().required(),
   confirmpassword: Joi.string().valid(Joi.ref('password')).required(),
   profile_image: Joi.string().allow(''),
-  companyId: Joi.required(),
+  companies: Joi.array().items(
+    Joi.object({
+        companyId: Joi.required(),
+        companyName: Joi.required()
+    })
+).required(),
   status: Joi.string().required(),
   roleId: Joi.number().required(),
-  createdBy: Joi.number().required()
+  createdBy: Joi.number().required(),
+  updatedBy: Joi.number().required(),
 });
 
 module.exports = {

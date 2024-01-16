@@ -2,7 +2,7 @@ const db = require('../db/dbconnection');
 const bcrypt = require('bcrypt');
 
 class User {
-    constructor(tenantId, username, fullname, email, password, confirmpassword, profile_image, companyId, status, roleId, createdBy, updatedBy) {
+    constructor(tenantId, username, fullname, email, password, confirmpassword, profile_image, companyId, status, createdBy, updatedBy,roleId) {
         this.tenantId = tenantId;
         this.username = username;
         this.fullname = fullname;
@@ -12,9 +12,9 @@ class User {
         this.profile_image = profile_image
         this.companyId = companyId;
         this.status = status;
-        this.roleId = roleId;
         this.createdBy = createdBy
         this.updatedBy = updatedBy
+        this.roleId = roleId;
     }
 
     dateandtime = () => {
@@ -49,6 +49,7 @@ class User {
                 status,
                 createdBy,
                 createdOn,
+                updatedBy,
                 updatedOn,
                 roleId
             )
@@ -63,6 +64,7 @@ class User {
                 '${this.status}',
                 '${this.createdBy}',
                 '${this.dateandtime()}',
+                '${this.updatedBy}',
                 '${this.dateandtime()}',
                 '${this.roleId}'
             )`;
@@ -108,9 +110,12 @@ class User {
     async update(id) {
         const hashedPassword = await bcrypt.hash(this.password, 8);
 
-        let sql = `UPDATE user_master SET tenantId='${this.tenantId}',username='${this.username}',fullname='${this.fullname}',email='${this.email}',password='${hashedPassword}',confirmpassword='${hashedPassword}',profile_image='${this.profile_image}',status='${this.status}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}',roleId='${this.roleId}' WHERE id = ${id}`;
-        return db.execute(sql)
+        const companyIdArray = Array.isArray(this.companyId) ? this.companyId : [this.companyId];
 
+        const companyIdString = companyIdArray.join(',');
+
+        let sql = `UPDATE user_master SET tenantId='${this.tenantId}',username='${this.username}',fullname='${this.fullname}',email='${this.email}',password='${hashedPassword}',confirmpassword='${hashedPassword}',profile_image='${this.profile_image}',companyId='${companyIdString}',status='${this.status}',createdBy='${this.createdBy}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}',roleId='${this.roleId}' WHERE id = ${id}`;
+        return db.execute(sql);
     };
 
     static saveOTP(email, otp) {

@@ -12,9 +12,9 @@ const CreateUser = async (req, res) => {
         if (error) {
             return res.status(400).json({ success: false, message: error.message });
         }
-        let { tenantId, username, fullname, email, password, confirmpassword, companyId, status, roleId, createdBy } = req.body;
+        let { tenantId, username, fullname, email, password, confirmpassword, profile_image, companyId, status, createdBy, updatedBy, roleId } = req.body;
 
-        let user = new User(tenantId, username, fullname, email, password, confirmpassword, '', companyId, status, roleId, createdBy);
+        let user = new User(tenantId, username, fullname, email, password, confirmpassword, profile_image, companyId, status, createdBy, updatedBy, roleId);
 
         if (req.file && req.file.buffer) {
             const imageBase64 = req.file.buffer.toString('base64');
@@ -175,7 +175,9 @@ const ListUser = async (req, res, next) => {
             }
         });
 
-        res.status(200).json(userResponse);
+        res.status(200).json({
+            data: userResponse
+        });
 
     } catch (error) {
         console.log(error);
@@ -216,26 +218,40 @@ const deleteUser = async (req, res, next) => {
 
 const updateUser = async (req, res, next) => {
     try {
-        let { tenantId, username, fullname, email, password, confirmpassword, profile_image, status, updatedBy, roleId } = req.body;
-        let user = new User(tenantId, username, fullname, email, password, confirmpassword, profile_image, status, updatedBy, roleId)
+        let { tenantId, username, fullname, email, password, confirmpassword, profile_image, companyId, status, createdBy, updatedBy, roleId } = req.body;
+
+        // Validate companyId
+        if (!companyId) {
+            throw new Error("companyId is required for updating user.");
+        }
+
+        // Convert companyId to an array if it's not already
+        const companyIdArray = Array.isArray(companyId) ? companyId : [companyId];
+
+        console.log(companyIdArray);
+
+        let user = new User(tenantId, username, fullname, email, password, confirmpassword, profile_image, companyIdArray, status, createdBy, updatedBy, roleId);
+        console.log(user);
         let userId = req.params.id;
         let [finduser, _] = await User.findById(userId);
         if (!finduser) {
-            throw new Error("User not found!")
+            throw new Error("User not found!");
         }
-        let updateuser = await user.update(userId)
+
+        let updateuser = await user.update(userId);
+
         res.status(200).json({
             success: true,
-
             message: "User Successfully Updated",
-            record: { updateuser }, returnOriginal: false, runValidators: true
+            record: { user },
+            returnOriginal: false,
+            runValidators: true
         });
     } catch (error) {
         console.log(error);
-        next(error)
+        next(error);
     }
 };
-
 
 const generateOTP = () => {
     return Math.floor(100000 + Math.random() * 900000);

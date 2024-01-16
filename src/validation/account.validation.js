@@ -3,10 +3,10 @@ const Joi = require('joi');
 const createAccountSchema = Joi.object({
     tenantId: Joi.number().integer().required(),
     account_name: Joi.string().required(),
-    group_name: Joi.string().required(),
+    group_name_Id: Joi.number().integer().required(),
     join_date: Joi.date().required(),
     exit_date: Joi.date().required(),
-    account_type: Joi.string().required(),
+    account_type_Id: Joi.number().integer().required(),
     status: Joi.string().required(),
     createdBy: Joi.number().integer().required()
 });

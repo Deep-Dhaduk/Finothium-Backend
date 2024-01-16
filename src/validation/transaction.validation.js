@@ -1,11 +1,11 @@
 const Joi = require('joi');
 
-const createPaymentSchema = Joi.object({
+const createTransactionSchema = Joi.object({
     tenantId: Joi.number().integer().required(),
     transaction_date: Joi.date().required(),
     transaction_type: Joi.string().required(),
-    payment_type: Joi.string().required(),
-    client_category_name: Joi.string().required(),
+    payment_type_Id: Joi.number().integer().required(),
+    client_category_name_Id: Joi.number().integer().required(),
     accountId: Joi.number().integer().required(),
     amount: Joi.number().required(),
     description: Joi.string().required(),
@@ -13,5 +13,5 @@ const createPaymentSchema = Joi.object({
 });
 
 module.exports = {
-    createPaymentSchema
+    createTransactionSchema
 };

@@ -24,7 +24,6 @@ const CreateCompanyAccess = async (req, res) => {
         console.log(error);
     }
 }
-
 const ListCreateCompanyAccess = async (req, res, next) => {
     const token = getDecodeToken(req)
     try {
@@ -43,7 +42,7 @@ const ListCreateCompanyAccess = async (req, res, next) => {
         const companyAccessResult = await CompanyAccess.findAll(token.tenantId);
         let responseData = {
             success: true,
-            message: 'Menu List Successfully!',
+            message: 'CompanyAccsess List Successfully!',
             data: companyAccessResult[0]
         };
 
@@ -111,36 +110,23 @@ const deleteCompanyAccess = async (req, res, next) => {
 const updateCompanyAccess = async (req, res, next) => {
     try {
         let { tenantId, user_id, company_id, updatedBy } = req.body;
-
-        const companyIdArray = Array.isArray(company_id) ? company_id : [company_id];
-
-        let companyAccess = new CompanyAccess(tenantId, user_id, companyIdArray, updatedBy);
-
-        if (Array.isArray(company_id)) {
-            companyAccess.company_id = company_id.map((value, index) => companyIdArray[index]);
-        }
-
+        let companyAccess = new CompanyAccess(tenantId, user_id, company_id, updatedBy)
         let Id = req.params.id;
         let [findcompanyAccess, _] = await CompanyAccess.findById(Id);
-
         if (!findcompanyAccess) {
-            throw new Error("CompanyAccess not found!");
+            throw new Error("CompanyAccess not found!")
         }
-
-        await companyAccess.update(Id);
-
+        await companyAccess.update(Id)
         res.status(200).json({
             success: true,
             message: "CompanyAccess Successfully Updated",
-            record: { companyAccess },
-            returnOriginal: false,
-            runValidators: true
+            record: { companyAccess }, returnOriginal: false, runValidators: true
         });
     } catch (error) {
         console.log(error);
-        next(error);
+        next(error)
     }
-};
+}
 
 module.exports = {
     CreateCompanyAccess,

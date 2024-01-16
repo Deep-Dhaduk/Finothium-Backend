@@ -10,8 +10,8 @@ const CreateAccount = async (req, res) => {
             return res.status(400).json({ success: false, message: error.message });
         }
 
-        let { tenantId, account_name, group_name, join_date, exit_date, account_type, status, createdBy } = req.body;
-        let account = new Account(tenantId, account_name, group_name, join_date, exit_date, account_type, status, createdBy);
+        let { tenantId, account_name, group_name_Id, join_date, exit_date, account_type_Id, status, createdBy } = req.body;
+        let account = new Account(tenantId, account_name, group_name_Id, join_date, exit_date, account_type_Id, status, createdBy);
 
         account = await account.save()
 
@@ -56,8 +56,8 @@ const ListAccount = async (req, res, next) => {
             const filteredData = accountResult[0].filter(
                 account =>
                     account.account_name.toLowerCase().includes(queryLowered) ||
-                    account.group_name.toLowerCase().includes(queryLowered) ||
-                    account.account_type.toLowerCase().includes(queryLowered) ||
+                    account.group_name_Id.toLowerCase().includes(queryLowered) ||
+                    account.account_type_Id.toLowerCase().includes(queryLowered) ||
                     (account.status.toLowerCase() === "active" && "active".includes(queryLowered))
 
             );
@@ -118,8 +118,8 @@ const deleteAccount = async (req, res, next) => {
 
 const updateAccount = async (req, res, next) => {
     try {
-        let { tenantId, account_name, group_name, join_date, exit_date, account_type, status, updatedBy } = req.body;
-        let account = new Account(tenantId, account_name, group_name, join_date, exit_date, account_type, status, updatedBy)
+        let { tenantId, account_name, group_name_Id, join_date, exit_date, account_type_Id, status, updatedBy } = req.body;
+        let account = new Account(tenantId, account_name, group_name_Id, join_date, exit_date, account_type_Id, status, updatedBy)
         let Id = req.params.id;
         let [findaccount, _] = await Account.findById(Id);
         if (!findaccount) {

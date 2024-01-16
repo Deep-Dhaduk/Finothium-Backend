@@ -2,7 +2,7 @@ const db = require('../db/dbconnection');
 const bcrypt = require('bcrypt');
 
 class User {
-    constructor(tenantId, username, fullname, email, password, confirmpassword, profile_image, companyIds, status, createdBy, updatedBy,roleId) {
+    constructor(tenantId, username, fullname, email, password, confirmpassword, profile_image, companyId, status, createdBy, updatedBy, roleId) {
         this.tenantId = tenantId;
         this.username = username;
         this.fullname = fullname;
@@ -10,7 +10,7 @@ class User {
         this.password = password;
         this.confirmpassword = confirmpassword;
         this.profile_image = profile_image
-        this.companyIds = companyIds;
+        this.companyId = companyId;
         this.status = status;
         this.createdBy = createdBy
         this.updatedBy = updatedBy
@@ -49,7 +49,6 @@ class User {
                 status,
                 createdBy,
                 createdOn,
-                updatedBy,
                 updatedOn,
                 roleId
             )
@@ -64,7 +63,6 @@ class User {
                 '${this.status}',
                 '${this.createdBy}',
                 '${this.dateandtime()}',
-                '${this.updatedBy}',
                 '${this.dateandtime()}',
                 '${this.roleId}'
             )`;
@@ -110,7 +108,7 @@ class User {
     async update(id) {
         const hashedPassword = await bcrypt.hash(this.password, 8);
 
-        const companyIdArray = Array.isArray(this.companyIds) ? this.companyIds : [this.companyIds];
+        const companyIdArray = Array.isArray(this.companyId) ? this.companyId : [this.companyId];
 
         const companyIdString = companyIdArray.join(',');
 

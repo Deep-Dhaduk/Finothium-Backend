@@ -17,7 +17,7 @@ const createUserSchema = Joi.object({
   status: Joi.string().required(),
   roleId: Joi.number().required(),
   createdBy: Joi.number().required(),
-  updatedBy: Joi.number().required(),
+  updatedBy: Joi.number().required()
 });
 
 module.exports = {

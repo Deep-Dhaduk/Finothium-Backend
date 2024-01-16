@@ -1,12 +1,12 @@
 const db = require('../db/dbconnection')
 
-class Payment {
-    constructor(tenantId, transaction_date, transaction_type, payment_type, client_category_name, accountId, amount, description, createdBy, updatedBy) {
+class Transaction {
+    constructor(tenantId, transaction_date, transaction_type, payment_type_Id, client_category_name_Id, accountId, amount, description, createdBy, updatedBy) {
         this.tenantId = tenantId;
         this.transaction_date = transaction_date;
         this.transaction_type = transaction_type;
-        this.payment_type = payment_type;
-        this.client_category_name = client_category_name;
+        this.payment_type_Id = payment_type_Id;
+        this.client_category_name_Id = client_category_name_Id;
         this.accountId = accountId;
         this.amount = amount;
         this.description = description;
@@ -32,12 +32,12 @@ class Payment {
 
         try {
             let sql = `
-            INSERT INTO payment_transaction(
+            INSERT INTO transaction(
                 tenantId,
                 transaction_date,
                 transaction_type,
-                payment_type,
-                client_category_name,
+                payment_type_Id,
+                client_category_name_Id,
                 accountId,
                 amount,
                 description,
@@ -49,8 +49,8 @@ class Payment {
                 '${this.tenantId}',
                 '${this.transaction_date}',
                 '${this.transaction_type}',
-                '${this.payment_type}',
-                '${this.client_category_name}',
+                '${this.payment_type_Id}',
+                '${this.client_category_name_Id}',
                 '${this.accountId}',
                 '${this.amount}',
                 '${this.description}',
@@ -66,26 +66,26 @@ class Payment {
     };
 
     static findAll(tenantId) {
-        let sql = "SELECT * FROM payment_transaction";
+        let sql = "SELECT * FROM transaction";
         if (tenantId) {
             sql += ` WHERE tenantId = '${tenantId}'`;
         }
         return db.execute(sql)
     }
     static findById(id) {
-        let sql = `SELECT * FROM payment_transaction WHERE transaction_id = ${id}`;
+        let sql = `SELECT * FROM transaction WHERE transaction_id = ${id}`;
         return db.execute(sql)
     }
     static delete(id) {
-        let sql = `DELETE FROM payment_transaction WHERE transaction_id = ${id}`;
+        let sql = `DELETE FROM transaction WHERE transaction_id = ${id}`;
         return db.execute(sql)
     }
 
     async update(id) {
-        let sql = `UPDATE payment_transaction SET tenantId='${this.tenantId}',transaction_date='${this.transaction_date}',transaction_type='${this.transaction_type}',payment_type='${this.payment_type}',client_category_name='${this.client_category_name}',accountId='${this.accountId}',amount='${this.amount}',description='${this.description}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}' WHERE transaction_id = ${id}`;
+        let sql = `UPDATE transaction SET tenantId='${this.tenantId}',transaction_date='${this.transaction_date}',transaction_type='${this.transaction_type}',payment_type_Id='${this.payment_type_Id}',client_category_name_Id='${this.client_category_name_Id}',accountId='${this.accountId}',amount='${this.amount}',description='${this.description}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}' WHERE transaction_id = ${id}`;
         return db.execute(sql)
 
     };
 }
 
-module.exports = Payment;
+module.exports = Transaction;

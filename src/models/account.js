@@ -1,13 +1,13 @@
 const db = require('../db/dbconnection')
 
 class Account {
-    constructor(tenantId, account_name, group_name, join_date, exit_date, account_type, status, createdBy, updatedBy) {
+    constructor(tenantId, account_name, group_name_Id, join_date, exit_date, account_type_Id, status, createdBy, updatedBy) {
         this.tenantId = tenantId;
         this.account_name = account_name;
-        this.group_name = group_name;
+        this.group_name_Id = group_name_Id;
         this.join_date = join_date;
         this.exit_date = exit_date;
-        this.account_type = account_type;
+        this.account_type_Id = account_type_Id;
         this.status = status;
         this.createdBy = createdBy;
         this.updatedBy = updatedBy;
@@ -34,10 +34,10 @@ class Account {
             INSERT INTO account_master(
                 tenantId,
                 account_name,
-                group_name,
+                group_name_Id,
                 join_date,
                 exit_date,
-                account_type,
+                account_type_Id,
                 status,
                 createdBy,
                 createdOn,
@@ -46,10 +46,10 @@ class Account {
             VALUES(
                 '${this.tenantId}',
                 '${this.account_name}',
-                '${this.group_name}',
+                '${this.group_name_Id}',
                 '${this.join_date}',
                 '${this.exit_date}',
-                '${this.account_type}',
+                '${this.account_type_Id}',
                 '${this.status}',
                 '${this.createdBy}',
                 '${this.dateandtime()}',
@@ -79,7 +79,7 @@ class Account {
     }
 
     async update(id) {
-        let sql = `UPDATE account_master SET tenantId='${this.tenantId}',account_name='${this.account_name}',group_name='${this.group_name}',join_date='${this.join_date}',exit_date='${this.exit_date}',account_type='${this.account_type}',status='${this.status}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}' WHERE account_id = ${id}`;
+        let sql = `UPDATE account_master SET tenantId='${this.tenantId}',account_name='${this.account_name}',group_name_Id='${this.group_name_Id}',join_date='${this.join_date}',exit_date='${this.exit_date}',account_type_Id='${this.account_type_Id}',status='${this.status}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}' WHERE account_id = ${id}`;
         return db.execute(sql)
 
     };

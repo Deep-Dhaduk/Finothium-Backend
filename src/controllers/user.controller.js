@@ -12,43 +12,53 @@ const CreateUser = async (req, res) => {
         if (error) {
             return res.status(400).json({ success: false, message: error.message });
         }
+
         let { tenantId, username, fullname, email, password, confirmpassword, profile_image, companies, status, createdBy, updatedBy, roleId } = req.body;
 
-        const companyIds = companies.map(company => company.companyId);
-        const companyNames = companies.map(company => company.companyName);
+        if (!Array.isArray(companies)) {
+            return res.status(400).json({
+                success: false,
+                message: "Companies must be an array of objects."
+            });
+        }
 
-        let user = new User(tenantId, username, fullname, email, password, confirmpassword, profile_image, companyIds, status, createdBy, updatedBy, roleId);
-
-        console.log(companyNames);
+        let user = new User(tenantId, username, fullname, email, password, confirmpassword, profile_image, null, status, createdBy, updatedBy, roleId);
 
         if (req.file && req.file.buffer) {
             const imageBase64 = req.file.buffer.toString('base64');
             user.profile_image = imageBase64;
-        };
+        }
 
-        let newUser = await user.save()
+        let newUser = await user.save();
 
-        let companyAccess = new CompanyAccess(tenantId, newUser[0].insertId, companyIds, createdBy);
-        let companyAccessResults = await companyAccess.save();
+        let companyAccessResults = [];
 
-        if (!companyAccess.user_id) {
-            companyAccessResults[0].message = `New user with ID '${newUser[0].insertId}' created.`;
+        for (const companyInfo of companies) {
+            const { companyId, companyName } = companyInfo;
+
+            let companyAccess = new CompanyAccess(tenantId, newUser[0].insertId, [companyId], createdBy);
+            let companyAccessResult = await companyAccess.save();
+
+            companyAccessResults.push({ companyId, companyName, companyAccessResult });
         }
 
         res.status(200).json({
             success: true,
-            message: "user create successfully!",
-            data: newUser,
-            companyaccesss: companyAccessResults
+            message: "User created successfully!",
+            data: {
+                user: newUser,
+                companyAccesses: companyAccessResults
+            }
         });
     } catch (error) {
         res.status(400).json({
             success: false,
             message: error.message
-        })
+        });
         console.log(error);
     }
 };
+
 
 const loginUser = async (req, res) => {
     try {
@@ -295,7 +305,7 @@ const forgotPassword = async (req, res) => {
 
 const verifyOTPAndUpdatePassword = async (req, res) => {
     try {
-        const { email, otp, newPassword } = req.body;
+        const {email, otp, newPassword } = req.body;
 
         const [storedOTP, _] = await User.findOTP(email);
 

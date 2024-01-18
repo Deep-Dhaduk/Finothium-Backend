@@ -28,7 +28,6 @@ class Menu {
                 const existingMenu = await this.findByChildId(item.child_id);
 
                 if (existingMenu) {
-                    // If it exists, update the existing record
                     let sql = `
                         UPDATE menu_master SET
                         tenantId='${this.tenantId}',
@@ -43,7 +42,6 @@ class Menu {
 
                     await db.execute(sql);
                 } else {
-                    // If it doesn't exist, insert a new record
                     let sql = `
                         INSERT INTO menu_master(
                             tenantId,
@@ -81,7 +79,6 @@ class Menu {
     }
 
     async findByChildId(childId) {
-        // Function to check if a record with the same child_id exists in the database
         let sql = `SELECT * FROM menu_master WHERE child_id = '${childId}'`;
         const result = await db.execute(sql);
         return result[0][0];

@@ -6,7 +6,37 @@ const router = express.Router();
 router.get(
     "/list-payment",
     auth.verifyToken,
-    Reportcontroller.ListReport
+    Reportcontroller.ListPaymentReport
+);
+
+router.get(
+    "/list-client",
+    auth.verifyToken,
+    Reportcontroller.ListClientReport
+);
+
+router.get(
+    "/list-category",
+    auth.verifyToken,
+    Reportcontroller.ListCategoryReport
+);
+
+router.get(
+    "/list-account",
+    auth.verifyToken,
+    Reportcontroller.ListAccountReport
+);
+
+router.get(
+    "/list-group",
+    auth.verifyToken,
+    Reportcontroller.ListGroupReport
+);
+
+router.get(
+    "/list-company",
+    auth.verifyToken,
+    Reportcontroller.ListCompanyReport
 );
 
 module.exports = router;

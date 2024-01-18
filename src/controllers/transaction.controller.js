@@ -53,11 +53,10 @@ const ListTransaction = async (req, res, next) => {
 
         if (q) {
             const queryLowered = q.toLowerCase();
-            const filteredData = transactionResult[0].filter(
-                transaction =>
-                    transaction.transaction_type.toLowerCase().includes(queryLowered) ||
-                    transaction.payment_type.toLowerCase().includes(queryLowered) ||
-                    transaction.client_category_name.toLowerCase().includes(queryLowered)
+            const filteredData = transactionResult[0].filter(transaction =>
+                (transaction.transaction_type && transaction.transaction_type.toLowerCase().includes(queryLowered)) ||
+                (transaction.payment_type && transaction.payment_type.toLowerCase().includes(queryLowered)) ||
+                (transaction.client_category_name && transaction.client_category_name.toLowerCase().includes(queryLowered))
             );
 
             if (filteredData.length > 0) {

@@ -54,12 +54,11 @@ const ListAccount = async (req, res, next) => {
 
         if (q) {
             const queryLowered = q.toLowerCase();
-            const filteredData = accountResult[0].filter(
-                account =>
-                    account.account_name.toLowerCase().includes(queryLowered) ||
-                    account.group_name_Id.toLowerCase().includes(queryLowered) ||
-                    account.account_type_Id.toLowerCase().includes(queryLowered) ||
-                    (account.status.toLowerCase() === "active" && "active".includes(queryLowered))
+            const filteredData = accountResult[0].filter(account =>
+                (account.account_name && account.account_name.toLowerCase().includes(queryLowered)) ||
+                (account.group_name && account.group_name.toLowerCase().includes(queryLowered)) ||
+                (account.account_type_name && account.account_type_name.toLowerCase().includes(queryLowered)) ||
+                (account.status && account.status.toLowerCase() === "active" && "active".includes(queryLowered))
             );
 
             if (filteredData.length > 0) {
@@ -71,13 +70,12 @@ const ListAccount = async (req, res, next) => {
             } else {
                 responseData = {
                     ...responseData,
-                    message: 'No matching account found',
+                    message: 'No matching menu found',
                     data: [],
                     total: 0
                 };
             }
         }
-
         res.status(200).json(responseData);
     } catch (error) {
         console.log(error);

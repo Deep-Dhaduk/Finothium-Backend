@@ -24,38 +24,67 @@ class Menu {
 
     async save() {
         try {
-            let values = this.menuItems.map(item => `(
-                '${this.tenantId}',
-                '${this.role_id}',
-                '${item.child_id}',
-                '${item.allow_access}',
-                '${item.allow_add}',
-                '${item.allow_edit}',
-                '${item.allow_delete}',
-                '${this.createdBy}',
-                '${this.dateandtime()}',
-                '${this.dateandtime()}'
-            )`).join(',');
+            for (const item of this.menuItems) {
+                const existingMenu = await this.findByChildId(item.child_id);
 
-            let sql = `
-                INSERT INTO menu_master(
-                    tenantId,
-                    role_id,
-                    child_id,
-                    allow_access,
-                    allow_add,
-                    allow_edit,
-                    allow_delete,
-                    createdBy,
-                    createdOn,
-                    updatedOn
-                )
-                VALUES ${values}`;
+                if (existingMenu) {
+                    // If it exists, update the existing record
+                    let sql = `
+                        UPDATE menu_master SET
+                        tenantId='${this.tenantId}',
+                        role_id='${this.role_id}',
+                        allow_access='${item.allow_access}',
+                        allow_add='${item.allow_add}',
+                        allow_edit='${item.allow_edit}',
+                        allow_delete='${item.allow_delete}',
+                        createdBy='${this.createdBy}',
+                        updatedOn='${this.dateandtime()}'
+                        WHERE child_id = '${item.child_id}'`;
 
-            return db.execute(sql);
+                    await db.execute(sql);
+                } else {
+                    // If it doesn't exist, insert a new record
+                    let sql = `
+                        INSERT INTO menu_master(
+                            tenantId,
+                            role_id,
+                            child_id,
+                            allow_access,
+                            allow_add,
+                            allow_edit,
+                            allow_delete,
+                            createdBy,
+                            createdOn,
+                            updatedOn
+                        )
+                        VALUES (
+                            '${this.tenantId}',
+                            '${this.role_id}',
+                            '${item.child_id}',
+                            '${item.allow_access}',
+                            '${item.allow_add}',
+                            '${item.allow_edit}',
+                            '${item.allow_delete}',
+                            '${this.createdBy}',
+                            '${this.dateandtime()}',
+                            '${this.dateandtime()}'
+                        )`;
+
+                    await db.execute(sql);
+                }
+            }
+
+            return { success: true };
         } catch (error) {
             throw error;
         }
+    }
+
+    async findByChildId(childId) {
+        // Function to check if a record with the same child_id exists in the database
+        let sql = `SELECT * FROM menu_master WHERE child_id = '${childId}'`;
+        const result = await db.execute(sql);
+        return result[0][0];
     }
 
     static findAll(tenantId) {

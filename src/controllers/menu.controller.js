@@ -4,30 +4,30 @@ const { getDecodeToken } = require('../middlewares/decoded');
 
 const CreateMenu = async (req, res) => {
     try {
-
         const { error } = createMenuSchema.validate(req.body);
         if (error) {
             return res.status(400).json({ success: false, message: error.message });
-        };
+        }
 
-        let { tenantId, role_id, menuItems, createdBy } = req.body;
-        let menu = new Menu(tenantId, role_id, menuItems, createdBy);
+        const { tenantId, role_id, menuItems, createdBy } = req.body;
+        const menu = new Menu(tenantId, role_id, menuItems, createdBy);
 
-        menu = await menu.save()
+        const result = await menu.save();
 
         res.status(200).json({
             success: true,
-            message: "Menu create successfully!",
+            message: result.success ? "Menu items saved successfully!" : "Menu items updated successfully!",
             record: { menu }
         });
     } catch (error) {
         res.status(400).json({
             success: false,
             message: error.message,
-        })
+        });
         console.log(error);
     }
-}
+};
+
 
 const ListMenu = async (req, res, next) => {
     const token = getDecodeToken(req)

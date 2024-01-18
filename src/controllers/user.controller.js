@@ -13,7 +13,7 @@ const CreateUser = async (req, res) => {
             return res.status(400).json({ success: false, message: error.message });
         }
 
-        let { tenantId, username, fullname, email, password, confirmpassword, profile_image, companies, status, createdBy, updatedBy, roleId } = req.body;
+        let { tenantId, username, fullname, email, password, confirmpassword, profile_image, companies, status, createdBy, updatedBy, role } = req.body;
 
         if (!Array.isArray(companies)) {
             return res.status(400).json({
@@ -21,6 +21,8 @@ const CreateUser = async (req, res) => {
                 message: "Companies must be an array of objects."
             });
         }
+
+        let { roleId } = role;
 
         let user = new User(tenantId, username, fullname, email, password, confirmpassword, profile_image, null, status, createdBy, updatedBy, roleId);
 
@@ -118,7 +120,7 @@ const findOneRec = async (req, res) => {
 const ListUser = async (req, res, next) => {
     const token = getDecodeToken(req)
     try {
-        const { q = '', id, role, status } = req.query;
+        const { q = '', id } = req.query;
 
         if (id) {
             const user = await User.findById(id);
@@ -143,9 +145,7 @@ const ListUser = async (req, res, next) => {
                 user =>
                     user.username.toLowerCase().includes(queryLowered) ||
                     user.fullname.toLowerCase().includes(queryLowered) ||
-                    (user.status.toLowerCase() === "active" && "active".includes(queryLowered)) ||
-                    user.role === (role || user.role) &&
-                    user.status === (status || user.status)
+                    (user.status.toLowerCase() === "active" && "active".includes(queryLowered))
             );
             if (filteredData.length > 0) {
                 responseData = {
@@ -200,7 +200,6 @@ const ListUser = async (req, res, next) => {
     }
 };
 
-
 const getUserById = async (req, res, next) => {
     try {
         let userId = req.params.id;
@@ -233,11 +232,13 @@ const deleteUser = async (req, res, next) => {
 
 const updateUser = async (req, res, next) => {
     try {
-        let { tenantId, username, fullname, email, password, confirmpassword, profile_image, companyId, status, createdBy, updatedBy, roleId } = req.body;
+        let { tenantId, username, fullname, email, password, confirmpassword, profile_image, companyId, status, createdBy, updatedBy, role } = req.body;
 
         if (!companyId) {
             throw new Error("companyId is required for updating user.");
         };
+
+        let { roleId } = role;
 
         const companyIdArray = Array.isArray(companyId) ? companyId : [companyId];
 
@@ -305,7 +306,7 @@ const forgotPassword = async (req, res) => {
 
 const verifyOTPAndUpdatePassword = async (req, res) => {
     try {
-        const {email, otp, newPassword } = req.body;
+        const { email, otp, newPassword } = req.body;
 
         const [storedOTP, _] = await User.findOTP(email);
 

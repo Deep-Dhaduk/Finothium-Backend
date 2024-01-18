@@ -15,7 +15,10 @@ const createUserSchema = Joi.object({
     })
 ).required(),
   status: Joi.string().required(),
-  roleId: Joi.number().required(),
+  role: Joi.object({
+    roleId: Joi.number().integer().required(),
+    role: Joi.string().required(),
+}).required(),
   createdBy: Joi.number().required(),
   updatedBy: Joi.number().required()
 });

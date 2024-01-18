@@ -31,7 +31,6 @@ const CreateCommon = async (req, res) => {
 
 const ListCommon = async (req, res, next) => {
     const token = getDecodeToken(req)
-    console.log(token, "Decoded token");
     try {
         const { q = '', id } = req.query;
 

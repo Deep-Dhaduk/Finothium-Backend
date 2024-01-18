@@ -1,10 +1,10 @@
 const db = require('../db/dbconnection')
 
 class Transfer {
-    constructor(tenantId, transactionDate, paymentType, fromAccount, toAccount, amount, description, createdBy, updatedBy) {
+    constructor(tenantId, transactionDate, paymentType_Id, fromAccount, toAccount, amount, description, createdBy, updatedBy) {
         this.tenantId = tenantId;
         this.transactionDate = transactionDate;
-        this.paymentType = paymentType;
+        this.paymentType_Id = paymentType_Id;
         this.fromAccount = fromAccount;
         this.toAccount = toAccount;
         this.amount = amount;
@@ -34,7 +34,7 @@ class Transfer {
             INSERT INTO transfer(
                 tenantId,
                 transactionDate,
-                paymentType,
+                paymentType_Id,
                 fromAccount,
                 toAccount,
                 amount,
@@ -46,7 +46,7 @@ class Transfer {
             VALUES(
                 '${this.tenantId}',
                 '${this.transactionDate}',
-                '${this.paymentType}',
+                '${this.paymentType_Id}',
                 '${this.fromAccount}',
                 '${this.toAccount}',
                 '${this.amount}',
@@ -79,7 +79,7 @@ class Transfer {
     }
 
     async update(id) {
-        let sql = `UPDATE transfer SET tenantId='${this.tenantId}',transactionDate='${this.transactionDate}',paymentType='${this.paymentType}',fromAccount='${this.fromAccount}',toAccount='${this.toAccount}',amount='${this.amount}',description='${this.description}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}' WHERE transfer_id = ${id}`;
+        let sql = `UPDATE transfer SET tenantId='${this.tenantId}',transactionDate='${this.transactionDate}',paymentType_Id='${this.paymentType_Id}',fromAccount='${this.fromAccount}',toAccount='${this.toAccount}',amount='${this.amount}',description='${this.description}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}' WHERE transfer_id = ${id}`;
         return db.execute(sql)
 
     };

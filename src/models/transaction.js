@@ -66,12 +66,22 @@ class Transaction {
     };
 
     static findAll(tenantId) {
-        let sql = "SELECT * FROM transaction";
+        let sql = `
+            SELECT t.*,
+                   cp.name as payment_type_name,
+                   cc.name as client_category_name,
+                   a.account_name as account_name
+            FROM transaction t
+            LEFT JOIN common_master cp ON t.payment_type_Id = cp.common_id
+            LEFT JOIN common_master cc ON t.client_category_name_Id = cc.common_id
+            LEFT JOIN account_master a ON t.accountId = a.account_id
+        `;
         if (tenantId) {
-            sql += ` WHERE tenantId = '${tenantId}'`;
+            sql += ` WHERE t.tenantId = '${tenantId}'`;
         }
-        return db.execute(sql)
-    }
+        return db.execute(sql);
+    };
+
     static findById(id) {
         let sql = `SELECT * FROM transaction WHERE transaction_id = ${id}`;
         return db.execute(sql)

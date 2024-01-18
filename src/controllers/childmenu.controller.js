@@ -10,9 +10,7 @@ const CreateChildmenu = async (req, res) => {
             return res.status(400).json({ success: false, message: error.message });
         }
 
-        let { tenantId, menu_name, parent_name, display_rank, status, createdBy, updatedBy } = req.body;
-
-        let { parent_id } = parent_name;
+        let { tenantId, menu_name, parent_id, display_rank, status, createdBy, updatedBy } = req.body;
 
         let childmenu = new Childmenu(tenantId, menu_name, parent_id, display_rank, status, createdBy, updatedBy);
 
@@ -118,10 +116,7 @@ const deleteChildmenu = async (req, res, next) => {
 
 const updateChildmenu = async (req, res, next) => {
     try {
-        let { tenantId, menu_name, parent, display_rank, status, createdBy, updatedBy } = req.body;
-
-        let { parent_id } = parent;
-
+        let { tenantId, menu_name, parent_id, display_rank, status, createdBy, updatedBy } = req.body;
         let childmenu = new Childmenu(tenantId, menu_name, parent_id, display_rank, status, createdBy, updatedBy)
         let Id = req.params.id;
         let [findchildmenu, _] = await Childmenu.findById(Id);

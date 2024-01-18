@@ -29,7 +29,6 @@ class Account {
 
     async save() {
         try {
-
             let sql = `
             INSERT INTO account_master(
                 tenantId,
@@ -64,9 +63,10 @@ class Account {
 
     static findAll(tenantId) {
         let sql = `
-            SELECT a.*, c.name as group_name
+            SELECT a.*, c.name as group_name, ct.name as account_type_name
             FROM account_master a
             LEFT JOIN common_master c ON a.group_name_Id = c.common_id
+            LEFT JOIN common_master ct ON a.account_type_Id = ct.common_id
         `;
         if (tenantId) {
             sql += ` WHERE a.tenantId = '${tenantId}'`;

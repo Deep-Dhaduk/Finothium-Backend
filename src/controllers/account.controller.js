@@ -46,9 +46,6 @@ const ListAccount = async (req, res, next) => {
 
         const accountResult = await Account.findAll(token.tenantId);
 
-        for (const account of accountResult[0]) {
-            console.log(account.group_name);
-        }
         let responseData = {
             success: true,
             message: 'Account List Successfully!',

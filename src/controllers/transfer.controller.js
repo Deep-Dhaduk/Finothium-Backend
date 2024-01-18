@@ -10,13 +10,9 @@ const CreateTransfer = async (req, res) => {
             return res.status(400).json({ success: false, message: error.message });
         };
 
-        let { tenantId, transactionDate, paymentType, fromAccount, toAccount, amount, description, createdBy } = req.body;
+        let { tenantId, transactionDate, paymentType_Id, fromAccount, toAccount, amount, description, createdBy } = req.body;
 
-        let { paymentType_Id } = paymentType;
-        let { fromAccount_Id } = fromAccount;
-        let { toAccount_Id } = toAccount;
-
-        let transfer = new Transfer(tenantId, transactionDate, paymentType_Id, fromAccount_Id, toAccount_Id, amount, description, createdBy);
+        let transfer = new Transfer(tenantId, transactionDate, paymentType_Id, fromAccount, toAccount, amount, description, createdBy);
 
         transfer = await transfer.save()
 
@@ -120,13 +116,9 @@ const deleteTransfer = async (req, res, next) => {
 
 const updateTransfer = async (req, res, next) => {
     try {
-        let { tenantId, transactionDate, paymentType, fromAccount, toAccount, amount, description, updatedBy } = req.body;
+        let { tenantId, transactionDate, paymentType_Id, fromAccount, toAccount, amount, description, updatedBy } = req.body;
 
-        let { paymentType_Id } = paymentType;
-        let { fromAccount_Id } = fromAccount;
-        let { toAccount_Id } = toAccount;
-
-        let transfer = new Transfer(tenantId, transactionDate, paymentType_Id, fromAccount_Id, toAccount_Id, amount, description, updatedBy)
+        let transfer = new Transfer(tenantId, transactionDate, paymentType_Id, fromAccount, toAccount, amount, description, updatedBy)
         let Id = req.params.id;
         let [findtransfer, _] = await Transfer.findById(Id);
         if (!findtransfer) {

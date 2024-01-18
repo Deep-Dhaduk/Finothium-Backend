@@ -63,12 +63,22 @@ class Transfer {
     };
 
     static findAll(tenantId) {
-        let sql = "SELECT * FROM transfer";
+        let sql = `
+            SELECT t.*,
+                   cp.name as paymentType_name,
+                   af.account_name as fromAccount_name,
+                   at.account_name as toAccount_name
+            FROM transfer t
+            LEFT JOIN common_master cp ON t.paymentType_Id = cp.common_id
+            LEFT JOIN account_master af ON t.fromAccount = af.account_id
+            LEFT JOIN account_master at ON t.toAccount = at.account_id
+        `;
         if (tenantId) {
-            sql += ` WHERE tenantId = '${tenantId}'`;
+            sql += ` WHERE t.tenantId = '${tenantId}'`;
         }
-        return db.execute(sql)
+        return db.execute(sql);
     }
+
     static findById(id) {
         let sql = `SELECT * FROM transfer WHERE transfer_id = ${id}`;
         return db.execute(sql)

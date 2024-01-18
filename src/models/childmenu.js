@@ -58,12 +58,18 @@ class Childmenu {
 
 
     static findAll(tenantId) {
-        let sql = "SELECT * FROM childmenu_master";
+        let sql = `
+            SELECT c.*,
+                   p.menu_name as parent_menu_name
+            FROM childmenu_master c
+            LEFT JOIN parentmenu_master p ON c.parent_id = p.id
+        `;
         if (tenantId) {
-            sql += ` WHERE tenantId = '${tenantId}'`;
+            sql += ` WHERE c.tenantId = '${tenantId}'`;
         }
-        return db.execute(sql)
-    }
+        return db.execute(sql);
+    };
+
     static findById(id) {
         let sql = `SELECT * FROM childmenu_master WHERE id = ${id}`;
         return db.execute(sql)
@@ -74,7 +80,7 @@ class Childmenu {
     }
 
     async update(id) {
-        let sql = `UPDATE childmenu_master SET tenantId='${this.tenantId}',menu_name='${this.menu_name}',parent_id='${this.parent_id}',display_rank='${this.display_rank}',status='${this.status}', createdBy='${this. createdBy}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}' WHERE id = ${id}`;
+        let sql = `UPDATE childmenu_master SET tenantId='${this.tenantId}',menu_name='${this.menu_name}',parent_id='${this.parent_id}',display_rank='${this.display_rank}',status='${this.status}', createdBy='${this.createdBy}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}' WHERE id = ${id}`;
         return db.execute(sql)
 
     };

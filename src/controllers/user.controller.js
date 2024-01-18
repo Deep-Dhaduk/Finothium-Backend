@@ -13,16 +13,14 @@ const CreateUser = async (req, res) => {
             return res.status(400).json({ success: false, message: error.message });
         }
 
-        let { tenantId, username, fullname, email, password, confirmpassword, profile_image, companies, status, createdBy, updatedBy, role } = req.body;
+        let { tenantId, username, fullname, email, password, confirmpassword, profile_image, companies, status, createdBy, updatedBy, roleId } = req.body;
 
         if (!Array.isArray(companies)) {
             return res.status(400).json({
                 success: false,
-                message: "Companies must be an array of objects."
+                message: "Companies must be an array of integers (companyId)."
             });
         }
-
-        let { roleId } = role;
 
         let user = new User(tenantId, username, fullname, email, password, confirmpassword, profile_image, null, status, createdBy, updatedBy, roleId);
 
@@ -35,13 +33,11 @@ const CreateUser = async (req, res) => {
 
         let companyAccessResults = [];
 
-        for (const companyInfo of companies) {
-            const { companyId, companyName } = companyInfo;
-
+        for (const companyId of companies) {
             let companyAccess = new CompanyAccess(tenantId, newUser[0].insertId, [companyId], createdBy);
             let companyAccessResult = await companyAccess.save();
 
-            companyAccessResults.push({ companyId, companyName, companyAccessResult });
+            companyAccessResults.push({ companyId, companyAccessResult });
         }
 
         res.status(200).json({
@@ -232,13 +228,11 @@ const deleteUser = async (req, res, next) => {
 
 const updateUser = async (req, res, next) => {
     try {
-        let { tenantId, username, fullname, email, password, confirmpassword, profile_image, companyId, status, createdBy, updatedBy, role } = req.body;
+        let { tenantId, username, fullname, email, password, confirmpassword, profile_image, companyId, status, createdBy, updatedBy, roleId } = req.body;
 
         if (!companyId) {
             throw new Error("companyId is required for updating user.");
         };
-
-        let { roleId } = role;
 
         const companyIdArray = Array.isArray(companyId) ? companyId : [companyId];
 
@@ -257,7 +251,7 @@ const updateUser = async (req, res, next) => {
         res.status(200).json({
             success: true,
             message: "User Successfully Updated",
-            record: { user },
+            record: { updateuser },
             returnOriginal: false,
             runValidators: true
         });

@@ -9,16 +9,10 @@ const createUserSchema = Joi.object({
   confirmpassword: Joi.string().valid(Joi.ref('password')).required(),
   profile_image: Joi.string().allow(''),
   companies: Joi.array().items(
-    Joi.object({
-        companyId: Joi.required(),
-        companyName: Joi.required()
-    })
-).required(),
+    Joi.number().integer().required()
+  ).required(),
   status: Joi.string().required(),
-  role: Joi.object({
-    roleId: Joi.number().integer().required(),
-    role: Joi.string().required(),
-}).required(),
+  roleId: Joi.number().integer().required(),
   createdBy: Joi.number().required(),
   updatedBy: Joi.number().required()
 });

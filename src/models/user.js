@@ -78,13 +78,21 @@ class User {
     }
 
     static findAll(tenantId) {
-        let sql = "SELECT * FROM user_master";
+        let sql = `
+            SELECT u.*,
+                   r.roleName,
+                   GROUP_CONCAT(c.company_name) AS companyNames
+            FROM user_master u
+            LEFT JOIN role_master r ON u.roleId = r.id
+            LEFT JOIN company_access ca ON u.id = ca.user_id
+            LEFT JOIN company_master c ON ca.company_id = c.id
+        `;
         if (tenantId) {
-            sql += ` WHERE tenantId = '${tenantId}'`;
+            sql += ` WHERE u.tenantId = '${tenantId}'`;
         }
-        return db.execute(sql)
+        sql += ' GROUP BY u.id';
+        return db.execute(sql);
     }
-
     static findById(id) {
         let sql = `SELECT * FROM user_master WHERE id = ${id}`;
         return db.execute(sql)
@@ -116,6 +124,19 @@ class User {
         return db.execute(sql);
     };
 
+    async update(id) {
+        const hashedPassword = await bcrypt.hash(this.password, 8);
+
+        const companyIdArray = Array.isArray(this.companyId) ? this.companyId : [this.companyId];
+        const companyIdString = companyIdArray.join(',');
+
+        // Fetch company names
+        const [companyResult, _] = await db.execute(`SELECT company_name FROM company_master WHERE id IN (${companyIdString})`);
+        const companyNames = companyResult.map(company => company.company_name).join(',');
+
+        let sql = `UPDATE user_master SET tenantId='${this.tenantId}',username='${this.username}',fullname='${this.fullname}',email='${this.email}',password='${hashedPassword}',confirmpassword='${hashedPassword}',profile_image='${this.profile_image}',companyId='${companyIdString}',companyNames='${companyNames}',status='${this.status}',createdBy='${this.createdBy}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}',roleId='${this.roleId}' WHERE id = ${id}`;
+        return db.execute(sql);
+    };
     static saveOTP(email, otp) {
         try {
             let sql = `

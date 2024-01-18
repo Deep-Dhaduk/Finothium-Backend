@@ -10,10 +10,7 @@ const CreateTransaction = async (req, res) => {
             return res.status(400).json({ success: false, message: error.message });
         };
 
-        let { tenantId, transaction_date, transaction_type, payment_type, client_category_name, account_name, amount, description, createdBy } = req.body;
-        let { payment_type_Id } = payment_type;
-        let { client_category_name_Id } = client_category_name;
-        let { accountId } = account_name;
+        let { tenantId, transaction_date, transaction_type, payment_type_Id, client_category_name_Id, accountId, amount, description, createdBy } = req.body;
         let transaction = new Transaction(tenantId, transaction_date, transaction_type, payment_type_Id, client_category_name_Id, accountId, amount, description, createdBy);
 
         transaction = await transaction.save()
@@ -119,12 +116,7 @@ const deleteTransaction = async (req, res, next) => {
 
 const updateTransaction = async (req, res, next) => {
     try {
-        let { tenantId, transaction_date, transaction_type, payment_type, client_category_name, account_name, amount, description, updatedBy } = req.body;
-
-        let { payment_type_Id } = payment_type;
-        let { client_category_name_Id } = client_category_name;
-        let { accountId } = account_name;
-
+        let { tenantId, transaction_date, transaction_type, payment_type_Id, client_category_name_Id, accountId, amount, description, updatedBy } = req.body;
         let transaction = new Transaction(tenantId, transaction_date, transaction_type, payment_type_Id, client_category_name_Id, accountId, amount, description, updatedBy)
         let Id = req.params.id;
         let [findtransaction, _] = await Transaction.findById(Id);

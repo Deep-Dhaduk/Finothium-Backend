@@ -63,15 +63,24 @@ class Account {
     }
 
     static findAll(tenantId) {
-        let sql = "SELECT * FROM account_master";
+        let sql = `
+            SELECT a.*, c.name as group_name
+            FROM account_master a
+            LEFT JOIN common_master c ON a.group_name_Id = c.common_id
+        `;
         if (tenantId) {
-            sql += ` WHERE tenantId = '${tenantId}'`;
+            sql += ` WHERE a.tenantId = '${tenantId}'`;
         }
-        return db.execute(sql)
-    }
+        return db.execute(sql);
+    };
+
     static findById(id) {
-        let sql = `SELECT * FROM account_master WHERE account_id = ${id}`;
-        return db.execute(sql)
+        let sql = `
+            SELECT *
+            FROM account_master
+            WHERE account_id = ${id}
+        `;
+        return db.execute(sql);
     }
     static delete(id) {
         let sql = `DELETE FROM account_master WHERE account_id = ${id}`;

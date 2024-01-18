@@ -5,7 +5,7 @@ const router = express.Router();
 
 router.get(
     "/list-payment",
-    // auth.verifyToken,
+    auth.verifyToken,
     Reportcontroller.ListReport
 );
 

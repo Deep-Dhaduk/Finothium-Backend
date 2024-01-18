@@ -8,7 +8,7 @@ const ListReport = async (req, res, next) => {
         res.status(200).json({
             success: true,
             message: "Report List Successfully!",
-            data: report
+            data: report[0]
         });
     } catch (error) {
         console.log(error);

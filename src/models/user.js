@@ -116,25 +116,7 @@ class User {
     async update(id) {
         const hashedPassword = await bcrypt.hash(this.password, 8);
 
-        const companyIdArray = Array.isArray(this.companyId) ? this.companyId : [this.companyId];
-
-        const companyIdString = companyIdArray.join(',');
-
-        let sql = `UPDATE user_master SET tenantId='${this.tenantId}',username='${this.username}',fullname='${this.fullname}',email='${this.email}',password='${hashedPassword}',confirmpassword='${hashedPassword}',profile_image='${this.profile_image}',companyId='${companyIdString}',status='${this.status}',createdBy='${this.createdBy}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}',roleId='${this.roleId}' WHERE id = ${id}`;
-        return db.execute(sql);
-    };
-
-    async update(id) {
-        const hashedPassword = await bcrypt.hash(this.password, 8);
-
-        const companyIdArray = Array.isArray(this.companyId) ? this.companyId : [this.companyId];
-        const companyIdString = companyIdArray.join(',');
-
-        // Fetch company names
-        const [companyResult, _] = await db.execute(`SELECT company_name FROM company_master WHERE id IN (${companyIdString})`);
-        const companyNames = companyResult.map(company => company.company_name).join(',');
-
-        let sql = `UPDATE user_master SET tenantId='${this.tenantId}',username='${this.username}',fullname='${this.fullname}',email='${this.email}',password='${hashedPassword}',confirmpassword='${hashedPassword}',profile_image='${this.profile_image}',companyId='${companyIdString}',companyNames='${companyNames}',status='${this.status}',createdBy='${this.createdBy}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}',roleId='${this.roleId}' WHERE id = ${id}`;
+        let sql = `UPDATE user_master SET tenantId='${this.tenantId}',username='${this.username}',fullname='${this.fullname}',email='${this.email}',password='${hashedPassword}',confirmpassword='${hashedPassword}',profile_image='${this.profile_image}',status='${this.status}',createdBy='${this.createdBy}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}',roleId='${this.roleId}' WHERE id = ${id}`;
         return db.execute(sql);
     };
     static saveOTP(email, otp) {

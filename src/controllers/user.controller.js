@@ -24,10 +24,10 @@ const CreateUser = async (req, res) => {
 
         let user = new User(tenantId, username, fullname, email, password, confirmpassword, profile_image, null, status, createdBy, updatedBy, roleId);
 
-        if (req.file && req.file.buffer) {
-            const imageBase64 = req.file.buffer.toString('base64');
-            user.profile_image = imageBase64;
-        }
+        // if (req.file && req.file.buffer) {
+        //     const imageBase64 = req.file.buffer.toString('base64');
+        //     user.profile_image = imageBase64;
+        // }
 
         let newUser = await user.save();
 

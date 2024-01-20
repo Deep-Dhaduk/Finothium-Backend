@@ -7,7 +7,6 @@ const app = express();
 const verifyToken = async (req, res, next) => {
     try {
         const decoded = getDecodeToken(req);
-
         const [user, _] = await User.findByEmail(decoded.email);
 
         if (!user) {

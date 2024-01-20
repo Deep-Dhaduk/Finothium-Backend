@@ -9,7 +9,7 @@ const createCompanySchema = Joi.object({
     gstin: Joi.string().required(),
     status: Joi.string().required(),
     createdBy: Joi.number().integer().required(),
-    updatedBy: Joi.number().integer().required(),
+    updatedBy: Joi.number().integer().required()
 });
 
 module.exports = {

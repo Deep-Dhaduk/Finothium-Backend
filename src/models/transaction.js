@@ -1,7 +1,7 @@
 const db = require('../db/dbconnection')
 
 class Transaction {
-    constructor(tenantId, transaction_date, transaction_type, payment_type_Id, client_category_name_Id, accountId, amount, description, createdBy, updatedBy) {
+    constructor(tenantId, transaction_date, transaction_type, payment_type_Id, client_category_name_Id, accountId, amount, description, createdBy, updatedBy,companyId) {
         this.tenantId = tenantId;
         this.transaction_date = transaction_date;
         this.transaction_type = transaction_type;
@@ -12,6 +12,7 @@ class Transaction {
         this.description = description;
         this.createdBy = createdBy;
         this.updatedBy = updatedBy;
+        this.companyId = companyId;
     }
 
     dateandtime = () => {

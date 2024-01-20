@@ -2,15 +2,32 @@ const Report = require("../models/reports");
 const { getDecodeToken } = require('../middlewares/decoded');
 
 const ListPaymentReport = async (req, res, next) => {
-    const token = getDecodeToken(req);
+    const tokenInfo = getDecodeToken(req);
+
+    if (!tokenInfo.success) {
+        return res.status(401).json({
+            success: false,
+            message: tokenInfo.message,
+        });
+    }
+
     try {
         const { q = '' } = req.query;
+        const { tenantId, companyId } = tokenInfo.decodedToken;
 
-        const report = await Report.findAllPayment(token.tenantId);
+        // Add companyId check to ensure the companyId in the token matches the one used in the query
+        if (companyId && req.query.companyId && companyId !== req.query.companyId) {
+            return res.status(403).json({
+                success: false,
+                message: 'Unauthorized: CompanyId in token does not match the requested companyId',
+            });
+        }
+
+        const report = await Report.findAllPayment(tenantId, companyId);
         let responseData = {
             success: true,
             message: 'Payment Report List Successfully!',
-            data: report[0]
+            data: report[0],
         };
 
         if (q) {
@@ -28,14 +45,14 @@ const ListPaymentReport = async (req, res, next) => {
                 responseData = {
                     ...responseData,
                     data: filteredData,
-                    total: filteredData.length
+                    total: filteredData.length,
                 };
             } else {
                 responseData = {
                     ...responseData,
                     message: 'No matching Payment Report found',
                     data: [],
-                    total: 0
+                    total: 0,
                 };
             }
         }
@@ -46,6 +63,7 @@ const ListPaymentReport = async (req, res, next) => {
         next(error);
     }
 };
+
 
 
 const ListClientReport = async (req, res, next) => {

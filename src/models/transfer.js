@@ -1,7 +1,7 @@
 const db = require('../db/dbconnection')
 
 class Transfer {
-    constructor(tenantId, transactionDate, paymentType_Id, fromAccount, toAccount, amount, description, createdBy, updatedBy) {
+    constructor(tenantId, transactionDate, paymentType_Id, fromAccount, toAccount, amount, description, createdBy, updatedBy, companyId) {
         this.tenantId = tenantId;
         this.transactionDate = transactionDate;
         this.paymentType_Id = paymentType_Id;
@@ -11,6 +11,7 @@ class Transfer {
         this.description = description;
         this.createdBy = createdBy;
         this.updatedBy = updatedBy;
+        this.companyId = companyId;
     }
 
     dateandtime = () => {

@@ -1,10 +1,21 @@
 const User = require("../models/user");
-const CompanyAccess = require('../models/company_access')
+const CompanyAccess = require('../models/company_access');
+const { upload } = require('../middlewares/upload');
+const fs = require('fs');
+const path = require('path');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt')
 const emailService = require('../service/email.service');
 const { createUserSchema } = require('../validation/user.validation');
 const { getDecodeToken } = require('../middlewares/decoded');
+
+
+const uploadImage = (file) => {
+    const fileName = `${Date.now()}-${file.originalname}`;
+    const filePath = path.join(__dirname, './src/public', fileName);
+    fs.writeFileSync(filePath, file.buffer);
+    return fileName;
+};
 
 const CreateUser = async (req, res) => {
     try {
@@ -24,10 +35,9 @@ const CreateUser = async (req, res) => {
 
         let user = new User(tenantId, username, fullname, email, password, confirmpassword, profile_image, null, status, createdBy, updatedBy, roleId);
 
-        // if (req.file && req.file.buffer) {
-        //     const imageBase64 = req.file.buffer.toString('base64');
-        //     user.profile_image = imageBase64;
-        // }
+        if (req.file && req.file.buffer) {
+            user.profile_image = uploadImage(req.file);
+        }
 
         let newUser = await user.save();
 
@@ -78,8 +88,34 @@ const loginUser = async (req, res) => {
             });
         }
 
+        const userId = user[0].id;
+        const companyResult = await CompanyAccess.findAll(user[0].tenantId);
+
+        const userCompaniesMap = {};
+        companyResult[0].forEach(access => {
+            const accessUserId = access.user_id;
+            if (!userCompaniesMap[accessUserId]) {
+                userCompaniesMap[accessUserId] = [];
+            }
+            userCompaniesMap[accessUserId].push(access.company_id);
+        });
+
+        const userWithCompanies = {
+            ...user[0],
+            companyId: userCompaniesMap[userId] || []
+        };
+
+        // Generate JWT token with companyId in the payload
+        const tokenPayload = {
+            userId: userWithCompanies.id,
+            email: userWithCompanies.email,
+            tenantId: userWithCompanies.tenantId,
+            roleId: userWithCompanies.roleId,
+            companyId: userWithCompanies.companyId
+        };
+
         const token = jwt.sign(
-            { userId: user[0].id, email: user[0].email, tenantId: user[0].tenantId, roleId: user[0].roleId, userId: user[0].id },
+            tokenPayload,
             process.env.JWT_SECRET,
             { expiresIn: process.env.JWT_EXPIRES_IN }
         );
@@ -87,9 +123,10 @@ const loginUser = async (req, res) => {
         return res.status(200).json({
             success: true,
             message: 'Login successful',
-            userData: user,
+            userData: userWithCompanies,
             token: token
         });
+
     } catch (error) {
         console.log(error);
         return res.status(500).json({
@@ -98,20 +135,34 @@ const loginUser = async (req, res) => {
     }
 };
 
+
+
 const findOneRec = async (req, res) => {
     try {
-        const userEmail = req.user.email;
+        const tokenInfo = getDecodeToken(req);
+
+        if (!tokenInfo.success) {
+            return res.status(401).json({
+                success: false,
+                message: tokenInfo.message,
+            });
+        }
+
+        const userEmail = tokenInfo.decodedToken.email;
 
         let checkUser = await User.findByEmail(userEmail);
 
         if (!checkUser[0]) {
             return res.status(404).json({ success: false, message: 'User not found' });
         }
+
         return res.status(200).json({ success: true, data: checkUser[0] });
+
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }
 };
+
 
 const ListUser = async (req, res, next) => {
     const token = getDecodeToken(req)

@@ -88,7 +88,7 @@ const loginUser = async (req, res) => {
             });
         }
 
-        const userId = user[0].id;
+        const  userId = user[0].id;
         const companyResult = await CompanyAccess.findAll(user[0].tenantId);
 
         const userCompaniesMap = {};
@@ -105,7 +105,6 @@ const loginUser = async (req, res) => {
             companyId: userCompaniesMap[userId] || []
         };
 
-        // Generate JWT token with companyId in the payload
         const tokenPayload = {
             userId: userWithCompanies.id,
             email: userWithCompanies.email,
@@ -135,8 +134,6 @@ const loginUser = async (req, res) => {
     }
 };
 
-
-
 const findOneRec = async (req, res) => {
     try {
         const tokenInfo = getDecodeToken(req);
@@ -156,7 +153,19 @@ const findOneRec = async (req, res) => {
             return res.status(404).json({ success: false, message: 'User not found' });
         }
 
-        return res.status(200).json({ success: true, data: checkUser[0] });
+        const userRecord = checkUser[0];
+
+        const userId = userRecord[0].id;
+
+        const tokenCompanyIdArray = tokenInfo.decodedToken.companyId || [];
+
+        const responseData = {
+            ...userRecord[0],
+            companyId: tokenCompanyIdArray,
+            id: userId
+        };
+
+        return res.status(200).json({ success: true, data: responseData });
 
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });

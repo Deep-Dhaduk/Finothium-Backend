@@ -9,7 +9,6 @@ const createTransferSchema = Joi.object({
     amount: Joi.number().positive().required(),
     description: Joi.string().required(),
     createdBy: Joi.number().integer().required(),
-    companyId: Joi.number().integer().required()
 });
 
 module.exports = {

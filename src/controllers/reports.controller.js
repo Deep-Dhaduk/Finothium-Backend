@@ -64,18 +64,33 @@ const ListPaymentReport = async (req, res, next) => {
     }
 };
 
-
-
 const ListClientReport = async (req, res, next) => {
-    const token = getDecodeToken(req);
+    const tokenInfo = getDecodeToken(req);
+
+    if (!tokenInfo.success) {
+        return res.status(401).json({
+            success: false,
+            message: tokenInfo.message,
+        });
+    }
+
     try {
         const { q = '' } = req.query;
+        const { tenantId, companyId } = tokenInfo.decodedToken;
 
-        const report = await Report.findAllClient(token.tenantId);
+        // Add companyId check to ensure the companyId in the token matches the one used in the query
+        if (companyId && req.query.companyId && companyId !== req.query.companyId) {
+            return res.status(403).json({
+                success: false,
+                message: 'Unauthorized: CompanyId in token does not match the requested companyId',
+            });
+        }
+
+        const report = await Report.findAllClient(tenantId, companyId);
         let responseData = {
             success: true,
             message: 'Client Report List Successfully!',
-            data: report[0]
+            data: report[0],
         };
 
         if (q) {
@@ -93,14 +108,14 @@ const ListClientReport = async (req, res, next) => {
                 responseData = {
                     ...responseData,
                     data: filteredData,
-                    total: filteredData.length
+                    total: filteredData.length,
                 };
             } else {
                 responseData = {
                     ...responseData,
-                    message: 'No matching category Report found',
+                    message: 'No matching Client Report found',
                     data: [],
-                    total: 0
+                    total: 0,
                 };
             }
         }
@@ -113,15 +128,32 @@ const ListClientReport = async (req, res, next) => {
 };
 
 const ListCategoryReport = async (req, res, next) => {
-    const token = getDecodeToken(req);
+    const tokenInfo = getDecodeToken(req);
+
+    if (!tokenInfo.success) {
+        return res.status(401).json({
+            success: false,
+            message: tokenInfo.message,
+        });
+    }
+
     try {
         const { q = '' } = req.query;
+        const { tenantId, companyId } = tokenInfo.decodedToken;
 
-        const report = await Report.findAllCategory(token.tenantId);
+        // Add companyId check to ensure the companyId in the token matches the one used in the query
+        if (companyId && req.query.companyId && companyId !== req.query.companyId) {
+            return res.status(403).json({
+                success: false,
+                message: 'Unauthorized: CompanyId in token does not match the requested companyId',
+            });
+        }
+
+        const report = await Report.findAllCategory(tenantId, companyId);
         let responseData = {
             success: true,
             message: 'Category Report List Successfully!',
-            data: report[0]
+            data: report[0],
         };
 
         if (q) {
@@ -139,14 +171,14 @@ const ListCategoryReport = async (req, res, next) => {
                 responseData = {
                     ...responseData,
                     data: filteredData,
-                    total: filteredData.length
+                    total: filteredData.length,
                 };
             } else {
                 responseData = {
                     ...responseData,
-                    message: 'No matching category Report found',
+                    message: 'No matching Category Report found',
                     data: [],
-                    total: 0
+                    total: 0,
                 };
             }
         }
@@ -159,15 +191,32 @@ const ListCategoryReport = async (req, res, next) => {
 };
 
 const ListAccountReport = async (req, res, next) => {
-    const token = getDecodeToken(req);
+    const tokenInfo = getDecodeToken(req);
+
+    if (!tokenInfo.success) {
+        return res.status(401).json({
+            success: false,
+            message: tokenInfo.message,
+        });
+    }
+
     try {
         const { q = '' } = req.query;
+        const { tenantId, companyId } = tokenInfo.decodedToken;
 
-        const report = await Report.findAllAccount(token.tenantId);
+        // Add companyId check to ensure the companyId in the token matches the one used in the query
+        if (companyId && req.query.companyId && companyId !== req.query.companyId) {
+            return res.status(403).json({
+                success: false,
+                message: 'Unauthorized: CompanyId in token does not match the requested companyId',
+            });
+        }
+
+        const report = await Report.findAllAccount(tenantId, companyId);
         let responseData = {
             success: true,
             message: 'Account Report List Successfully!',
-            data: report[0]
+            data: report[0],
         };
 
         if (q) {
@@ -185,14 +234,14 @@ const ListAccountReport = async (req, res, next) => {
                 responseData = {
                     ...responseData,
                     data: filteredData,
-                    total: filteredData.length
+                    total: filteredData.length,
                 };
             } else {
                 responseData = {
                     ...responseData,
-                    message: 'No matching account Report found',
+                    message: 'No matching Account Report found',
                     data: [],
-                    total: 0
+                    total: 0,
                 };
             }
         }
@@ -204,16 +253,34 @@ const ListAccountReport = async (req, res, next) => {
     }
 };
 
+
 const ListGroupReport = async (req, res, next) => {
-    const token = getDecodeToken(req);
+    const tokenInfo = getDecodeToken(req);
+
+    if (!tokenInfo.success) {
+        return res.status(401).json({
+            success: false,
+            message: tokenInfo.message,
+        });
+    }
+
     try {
         const { q = '' } = req.query;
+        const { tenantId, companyId } = tokenInfo.decodedToken;
 
-        const report = await Report.findAllGroup(token.tenantId);
+        // Add companyId check to ensure the companyId in the token matches the one used in the query
+        if (companyId && req.query.companyId && companyId !== req.query.companyId) {
+            return res.status(403).json({
+                success: false,
+                message: 'Unauthorized: CompanyId in token does not match the requested companyId',
+            });
+        }
+
+        const report = await Report.findAllGroup(tenantId, companyId);
         let responseData = {
             success: true,
-            message: 'Group Report List Successfully!',
-            data: report[0]
+            message: 'Category Report List Successfully!',
+            data: report[0],
         };
 
         if (q) {
@@ -231,14 +298,14 @@ const ListGroupReport = async (req, res, next) => {
                 responseData = {
                     ...responseData,
                     data: filteredData,
-                    total: filteredData.length
+                    total: filteredData.length,
                 };
             } else {
                 responseData = {
                     ...responseData,
-                    message: 'No matching group Report found',
+                    message: 'No matching Group Report found',
                     data: [],
-                    total: 0
+                    total: 0,
                 };
             }
         }
@@ -251,15 +318,32 @@ const ListGroupReport = async (req, res, next) => {
 };
 
 const ListCompanyReport = async (req, res, next) => {
-    const token = getDecodeToken(req);
+    const tokenInfo = getDecodeToken(req);
+
+    if (!tokenInfo.success) {
+        return res.status(401).json({
+            success: false,
+            message: tokenInfo.message,
+        });
+    }
+
     try {
         const { q = '' } = req.query;
+        const { tenantId, companyId } = tokenInfo.decodedToken;
 
-        const report = await Report.findAllCompany(token.tenantId);
+        // Add companyId check to ensure the companyId in the token matches the one used in the query
+        if (companyId && req.query.companyId && companyId !== req.query.companyId) {
+            return res.status(403).json({
+                success: false,
+                message: 'Unauthorized: CompanyId in token does not match the requested companyId',
+            });
+        }
+
+        const report = await Report.findAllCompany(tenantId, companyId);
         let responseData = {
             success: true,
             message: 'Company Report List Successfully!',
-            data: report[0]
+            data: report[0],
         };
 
         if (q) {
@@ -277,14 +361,14 @@ const ListCompanyReport = async (req, res, next) => {
                 responseData = {
                     ...responseData,
                     data: filteredData,
-                    total: filteredData.length
+                    total: filteredData.length,
                 };
             } else {
                 responseData = {
                     ...responseData,
-                    message: 'No matching company Report found',
+                    message: 'No matching Company Report found',
                     data: [],
-                    total: 0
+                    total: 0,
                 };
             }
         }

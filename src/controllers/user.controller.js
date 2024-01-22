@@ -1,6 +1,5 @@
 const User = require("../models/user");
 const CompanyAccess = require('../models/company_access');
-const { upload } = require('../middlewares/upload');
 const fs = require('fs');
 const path = require('path');
 const jwt = require('jsonwebtoken');
@@ -9,13 +8,6 @@ const emailService = require('../service/email.service');
 const { createUserSchema } = require('../validation/user.validation');
 const { getDecodeToken } = require('../middlewares/decoded');
 
-
-const uploadImage = (file) => {
-    const fileName = `${Date.now()}-${file.originalname}`;
-    const filePath = path.join(__dirname, './src/public', fileName);
-    fs.writeFileSync(filePath, file.buffer);
-    return fileName;
-};
 
 const CreateUser = async (req, res) => {
     try {
@@ -31,7 +23,34 @@ const CreateUser = async (req, res) => {
                 success: false,
                 message: "Companies must be an array of integers (companyId)."
             });
+        };
+
+        if (profile_image) {
+            const matches = profile_image.match(/^data:(image\/([a-zA-Z]+));base64,(.+)$/);
+
+            if (!matches || matches.length !== 4) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Invalid profile_image format'
+                });
+            }
+
+            const contentType = matches[1];
+            const fileExtension = matches[2];
+            const base64Data = matches[3];
+
+            const buffer = Buffer.from(base64Data, 'base64');
+
+            const fileName = `${Date.now()}-profile.${fileExtension}`;
+            const filePath = path.join(__dirname, 'public', 'Images', fileName);
+
+            fs.mkdirSync(path.dirname(filePath), { recursive: true });
+
+            fs.writeFileSync(filePath, buffer);
+
+            profile_image = fileName;
         }
+
 
         let user = new User(tenantId, username, fullname, email, password, confirmpassword, profile_image, null, status, createdBy, updatedBy, roleId);
 
@@ -67,7 +86,6 @@ const CreateUser = async (req, res) => {
     }
 };
 
-
 const loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -88,7 +106,7 @@ const loginUser = async (req, res) => {
             });
         }
 
-        const  userId = user[0].id;
+        const userId = user[0].id;
         const companyResult = await CompanyAccess.findAll(user[0].tenantId);
 
         const userCompaniesMap = {};
@@ -105,12 +123,14 @@ const loginUser = async (req, res) => {
             companyId: userCompaniesMap[userId] || []
         };
 
+        const singleCompanyId = userWithCompanies.companyId.length > 0 ? userWithCompanies.companyId[0] : null;
+
         const tokenPayload = {
             userId: userWithCompanies.id,
             email: userWithCompanies.email,
             tenantId: userWithCompanies.tenantId,
             roleId: userWithCompanies.roleId,
-            companyId: userWithCompanies.companyId
+            companyId: singleCompanyId
         };
 
         const token = jwt.sign(

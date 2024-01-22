@@ -4,7 +4,7 @@ const createUserSchema = Joi.object({
   tenantId: Joi.number().integer().required(),
   username: Joi.string().required(),
   fullname: Joi.string().required(),
-  email: Joi.string().email().required(),
+  email: Joi.string().required(),
   password: Joi.string().required(),
   confirmpassword: Joi.string().valid(Joi.ref('password')).required(),
   profile_image: Joi.string().allow(''),

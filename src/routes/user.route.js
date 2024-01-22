@@ -2,11 +2,9 @@ const express = require('express');
 const UserController = require('../controllers/user.controller');
 const router = express.Router();
 const auth = require('../middlewares/auth');
-const { upload } = require('../middlewares/upload')
 
 router.post(
     "/create-user",
-    upload.single('profile_image'),
     UserController.CreateUser
 );
 

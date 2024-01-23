@@ -25,6 +25,8 @@ const CreateUser = async (req, res) => {
             });
         };
 
+        let user = new User(tenantId, username, fullname, email, password, confirmpassword, profile_image, null, status, createdBy, updatedBy, roleId);
+
         if (profile_image) {
             const matches = profile_image.match(/^data:(image\/([a-zA-Z]+));base64,(.+)$/);
 
@@ -42,20 +44,16 @@ const CreateUser = async (req, res) => {
             const buffer = Buffer.from(base64Data, 'base64');
 
             const fileName = `${Date.now()}-profile.${fileExtension}`;
-            const filePath = path.join(__dirname, 'public', 'Images', fileName);
+            const filePath = path.join(__dirname, '../public/Images/Profile_Images', fileName);
 
             fs.mkdirSync(path.dirname(filePath), { recursive: true });
 
             fs.writeFileSync(filePath, buffer);
 
             profile_image = fileName;
-        }
 
-
-        let user = new User(tenantId, username, fullname, email, password, confirmpassword, profile_image, null, status, createdBy, updatedBy, roleId);
-
-        if (req.file && req.file.buffer) {
-            user.profile_image = uploadImage(req.file);
+            user.profile_image = fileName;
+            user.profile_image_filename = fileName;
         }
 
         let newUser = await user.save();
@@ -192,9 +190,9 @@ const findOneRec = async (req, res) => {
     }
 };
 
-
 const ListUser = async (req, res, next) => {
-    const token = getDecodeToken(req)
+    const token = getDecodeToken(req);
+    const baseURL = 'http://localhost:8080';
     try {
         const { q = '', id } = req.query;
 
@@ -243,7 +241,6 @@ const ListUser = async (req, res, next) => {
         let userResponse = responseData.data;
         let companyAccessResponse = companyResult[0]
 
-
         const userCompaniesMap = {};
 
         companyAccessResponse.forEach(access => {
@@ -261,6 +258,9 @@ const ListUser = async (req, res, next) => {
 
             if (userCompaniesMap[userId]) {
                 user.companyId = userCompaniesMap[userId];
+                if (user.profile_image_filename) {
+                    user.profile_image_filename = `${baseURL}/Images/Profile_Images/${user.profile_image_filename}`;
+                }
             } else {
                 user.companyId = [];
             }
@@ -278,8 +278,20 @@ const ListUser = async (req, res, next) => {
 
 const getUserById = async (req, res, next) => {
     try {
+        const baseURL = 'http://localhost:8080';
         let userId = req.params.id;
-        let [user, _] = await User.findById(userId);
+        let [user, _] = await User.findOne(userId);
+
+        if (user.length === 0) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+
+        user[0].companyNames = user[0].companyNames ? user[0].companyNames.split(',') : [];
+        user[0].companyIds = user[0].companyIds ? user[0].companyIds.split(',').map(Number) : [];
+
+        if (user[0].profile_image_filename) {
+            user[0].profile_image_filename = `${baseURL}/Images/Profile_Images/${user[0].profile_image_filename}`;
+        }
 
         res.status(200).json({
             success: true,
@@ -288,9 +300,10 @@ const getUserById = async (req, res, next) => {
         });
     } catch (error) {
         console.log(error);
-        next(error)
+        next(error);
     }
 };
+
 
 const deleteUser = async (req, res, next) => {
     try {

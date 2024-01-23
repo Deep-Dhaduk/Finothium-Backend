@@ -1,24 +1,22 @@
 const db = require('../db/dbconnection');
 const bcrypt = require('bcrypt');
-
 class User {
-    constructor(tenantId, username, fullname, email, password, confirmpassword, profile_image, companyId, status, createdBy, updatedBy, roleId) {
+    constructor(tenantId, username, fullname, email, password, confirmpassword, profile_image_filename, companyId, status, createdBy, updatedBy, roleId) {
         this.tenantId = tenantId;
         this.username = username;
         this.fullname = fullname;
         this.email = email;
         this.password = password;
         this.confirmpassword = confirmpassword;
-        this.profile_image = profile_image
+        this.profile_image_filename = profile_image_filename;
         this.companyId = companyId;
         this.status = status;
-        this.createdBy = createdBy
-        this.updatedBy = updatedBy
+        this.createdBy = createdBy;
+        this.updatedBy = updatedBy;
         this.roleId = roleId;
     }
 
     dateandtime = () => {
-
         let d = new Date();
         let yyyy = d.getFullYear();
         let mm = d.getMonth() + 1;
@@ -45,7 +43,7 @@ class User {
                 email,
                 password,
                 confirmpassword,
-                profile_image,
+                profile_image_filename,
                 status,
                 createdBy,
                 createdOn,
@@ -59,7 +57,7 @@ class User {
                 '${this.email}',
                 '${hashedPassword}',
                 '${hashedPassword}',
-                '${this.profile_image}',
+                '${this.profile_image_filename}',
                 '${this.status}',
                 '${this.createdBy}',
                 '${this.dateandtime()}',
@@ -99,10 +97,20 @@ class User {
     }
 
     static findOne(userId) {
-        let sql = `SELECT * FROM user_master WHERE id = ${userId}`;
+        let sql = `
+            SELECT u.*,
+                   r.roleName,
+                   GROUP_CONCAT(c.id) AS companyIds,
+                   GROUP_CONCAT(c.company_name) AS companyNames
+            FROM user_master u
+            LEFT JOIN role_master r ON u.roleId = r.id
+            LEFT JOIN company_access ca ON u.id = ca.user_id
+            LEFT JOIN company_master c ON ca.company_id = c.id
+            WHERE u.id = ${userId}
+            GROUP BY u.id
+        `;
         return db.execute(sql);
     }
-
     static findByEmail(email) {
         let sql = `SELECT * FROM user_master WHERE email = '${email}'`;
         return db.execute(sql);
@@ -140,8 +148,6 @@ class User {
     static updatePassword(email, hashedPassword) {
         let sql = `UPDATE user_master SET password='${hashedPassword}', confirmpassword='${hashedPassword}'WHERE email = '${email}'`;
         return db.execute(sql);
-    }
-
-
-}
+    };
+};
 module.exports = User

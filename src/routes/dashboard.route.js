@@ -4,7 +4,7 @@ const auth = require('../middlewares/auth');
 const router = express.Router();
 
 router.get(
-    "/list-dashboard",
+    "/dashboard-data",
     auth.verifyToken,
     Dashboardcontroller.ListDashboard
 );

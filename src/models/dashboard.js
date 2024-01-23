@@ -1,14 +1,17 @@
-const db = require('../db/dbconnection')
+const db = require('../db/dbconnection');
 
 class Dashboard {
-
-    static findAll(tenantId) {
-        let sql = "SELECT * FROM dashboard";
-        if (tenantId) {
-            sql += ` WHERE tenantId = '${tenantId}'`;
-        }
-        return db.execute(sql)
+    static async calculateDashboardAmounts(tenantId) {
+        try {
+            let sql = "CALL calculate_dashboard_amounts(?)";
+            const [result, _] = await db.execute(sql, [tenantId]);
+            return result;
+        } catch (error) {
+            console.error('Error in findAll:', error);
+            throw error;
+        };
     };
 }
+
 
 module.exports = Dashboard;

@@ -7,7 +7,7 @@ const createCompanySchema = Joi.object({
     authorize_person_name: Joi.string().required(),
     pan: Joi.string().required(),
     gstin: Joi.string().required(),
-    status: Joi.string().required(),
+    status: Joi.number().integer().required(),
     createdBy: Joi.number().integer().required(),
     updatedBy: Joi.number().integer().required()
 });

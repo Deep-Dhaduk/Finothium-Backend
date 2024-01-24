@@ -7,7 +7,7 @@ const createAccountSchema = Joi.object({
     join_date: Joi.date().required(),
     exit_date: Joi.string().allow(""),
     account_type_Id: Joi.number().integer().required(),
-    status: Joi.string().required(),
+    status: Joi.number().integer().required(),
     createdBy: Joi.number().integer().required()
 });
 

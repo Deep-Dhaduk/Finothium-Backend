@@ -11,7 +11,7 @@ const createUserSchema = Joi.object({
   companies: Joi.array().items(
     Joi.number().integer().required()
   ).required(),
-  status: Joi.string().required(),
+  status: Joi.number().integer().required(),
   roleId: Joi.number().integer().required(),
   createdBy: Joi.number().required(),
   updatedBy: Joi.number().required()

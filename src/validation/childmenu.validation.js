@@ -5,7 +5,7 @@ const createChildmenuSchema = Joi.object({
     menu_name: Joi.string().required(),
     parent_id: Joi.number().integer().required(),
     display_rank: Joi.number().integer().required(),
-    status: Joi.string().required(),
+    status: Joi.number().integer().required(),
     createdBy: Joi.number().integer().required(),
     updatedBy: Joi.number().integer().required()
 });

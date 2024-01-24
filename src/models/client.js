@@ -31,18 +31,18 @@ class Client {
                 tenantId,
                 clientName,
                 status,
-                companyId,
                 createdBy,
                 createdOn,
+                updatedBy,
                 updatedOn
             )
             VALUES(
                 '${this.tenantId}',
                 '${this.clientName}',
                 '${this.status}',
-                '${this.companyId}',
                 '${this.createdBy}',
                 '${this.dateandtime()}',
+                '${this.updatedBy}',
                 '${this.dateandtime()}'
             )`;
             return db.execute(sql)
@@ -69,7 +69,7 @@ class Client {
     }
 
     async update(id) {
-        let sql = `UPDATE client_master SET tenantId='${this.tenantId}',clientName='${this.clientName}',status='${this.status}',companyId='${this.companyId}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}' WHERE clientId = ${id}`;
+        let sql = `UPDATE client_master SET tenantId='${this.tenantId}',clientName='${this.clientName}',status='${this.status}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}' WHERE clientId = ${id}`;
         return db.execute(sql)
 
     };

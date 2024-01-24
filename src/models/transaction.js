@@ -44,6 +44,7 @@ class Transaction {
                 description,
                 createdBy,
                 createdOn,
+                updatedBy,
                 updatedOn
             )
             VALUES(
@@ -57,6 +58,7 @@ class Transaction {
                 '${this.description}',
                 '${this.createdBy}',
                 '${this.dateandtime()}',
+                '${this.updatedBy}',
                 '${this.dateandtime()}'
             )`;
             return db.execute(sql)

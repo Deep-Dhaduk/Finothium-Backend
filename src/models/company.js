@@ -74,7 +74,6 @@ class Company {
         }
     }
 
-
     static findAll(tenantId) {
         let sql = "SELECT * FROM company_master";
         if (tenantId) {

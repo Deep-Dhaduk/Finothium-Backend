@@ -10,8 +10,8 @@ const CreateRole = async (req, res) => {
             return res.status(400).json({ success: false, message: error.message });
         };
 
-        let { tenantId, rolename, status, createdBy } = req.body;
-        let role = new Role(tenantId, rolename, status, createdBy);
+        let { tenantId, rolename, status, createdBy, updatedBy } = req.body;
+        let role = new Role(tenantId, rolename, status, createdBy, updatedBy);
 
         role = await role.save()
 

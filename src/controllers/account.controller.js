@@ -10,8 +10,8 @@ const CreateAccount = async (req, res) => {
             return res.status(400).json({ success: false, message: error.message });
         }
 
-        let { tenantId, account_name, group_name_Id, join_date, exit_date, account_type_Id, status, createdBy } = req.body;
-        let account = new Account(tenantId, account_name, group_name_Id, join_date, exit_date, account_type_Id, status, createdBy);
+        let { tenantId, account_name, group_name_Id, join_date, exit_date, account_type_Id, status, createdBy, updatedBy } = req.body;
+        let account = new Account(tenantId, account_name, group_name_Id, join_date, exit_date, account_type_Id, status, createdBy, updatedBy);
 
         account = await account.save()
 

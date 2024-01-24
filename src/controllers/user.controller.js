@@ -432,7 +432,7 @@ const resetPassword = async (req, res) => {
                 success: false,
                 message: 'User not found'
             });
-        }
+        };
 
         const isValidPassword = await User.comparePassword(oldPassword, user[0].password);
         if (!isValidPassword) {

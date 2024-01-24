@@ -10,8 +10,8 @@ const CreateTransfer = async (req, res) => {
             return res.status(400).json({ success: false, message: error.message });
         };
 
-        let { tenantId, transactionDate, paymentType_Id, fromAccount, toAccount, amount, description, createdBy } = req.body;
-        let transfer = new Transfer(tenantId, transactionDate, paymentType_Id, fromAccount, toAccount, amount, description, createdBy);
+        let { tenantId, transactionDate, paymentType_Id, fromAccount, toAccount, amount, description, createdBy, updatedBy } = req.body;
+        let transfer = new Transfer(tenantId, transactionDate, paymentType_Id, fromAccount, toAccount, amount, description, createdBy, updatedBy);
 
         transfer = await transfer.save()
 

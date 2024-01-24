@@ -10,8 +10,8 @@ const CreateCommon = async (req, res) => {
             return res.status(400).json({ success: false, message: error.message });
         }
 
-        let { tenantId, name, type, status, createdBy } = req.body;
-        let common = new Common(tenantId, name, type, status, createdBy);
+        let { tenantId, name, type, status, createdBy, updatedBy } = req.body;
+        let common = new Common(tenantId, name, type, status, createdBy, updatedBy);
 
         common = await common.save()
 

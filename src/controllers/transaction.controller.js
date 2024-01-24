@@ -10,8 +10,8 @@ const CreateTransaction = async (req, res) => {
             return res.status(400).json({ success: false, message: error.message });
         };
 
-        let { tenantId, transaction_date, transaction_type, payment_type_Id, client_category_name_Id, accountId, amount, description, createdBy } = req.body;
-        let transaction = new Transaction(tenantId, transaction_date, transaction_type, payment_type_Id, client_category_name_Id, accountId, amount, description, createdBy);
+        let { tenantId, transaction_date, transaction_type, payment_type_Id, client_category_name_Id, accountId, amount, description, createdBy, updatedBy } = req.body;
+        let transaction = new Transaction(tenantId, transaction_date, transaction_type, payment_type_Id, client_category_name_Id, accountId, amount, description, createdBy, updatedBy);
 
         transaction = await transaction.save()
 

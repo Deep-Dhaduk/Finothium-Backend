@@ -10,8 +10,8 @@ const CreateClient = async (req, res) => {
             return res.status(400).json({ success: false, message: error.message });
         }
 
-        let { tenantId, clientName, status, companyId, createdBy } = req.body;
-        let client = new Client(tenantId, clientName, status, companyId, createdBy);
+        let { tenantId, clientName, status, createdBy, updatedBy } = req.body;
+        let client = new Client(tenantId, clientName, status, createdBy, updatedBy);
 
         client = await client.save()
 
@@ -119,8 +119,8 @@ const deleteClient = async (req, res, next) => {
 
 const updateClient = async (req, res, next) => {
     try {
-        let { tenantId, clientName, status, companyId, updatedBy } = req.body;
-        let client = new Client(tenantId, clientName, status, companyId, updatedBy)
+        let { tenantId, clientName, status, updatedBy } = req.body;
+        let client = new Client(tenantId, clientName, status, updatedBy)
         let Id = req.params.id;
         let [findclient, _] = await Client.findById(Id)
             ;

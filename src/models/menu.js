@@ -38,6 +38,7 @@ class Menu {
                         allow_delete='${item.allow_delete}',
                         createdBy='${this.createdBy}',
                         updatedOn='${this.dateandtime()}'
+                        updatedBy='${this.updatedBy}',
                         WHERE child_id = '${item.child_id}'`;
 
                     await db.execute(sql);
@@ -53,6 +54,7 @@ class Menu {
                             allow_delete,
                             createdBy,
                             createdOn,
+                            updatedBy,
                             updatedOn
                         )
                         VALUES (
@@ -65,6 +67,7 @@ class Menu {
                             '${item.allow_delete}',
                             '${this.createdBy}',
                             '${this.dateandtime()}',
+                            '${this.updatedBy}',
                             '${this.dateandtime()}'
                         )`;
 

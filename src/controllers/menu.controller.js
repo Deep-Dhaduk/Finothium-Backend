@@ -9,8 +9,8 @@ const CreateMenu = async (req, res) => {
             return res.status(400).json({ success: false, message: error.message });
         }
 
-        const { tenantId, role_id, menuItems, createdBy } = req.body;
-        const menu = new Menu(tenantId, role_id, menuItems, createdBy);
+        const { tenantId, role_id, menuItems, createdBy, updatedBy } = req.body;
+        const menu = new Menu(tenantId, role_id, menuItems, createdBy, updatedBy);
 
         const result = await menu.save();
 

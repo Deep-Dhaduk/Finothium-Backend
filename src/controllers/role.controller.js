@@ -115,8 +115,8 @@ const deleteRole = async (req, res, next) => {
 
 const updateRole = async (req, res, next) => {
     try {
-        let { tenantId, rolename, status, updatedBy } = req.body;
-        let role = new Role(tenantId, rolename, status, updatedBy)
+        let { tenantId, rolename, status, createdBy, updatedBy } = req.body;
+        let role = new Role(tenantId, rolename, status, createdBy, updatedBy)
         let Id = req.params.id;
         let [findrole, _] = await Role.findById(Id);
         if (!findrole) {

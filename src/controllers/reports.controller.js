@@ -253,7 +253,6 @@ const ListAccountReport = async (req, res, next) => {
     }
 };
 
-
 const ListGroupReport = async (req, res, next) => {
     const tokenInfo = getDecodeToken(req);
 

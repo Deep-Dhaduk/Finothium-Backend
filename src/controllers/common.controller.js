@@ -120,8 +120,8 @@ const deleteCommon = async (req, res, next) => {
 
 const updateCommon = async (req, res, next) => {
     try {
-        let { tenantId, name, type, status, updatedBy } = req.body;
-        let common = new Common(tenantId, name, type, status, updatedBy)
+        let { tenantId, name, type, status, createdBy, updatedBy } = req.body;
+        let common = new Common(tenantId, name, type, status, createdBy, updatedBy)
         let Id = req.params.id;
         let [findcommon, _] = await Common.findById(Id)
             ;

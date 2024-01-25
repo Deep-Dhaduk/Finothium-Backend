@@ -1,11 +1,10 @@
 const db = require('../db/dbconnection')
 
 class Client {
-    constructor(tenantId, clientName, status,companyId, createdBy, updatedBy) {
+    constructor(tenantId, clientName, status, createdBy, updatedBy) {
         this.tenantId = tenantId;
         this.clientName = clientName;
         this.status = status;
-        this.companyId = companyId;
         this.createdBy = createdBy;
         this.updatedBy = updatedBy;
     }
@@ -69,7 +68,7 @@ class Client {
     }
 
     async update(id) {
-        let sql = `UPDATE client_master SET tenantId='${this.tenantId}',clientName='${this.clientName}',status='${this.status}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}' WHERE clientId = ${id}`;
+        let sql = `UPDATE client_master SET tenantId='${this.tenantId}',clientName='${this.clientName}',status='${this.status}',createdBy='${this.createdBy}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}' WHERE clientId = ${id}`;
         return db.execute(sql)
 
     };

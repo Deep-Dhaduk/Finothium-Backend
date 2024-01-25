@@ -9,8 +9,7 @@ const createAccountSchema = Joi.object({
     account_type_Id: Joi.number().integer().required(),
     status: Joi.number().integer().required(),
     createdBy: Joi.number().integer().required(),
-    updatedBy: Joi.number().integer().required(),
-    companyId: Joi.number().integer().required()
+    updatedBy: Joi.number().integer().required()
 });
 
 module.exports = {

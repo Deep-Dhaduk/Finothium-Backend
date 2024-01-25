@@ -1,5 +1,6 @@
 const User = require("../models/user");
 const CompanyAccess = require('../models/company_access');
+const Role = require("../models/role");
 const fs = require('fs');
 const path = require('path');
 const jwt = require('jsonwebtoken');
@@ -123,11 +124,17 @@ const loginUser = async (req, res) => {
 
         const singleCompanyId = userWithCompanies.companyId.length > 0 ? userWithCompanies.companyId[0] : null;
 
+        const role = await Role.findById(userWithCompanies.roleId);
+        const roleInfo = role[0][0];
+
+        const roleName = roleInfo ? roleInfo.rolename : null;
+
         const tokenPayload = {
             userId: userWithCompanies.id,
             email: userWithCompanies.email,
             tenantId: userWithCompanies.tenantId,
             roleId: userWithCompanies.roleId,
+            roleName: roleName,
             companyId: singleCompanyId
         };
 
@@ -140,7 +147,7 @@ const loginUser = async (req, res) => {
         return res.status(200).json({
             success: true,
             message: 'Login successful',
-            userData: userWithCompanies,
+            userData: { ...userWithCompanies, roleName: roleName },
             token: token
         });
 
@@ -236,10 +243,9 @@ const ListUser = async (req, res, next) => {
                 };
             }
         }
-
         const companyResult = await CompanyAccess.findAll(token.tenantId);
         let userResponse = responseData.data;
-        let companyAccessResponse = companyResult[0]
+        let companyAccessResponse = companyResult[0];
 
         const userCompaniesMap = {};
 
@@ -255,7 +261,6 @@ const ListUser = async (req, res, next) => {
 
         userResponse.forEach(user => {
             const userId = user.id;
-
             if (userCompaniesMap[userId]) {
                 user.companyId = userCompaniesMap[userId];
                 if (user.profile_image_filename) {
@@ -278,17 +283,20 @@ const ListUser = async (req, res, next) => {
 
 const getUserById = async (req, res, next) => {
     try {
-        const baseURL = 'http://localhost:8080';
         let userId = req.params.id;
+        const baseURL = 'http://localhost:8080';
+
         let [user, _] = await User.findOne(userId);
 
         if (user.length === 0) {
             return res.status(404).json({ success: false, message: 'User not found' });
         }
 
+        // Convert the companyNames and companyIds strings to arrays
         user[0].companyNames = user[0].companyNames ? user[0].companyNames.split(',') : [];
         user[0].companyIds = user[0].companyIds ? user[0].companyIds.split(',').map(Number) : [];
 
+        // Prepend baseURL to profile_image_filename
         if (user[0].profile_image_filename) {
             user[0].profile_image_filename = `${baseURL}/Images/Profile_Images/${user[0].profile_image_filename}`;
         }
@@ -432,7 +440,7 @@ const resetPassword = async (req, res) => {
                 success: false,
                 message: 'User not found'
             });
-        };
+        }
 
         const isValidPassword = await User.comparePassword(oldPassword, user[0].password);
         if (!isValidPassword) {

@@ -28,7 +28,6 @@ const CreateMenu = async (req, res) => {
     }
 };
 
-
 const ListMenu = async (req, res, next) => {
     const token = getDecodeToken(req)
     try {

@@ -71,7 +71,7 @@ class Common {
     }
 
     async update(id) {
-        let sql = `UPDATE common_master SET tenantId='${this.tenantId}',name='${this.name}',type='${this.type}',status='${this.status}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}' WHERE common_id = ${id}`;
+        let sql = `UPDATE common_master SET tenantId='${this.tenantId}',name='${this.name}',type='${this.type}',status='${this.status}',createdBy='${this.createdBy}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}' WHERE common_id = ${id}`;
         return db.execute(sql)
 
     };

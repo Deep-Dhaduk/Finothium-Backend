@@ -31,6 +31,7 @@ const CreateAccount = async (req, res) => {
 
 const ListAccount = async (req, res, next) => {
     const token = getDecodeToken(req);
+    const tenantId = token.tenantId;
     try {
         const { q = '', id } = req.query;
 
@@ -115,8 +116,8 @@ const deleteAccount = async (req, res, next) => {
 
 const updateAccount = async (req, res, next) => {
     try {
-        let { tenantId, account_name, group_name_Id, join_date, exit_date, account_type_Id, status, updatedBy } = req.body;
-        let account = new Account(tenantId, account_name, group_name_Id, join_date, exit_date, account_type_Id, status, updatedBy);
+        let { tenantId, account_name, group_name_Id, join_date, exit_date, account_type_Id, status, createdBy,updatedBy } = req.body;
+        let account = new Account(tenantId, account_name, group_name_Id, join_date, exit_date, account_type_Id, status,createdBy, updatedBy);
 
         let Id = req.params.id;
 

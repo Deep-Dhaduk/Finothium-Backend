@@ -1,7 +1,7 @@
 const db = require('../db/dbconnection')
 
 class Transaction {
-    constructor(tenantId, transaction_date, transaction_type, payment_type_Id, client_category_name_Id, accountId, amount, description, createdBy, updatedBy,companyId) {
+    constructor(tenantId, transaction_date, transaction_type, payment_type_Id, client_category_name_Id, accountId, amount, description, createdBy, updatedBy) {
         this.tenantId = tenantId;
         this.transaction_date = transaction_date;
         this.transaction_type = transaction_type;
@@ -12,7 +12,6 @@ class Transaction {
         this.description = description;
         this.createdBy = createdBy;
         this.updatedBy = updatedBy;
-        this.companyId = companyId;
     }
 
     dateandtime = () => {
@@ -95,10 +94,9 @@ class Transaction {
     }
 
     async update(id) {
-        let sql = `UPDATE transaction SET tenantId='${this.tenantId}',transaction_date='${this.transaction_date}',transaction_type='${this.transaction_type}',payment_type_Id='${this.payment_type_Id}',client_category_name_Id='${this.client_category_name_Id}',accountId='${this.accountId}',amount='${this.amount}',description='${this.description}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}' WHERE transactionId = ${id}`;
-        return db.execute(sql)
-
-    };
+        let sql = `UPDATE transaction SET tenantId='${this.tenantId}', transaction_date='${this.transaction_date}', transaction_type='${this.transaction_type}', payment_type_Id='${this.payment_type_Id}', client_category_name_Id='${this.client_category_name_Id}', accountId='${this.accountId}', amount='${this.amount}', description='${this.description}', createdBy='${this.createdBy}',updatedBy='${this.updatedBy}', updatedOn='${this.dateandtime()}' WHERE transactionId = ${id}`;
+        return db.execute(sql);
+    }
 }
 
 module.exports = Transaction;

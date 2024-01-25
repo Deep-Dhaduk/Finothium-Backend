@@ -1,12 +1,10 @@
 const db = require('../db/dbconnection');
 
 class CompanyAccess {
-    constructor(tenantId, user_id, companyId, createdBy, updatedBy) {
+    constructor(tenantId, user_id, companyId) {
         this.tenantId = tenantId;
         this.user_id = user_id;
         this.company_id = companyId;
-        this.createdBy = createdBy;
-        this.updatedBy = updatedBy;
     }
 
     dateandtime = () => {
@@ -58,7 +56,6 @@ class CompanyAccess {
                         tenantId,
                         user_id,
                         company_id,
-                        createdBy,
                         createdOn,
                         updatedOn
                     )
@@ -66,7 +63,6 @@ class CompanyAccess {
                         '${this.tenantId}',
                         '${this.user_id}',
                         '${chosenCompanyId}',
-                        '${this.createdBy}',
                         '${this.dateandtime()}',
                         '${this.dateandtime()}'
                     )`;

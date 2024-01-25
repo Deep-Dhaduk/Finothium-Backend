@@ -115,8 +115,9 @@ const deleteTransaction = async (req, res, next) => {
 
 const updateTransaction = async (req, res, next) => {
     try {
-        let { tenantId, transaction_date, transaction_type, payment_type_Id, client_category_name_Id, accountId, amount, description, updatedBy } = req.body;
-        let transaction = new Transaction(tenantId, transaction_date, transaction_type, payment_type_Id, client_category_name_Id, accountId, amount, description, updatedBy)
+        let { tenantId, transaction_date, transaction_type, payment_type_Id, client_category_name_Id, accountId, amount, description,createdBy, updatedBy } = req.body;
+
+        let transaction = new Transaction(tenantId, transaction_date, transaction_type, payment_type_Id, client_category_name_Id, accountId, amount, description, createdBy, updatedBy);
         let Id = req.params.id;
         let [findtransaction, _] = await Transaction.findById(Id);
         if (!findtransaction) {

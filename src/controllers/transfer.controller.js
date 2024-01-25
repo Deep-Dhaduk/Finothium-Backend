@@ -115,8 +115,8 @@ const deleteTransfer = async (req, res, next) => {
 
 const updateTransfer = async (req, res, next) => {
     try {
-        let { tenantId, transactionDate, paymentType_Id, fromAccount, toAccount, amount, description, updatedBy } = req.body;
-        let transfer = new Transfer(tenantId, transactionDate, paymentType_Id, fromAccount, toAccount, amount, description, updatedBy)
+        let { tenantId, transactionDate, paymentType_Id, fromAccount, toAccount, amount, description, createdBy, updatedBy } = req.body;
+        let transfer = new Transfer(tenantId, transactionDate, paymentType_Id, fromAccount, toAccount, amount, description, createdBy, updatedBy)
         let Id = req.params.id;
         let [findtransfer, _] = await Transfer.findById(Id);
         if (!findtransfer) {

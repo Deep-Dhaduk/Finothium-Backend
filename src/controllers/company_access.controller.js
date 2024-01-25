@@ -3,11 +3,11 @@ const { getDecodeToken } = require('../middlewares/decoded');
 
 const CreateCompanyAccess = async (req, res) => {
     try {
-        let { tenantId, user_id, company_id, createdBy } = req.body;
+        let { tenantId, user_id, company_id } = req.body;
         if (!Array.isArray(company_id)) {
             company_id = [company_id];
         }
-        let companyAccess = new CompanyAccess(tenantId, user_id, company_id, createdBy);
+        let companyAccess = new CompanyAccess(tenantId, user_id, company_id);
 
         companyAccess = await companyAccess.save()
 

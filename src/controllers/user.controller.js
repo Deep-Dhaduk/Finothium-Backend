@@ -428,7 +428,7 @@ const verifyOTPAndUpdatePassword = async (req, res) => {
     }
 };
 
-const resetPassword = async (req, res) => {
+const changePassword = async (req, res) => {
     try {
         const { oldPassword, newPassword, confirmPassword } = req.body;
 
@@ -462,7 +462,44 @@ const resetPassword = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: 'Password reset successful'
+            message: 'Password change successful'
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            success: false,
+            message: 'Internal server error'
+        });
+    }
+};
+
+const resetPassword = async (req, res) => {
+    try {
+        const { newPassword, confirmPassword } = req.body;
+
+        const userId = req.params.id;
+        const [user, _] = await User.findById(userId);
+
+        if (!user[0]) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
+            });
+        };
+
+        if (newPassword !== confirmPassword) {
+            return res.status(400).json({
+                success: false,
+                message: 'New password and confirm password do not match'
+            });
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, 8);
+        await User.updatePassword(user[0].email, hashedPassword);
+
+        return res.status(200).json({
+            success: true,
+            message: 'Password change successful'
         });
     } catch (error) {
         console.log(error);
@@ -482,6 +519,7 @@ module.exports = {
     loginUser,
     findOneRec,
     forgotPassword,
-    resetPassword,
-    verifyOTPAndUpdatePassword
+    changePassword,
+    verifyOTPAndUpdatePassword,
+    resetPassword
 }

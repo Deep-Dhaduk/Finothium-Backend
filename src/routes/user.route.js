@@ -54,6 +54,11 @@ router.post(
 );
 
 router.post(
+    "/change-password/:id",
+    UserController.changePassword
+);
+
+router.post(
     "/reset-password/:id",
     UserController.resetPassword
 );

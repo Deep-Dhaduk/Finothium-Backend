@@ -56,7 +56,9 @@ const ListTransfer = async (req, res, next) => {
             const queryLowered = q.toLowerCase();
             const filteredData = transferResult[0].filter(
                 transfer =>
-                    transfer.paymentType.toLowerCase().includes(queryLowered)
+                    (transfer.paymentType_Id && typeof transfer.paymentType_Id === 'string' && transfer.paymentType_Id.toLowerCase().includes(queryLowered)) ||
+                    (transfer.fromAccount && typeof transfer.fromAccount === 'string' && transfer.fromAccount.toLowerCase().includes(queryLowered)) ||
+                    (transfer.toAccount && typeof transfer.toAccount === 'string' && transfer.toAccount.toLowerCase().includes(queryLowered))
             );
 
             if (filteredData.length > 0) {

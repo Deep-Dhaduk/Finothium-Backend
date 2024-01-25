@@ -9,8 +9,8 @@ const CreateTenant = async (req, res) => {
             return res.status(400).json({ success: false, message: error.message });
         };
 
-        let { tenantname, personname, address, contact, email, startdate, enddate, status, createdBy,updatedBy } = req.body;
-        let tenant = new Tenant(tenantname, personname, address, contact, email, startdate, enddate, status, createdBy,updatedBy);
+        let { tenantname, personname, address, contact, email, startdate, enddate, status, createdBy, updatedBy } = req.body;
+        let tenant = new Tenant(tenantname, personname, address, contact, email, startdate, enddate, status, createdBy, updatedBy);
 
         tenant = await tenant.save()
 
@@ -56,9 +56,8 @@ const ListTenant = async (req, res, next) => {
                     tenant.tenantname.toLowerCase().includes(queryLowered) ||
                     tenant.personname.toLowerCase().includes(queryLowered) ||
                     tenant.address.toLowerCase().includes(queryLowered) ||
-                    (tenant.status.toLowerCase() === "active" && "active".includes(queryLowered))
+                    (typeof tenant.status === 'string' && tenant.status.toLowerCase() === "active" && "active".includes(queryLowered))
             );
-
             if (filteredData.length > 0) {
                 responseData = {
                     ...responseData,

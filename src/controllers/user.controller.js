@@ -226,7 +226,8 @@ const ListUser = async (req, res, next) => {
                 user =>
                     user.username.toLowerCase().includes(queryLowered) ||
                     user.fullname.toLowerCase().includes(queryLowered) ||
-                    (user.status.toLowerCase() === "active" && "active".includes(queryLowered))
+                    user.roleName.toLowerCase().includes(queryLowered) ||
+                    (typeof user.status === 'string' && user.status.toLowerCase() === "active" && "active".includes(queryLowered))
             );
             if (filteredData.length > 0) {
                 responseData = {

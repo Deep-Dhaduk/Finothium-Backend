@@ -59,7 +59,7 @@ const ListAccount = async (req, res, next) => {
                 (account.account_name && account.account_name.toLowerCase().includes(queryLowered)) ||
                 (account.group_name && account.group_name.toLowerCase().includes(queryLowered)) ||
                 (account.account_type_name && account.account_type_name.toLowerCase().includes(queryLowered)) ||
-                (account.status && account.status.toLowerCase() === "active" && "active".includes(queryLowered))
+                (typeof account.status === 'string' && account.status.toLowerCase() === "active" && "active".includes(queryLowered))
             );
 
             if (filteredData.length > 0) {
@@ -116,8 +116,8 @@ const deleteAccount = async (req, res, next) => {
 
 const updateAccount = async (req, res, next) => {
     try {
-        let { tenantId, account_name, group_name_Id, join_date, exit_date, account_type_Id, status, createdBy,updatedBy } = req.body;
-        let account = new Account(tenantId, account_name, group_name_Id, join_date, exit_date, account_type_Id, status,createdBy, updatedBy);
+        let { tenantId, account_name, group_name_Id, join_date, exit_date, account_type_Id, status, createdBy, updatedBy } = req.body;
+        let account = new Account(tenantId, account_name, group_name_Id, join_date, exit_date, account_type_Id, status, createdBy, updatedBy);
 
         let Id = req.params.id;
 

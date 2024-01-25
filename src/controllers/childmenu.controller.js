@@ -57,10 +57,9 @@ const ListChildmenu = async (req, res, next) => {
             const filteredData = childmenuResult[0].filter(
                 childmenu =>
                     childmenu.menu_name.toLowerCase().includes(queryLowered) ||
-                    (childmenu.status.toLowerCase() === "active" && "active".includes(queryLowered)) ||
+                    (typeof childmenu.status === 'string' && childmenu.status.toLowerCase() === "active" && "active".includes(queryLowered)) ||
                     (childmenu.display_rank && childmenu.display_rank.toString().includes(queryLowered))
             );
-
             if (filteredData.length > 0) {
                 responseData = {
                     ...responseData,

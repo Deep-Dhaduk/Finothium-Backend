@@ -10,9 +10,9 @@ const CreateCompany = async (req, res) => {
             return res.status(400).json({ success: false, message: error.message });
         };
 
-        let { tenantId, company_name, legal_name, authorize_person_name, address, contact_no, email, website, pan, gstin, status, createdBy } = req.body;
+        let { tenantId, company_name, legal_name, authorize_person_name, address, contact_no, email, website, pan, gstin, status, createdBy, updatedBy } = req.body;
 
-        let company = new Company(tenantId, company_name, legal_name, authorize_person_name, address, contact_no, email, website, pan, gstin, status, createdBy);
+        let company = new Company(tenantId, company_name, legal_name, authorize_person_name, address, contact_no, email, website, pan, gstin, status, createdBy, updatedBy);
 
         company = await company.save();
 
@@ -61,10 +61,9 @@ const ListCompany = async (req, res, next) => {
                     company.authorize_person_name.toLowerCase().includes(queryLowered) ||
                     company.address.toLowerCase().includes(queryLowered) ||
                     company.pan.toLowerCase().includes(queryLowered) ||
-                    (company.status.toLowerCase() === "active" && "active".includes(queryLowered)) ||
+                    (typeof company.status === 'string' && company.status.toLowerCase() === "active" && "active".includes(queryLowered)) ||
                     company.gstin.toString().toLowerCase().includes(queryLowered)
             );
-
             if (filteredData.length > 0) {
                 responseData = {
                     ...responseData,

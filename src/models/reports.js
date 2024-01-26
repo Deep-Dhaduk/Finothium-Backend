@@ -2,16 +2,27 @@ const db = require('../db/dbconnection');
 
 class reports {
 
-    static async findAllPayment(tenantId) {
+    static async findAllPayment(tenantId, startDate = null, endDate = null) {
         try {
-            let sql = "CALL payment_wise_statement(?)";
-            const [result, _] = await db.execute(sql, [tenantId]);
+            let sql;
+            let params;
+
+            if (startDate && endDate) {
+                sql = "CALL payment_wise_statement(?, ?, ?)";
+                params = [tenantId, startDate, endDate];
+            } else {
+                sql = "CALL payment_wise_statement_all(?)";
+                params = [tenantId];
+            }
+
+            const [result, _] = await db.execute(sql, params, { nullUndefined: true });
             return result;
         } catch (error) {
             console.error('Error in findAll:', error);
             throw error;
-        };
-    };
+        }
+    }
+
 
     static async findAllClient(tenantId) {
         try {

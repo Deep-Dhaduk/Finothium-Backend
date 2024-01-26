@@ -3,7 +3,7 @@ const Reportcontroller = require('../controllers/reports.controller');
 const auth = require('../middlewares/auth');
 const router = express.Router();
 
-router.get(
+router.post(
     "/list-payment",
     auth.verifyToken,
     Reportcontroller.ListPaymentReport

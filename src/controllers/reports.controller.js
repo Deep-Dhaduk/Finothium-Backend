@@ -14,30 +14,50 @@ const ListPaymentReport = async (req, res, next) => {
     try {
         const { q = '' } = req.query;
         const { tenantId, companyId } = tokenInfo.decodedToken;
+        const { startDate, endDate, clientCategory } = req.body; // Modified this line
 
         // Add companyId check to ensure the companyId in the token matches the one used in the query
-        if (companyId && req.query.companyId && companyId !== req.query.companyId) {
+        if (companyId && req.body.companyId && companyId !== req.body.companyId) { // Modified this line
             return res.status(403).json({
                 success: false,
                 message: 'Unauthorized: CompanyId in token does not match the requested companyId',
             });
         }
 
-        const report = await Report.findAllPayment(tenantId, companyId);
+        let report;
+        if (startDate && endDate) {
+            report = await Report.findAllPayment(tenantId, startDate, endDate);
+        } else {
+            report = await Report.findAllPayment(tenantId);
+        }
+
         let responseData = {
             success: true,
             message: 'Payment Report List Successfully!',
-            data: report[0],
+            data: report[0]
         };
+
+        if (clientCategory) {
+            const filteredByClientCategory = responseData.data.filter(payment =>
+                payment.client_category_name &&
+                payment.client_category_name.toLowerCase() === clientCategory.toLowerCase()
+            );
+
+            responseData = {
+                responseData,
+                data: filteredByClientCategory,
+                total: filteredByClientCategory.length,
+            };
+        }
 
         if (q) {
             const queryLowered = q.toLowerCase();
-            const filteredData = report[0].filter(payment =>
+            const filteredData = responseData.data.filter(payment =>
+                (payment.payment_type_name && payment.payment_type_name.toLowerCase().includes(queryLowered)) ||
                 (payment.client_category_name && payment.client_category_name.toLowerCase().includes(queryLowered)) ||
-                (payment.payment_type && payment.payment_type.toLowerCase().includes(queryLowered)) ||
                 (payment.account_name && payment.account_name.toLowerCase().includes(queryLowered)) ||
-                (payment.paid_amount && payment.paid_amount.toLowerCase().includes(queryLowered)) ||
-                (payment.receive_amount && payment.receive_amount.toLowerCase().includes(queryLowered)) ||
+                (payment.PaidAmount && payment.PaidAmount.toString().toLowerCase().includes(queryLowered)) ||
+                (payment.ReceiveAmount && payment.ReceiveAmount.toString().toLowerCase().includes(queryLowered)) ||
                 (payment.description && payment.description.toLowerCase().includes(queryLowered))
             );
 
@@ -63,6 +83,7 @@ const ListPaymentReport = async (req, res, next) => {
         next(error);
     }
 };
+
 
 const ListClientReport = async (req, res, next) => {
     const tokenInfo = getDecodeToken(req);

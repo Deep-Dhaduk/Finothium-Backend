@@ -29,64 +29,8 @@ const CreateClient = async (req, res) => {
     }
 }
 
-// const ListClient = async (req, res, next) => {
-//     const token = getDecodeToken(req)
-//     try {
-//         const { q = '', id } = req.query;
-
-//         if (id) {
-//             const client = await Client.findById(id)
-//                 ;
-
-//             if (client[0].length === 0) {
-//                 return res.status(404).json({ success: false, message: 'Client not found' });
-//             }
-
-//             return res.status(200).json({ success: true, message: 'Client found', data: client[0][0] });
-//         }
-
-//         const clientResult = await Client.findAll(token.tenantId);
-//         let responseData = {
-//             success: true,
-//             message: 'Client List Successfully!',
-//             data: clientResult[0]
-//         };
-
-//         if (q) {
-//             const queryLowered = q.toLowerCase();
-//             const filteredData = clientResult[0].filter(
-//                 client =>
-//                     client.clientName.toLowerCase().includes(queryLowered) ||
-//                     (client.status.toLowerCase() === "active" && "active".includes(queryLowered))
-
-//             );
-
-//             if (filteredData.length > 0) {
-//                 responseData = {
-//                     ...responseData,
-//                     data: filteredData,
-//                     total: filteredData.length
-//                 };
-//             } else {
-//                 responseData = {
-//                     ...responseData,
-//                     message: 'No matching Client found',
-//                     data: [],
-//                     total: 0
-//                 };
-//             };
-//         };
-
-//         res.status(200).json(responseData);
-
-//     } catch (error) {
-//         console.log(error);
-//         next(error);
-//     }
-// };
-
 const ListClient = async (req, res, next) => {
-    const token = getDecodeToken(req);
+    const token = getDecodeToken(req)
     try {
         const { q = '', id } = req.query;
 
@@ -95,14 +39,17 @@ const ListClient = async (req, res, next) => {
 
             if (client[0].length === 0) {
                 return res.status(404).json({ success: false, message: 'Client not found' });
-            };
+            }
+        }
 
-            return res.status(200).json({ success: true, message: 'Client found', data: client[0][0] });
-        };
         const clientResult = await Client.findAll(token.tenantId);
+        const tokenCompanyId = token && token.decodedToken.companyId;
 
-        const verifiedClientList = clientResult[0].filter(client => client.companyId === token.companyId);
-
+        const verifiedClientList = clientResult[0].filter(
+            client => {
+                return client.companyId == tokenCompanyId && client.status == 1;
+            }
+        );
         let responseData = {
             success: true,
             message: 'Client List Successfully!',
@@ -111,10 +58,11 @@ const ListClient = async (req, res, next) => {
 
         if (q) {
             const queryLowered = q.toLowerCase();
-            const filteredData = verifiedClientList.filter(
+            const filteredData = clientResult[0].filter(
                 client =>
                     client.clientName.toLowerCase().includes(queryLowered) ||
                     (client.status.toLowerCase() === "active" && "active".includes(queryLowered))
+
             );
 
             if (filteredData.length > 0) {
@@ -130,8 +78,8 @@ const ListClient = async (req, res, next) => {
                     data: [],
                     total: 0
                 };
-            }
-        }
+            };
+        };
 
         res.status(200).json(responseData);
 

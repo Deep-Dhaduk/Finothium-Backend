@@ -114,28 +114,23 @@ const loginUser = async (req, res) => {
             if (!userCompaniesMap[accessUserId]) {
                 userCompaniesMap[accessUserId] = [];
             }
-            userCompaniesMap[accessUserId].push(access.company_id);
+            userCompaniesMap[accessUserId].push({ companyId: access.company_id, roleName: access.roleName });
         });
 
         const userWithCompanies = {
             ...user[0],
-            companyId: userCompaniesMap[userId] || []
+            companies: userCompaniesMap[userId] || []
         };
 
-        const singleCompanyId = userWithCompanies.companyId.length > 0 ? userWithCompanies.companyId[0] : null;
-
-        const role = await Role.findById(userWithCompanies.roleId);
-        const roleInfo = role[0][0];
-
-        const roleName = roleInfo ? roleInfo.rolename : null;
+        // Assuming the first company is selected by default
+        const selectedCompany = userWithCompanies.companies.length > 0 ? userWithCompanies.companies[0] : null;
 
         const tokenPayload = {
             userId: userWithCompanies.id,
             email: userWithCompanies.email,
             tenantId: userWithCompanies.tenantId,
             roleId: userWithCompanies.roleId,
-            roleName: roleName,
-            companyId: singleCompanyId
+            company: selectedCompany  // Store information about the selected company
         };
 
         const token = jwt.sign(
@@ -147,7 +142,7 @@ const loginUser = async (req, res) => {
         return res.status(200).json({
             success: true,
             message: 'Login successful',
-            userData: { ...userWithCompanies, roleName: roleName },
+            userData: { ...userWithCompanies },
             token: token
         });
 
@@ -257,18 +252,18 @@ const ListUser = async (req, res, next) => {
                 userCompaniesMap[userId] = [];
             }
 
-            userCompaniesMap[userId].push(access.company_id);
+            userCompaniesMap[userId].push({ companyId: access.company_id, roleName: access.roleName });
         });
 
         userResponse.forEach(user => {
             const userId = user.id;
             if (userCompaniesMap[userId]) {
-                user.companyId = userCompaniesMap[userId];
+                user.companies = userCompaniesMap[userId];
                 if (user.profile_image_filename) {
                     user.profile_image_filename = `${baseURL}/Images/Profile_Images/${user.profile_image_filename}`;
                 }
             } else {
-                user.companyId = [];
+                user.companies = [];
             }
         });
 

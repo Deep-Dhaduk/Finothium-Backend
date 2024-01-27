@@ -102,10 +102,11 @@ class CompanyAccess {
     }
 
     async update(id) {
-        let sql = `UPDATE company_access SET tenantId='${this.tenantId}',user_id='${this.user_id}',company_id='${this.company_id}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}' WHERE id = ${id}`;
+        let sql = `UPDATE company_access SET tenantId='${this.tenantId}',user_id='${this.user_id}',company_id='${this.company_id}',updatedOn='${this.dateandtime()}' WHERE id = ${id}`;
         return db.execute(sql)
 
     };
+
 }
 
 module.exports = CompanyAccess;

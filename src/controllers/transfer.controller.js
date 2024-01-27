@@ -3,15 +3,20 @@ const { createTransferSchema } = require('../validation/transfer.validation');
 const { getDecodeToken } = require('../middlewares/decoded');
 
 const CreateTransfer = async (req, res) => {
+    const token = getDecodeToken(req)
     try {
-
         const { error } = createTransferSchema.validate(req.body);
         if (error) {
             return res.status(400).json({ success: false, message: error.message });
         };
 
         let { tenantId, transactionDate, paymentType_Id, fromAccount, toAccount, amount, description, createdBy, updatedBy } = req.body;
+
+        const companyId = token.decodedToken.company.companyId;
+
         let transfer = new Transfer(tenantId, transactionDate, paymentType_Id, fromAccount, toAccount, amount, description, createdBy, updatedBy);
+
+        transfer.companyId = companyId;
 
         transfer = await transfer.save()
 

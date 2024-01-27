@@ -1,5 +1,6 @@
 const User = require("../models/user");
 const CompanyAccess = require('../models/company_access');
+const Company = require('../models/company');
 const Role = require("../models/role");
 const fs = require('fs');
 const path = require('path');
@@ -109,28 +110,36 @@ const loginUser = async (req, res) => {
         const companyResult = await CompanyAccess.findAll(user[0].tenantId);
 
         const userCompaniesMap = {};
-        companyResult[0].forEach(access => {
+        await Promise.all(companyResult[0].map(async (access) => {
             const accessUserId = access.user_id;
             if (!userCompaniesMap[accessUserId]) {
                 userCompaniesMap[accessUserId] = [];
             }
-            userCompaniesMap[accessUserId].push({ companyId: access.company_id, roleName: access.roleName });
-        });
+            const companyName = await getCompanyName(access.company_id);
+            userCompaniesMap[accessUserId].push({ companyId: access.company_id, companyName });
+        }));
+        const roleResult = await Role.findById(user[0].roleId);
 
         const userWithCompanies = {
             ...user[0],
-            companies: userCompaniesMap[userId] || []
+            companies: userCompaniesMap[userId] || [],
+            roleName: roleResult[0][0].rolename
         };
 
-        // Assuming the first company is selected by default
-        const selectedCompany = userWithCompanies.companies.length > 0 ? userWithCompanies.companies[0] : null;
+        let selectedCompany = userWithCompanies.companies.length > 0 ? userWithCompanies.companies[0] : null;
+
+        // Remove the companyName property from selectedCompany
+        if (selectedCompany) {
+            const { companyName, ...companyWithoutName } = selectedCompany;
+            selectedCompany = companyWithoutName;
+        }
 
         const tokenPayload = {
             userId: userWithCompanies.id,
             email: userWithCompanies.email,
             tenantId: userWithCompanies.tenantId,
             roleId: userWithCompanies.roleId,
-            company: selectedCompany  // Store information about the selected company
+            company: selectedCompany  // Store information about the selected company without companyName
         };
 
         const token = jwt.sign(
@@ -138,6 +147,7 @@ const loginUser = async (req, res) => {
             process.env.JWT_SECRET,
             { expiresIn: process.env.JWT_EXPIRES_IN }
         );
+
 
         return res.status(200).json({
             success: true,
@@ -149,6 +159,39 @@ const loginUser = async (req, res) => {
     } catch (error) {
         console.log(error);
         return res.status(500).json({
+            message: 'Internal server error'
+        });
+    }
+};
+
+async function getCompanyName(Cid) {
+    const companyInfo = await Company.findById(Cid);
+    let companyName = companyInfo[0][0].company_name;
+    return companyName;
+}
+
+const changeCompany = async (req, res) => {
+    try {
+        const { companyId } = req.body;
+
+        const existingTokenPayload = getDecodeToken(req).decodedToken;
+
+        existingTokenPayload.company.companyId = companyId;
+
+        const newToken = jwt.sign(
+            existingTokenPayload,
+            process.env.JWT_SECRET
+        );
+
+        return res.status(200).json({
+            success: true,
+            message: 'Company changed successfully',
+            token: newToken
+        });
+    } catch (error) {
+        console.error('Error changing company:', error);
+        return res.status(500).json({
+            success: false,
             message: 'Internal server error'
         });
     }
@@ -208,6 +251,9 @@ const ListUser = async (req, res, next) => {
             return res.status(200).json({ success: true, message: 'User found', data: user[0][0] });
         }
 
+        const existingTokenPayload = getDecodeToken(req).decodedToken;
+        const companyId = existingTokenPayload.company.companyId;
+
         const userResult = await User.findAll(token.tenantId);
         let responseData = {
             success: true,
@@ -253,6 +299,12 @@ const ListUser = async (req, res, next) => {
             }
 
             userCompaniesMap[userId].push({ companyId: access.company_id, roleName: access.roleName });
+
+        });
+
+        userResponse = userResponse.filter(user => {
+            const userId = user.id;
+            return userCompaniesMap[userId]?.some(company => company.companyId === companyId);
         });
 
         userResponse.forEach(user => {
@@ -308,7 +360,6 @@ const getUserById = async (req, res, next) => {
     }
 };
 
-
 const deleteUser = async (req, res, next) => {
     try {
         let userId = req.params.id;
@@ -329,14 +380,11 @@ const updateUser = async (req, res, next) => {
 
         if (!companyId) {
             throw new Error("companyId is required for updating user.");
-        };
+        }
 
         const companyIdArray = Array.isArray(companyId) ? companyId : [companyId];
 
-        console.log(companyIdArray);
-
         let user = new User(tenantId, username, fullname, email, password, confirmpassword, profile_image, companyIdArray, status, createdBy, updatedBy, roleId);
-        console.log(user);
         let userId = req.params.id;
         let [finduser, _] = await User.findById(userId);
         if (!finduser) {
@@ -513,6 +561,7 @@ module.exports = {
     deleteUser,
     updateUser,
     loginUser,
+    changeCompany,
     findOneRec,
     forgotPassword,
     changePassword,

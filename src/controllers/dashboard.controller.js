@@ -17,7 +17,7 @@ const ListDashboard = async (req, res, next) => {
         let responseData = {
             success: true,
             message: 'Dashboard Data Successfully!',
-            data: dashboardData[0],
+            data: dashboardData[0][0],
         };
         res.status(200).json(responseData);
     } catch (error) {

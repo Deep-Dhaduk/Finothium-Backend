@@ -43,7 +43,8 @@ class Transfer {
                 createdBy,
                 createdOn,
                 updatedBy,
-                updatedOn
+                updatedOn,
+                companyId
             )
             VALUES(
                 '${this.tenantId}',
@@ -56,7 +57,8 @@ class Transfer {
                 '${this.createdBy}',
                 '${this.dateandtime()}',
                 '${this.updatedBy}',
-                '${this.dateandtime()}'
+                '${this.dateandtime()}',
+                '${this.companyId}'
             )`;
             return db.execute(sql)
 

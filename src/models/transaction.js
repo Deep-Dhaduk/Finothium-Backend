@@ -1,7 +1,7 @@
 const db = require('../db/dbconnection')
 
 class Transaction {
-    constructor(tenantId, transaction_date, transaction_type, payment_type_Id, client_category_name_Id, accountId, amount, description, createdBy, updatedBy) {
+    constructor(tenantId, transaction_date, transaction_type, payment_type_Id, client_category_name_Id, accountId, amount, description, createdBy, updatedBy, companyId) {
         this.tenantId = tenantId;
         this.transaction_date = transaction_date;
         this.transaction_type = transaction_type;
@@ -12,6 +12,7 @@ class Transaction {
         this.description = description;
         this.createdBy = createdBy;
         this.updatedBy = updatedBy;
+        this.companyId = companyId;
     }
 
     dateandtime = () => {
@@ -29,43 +30,43 @@ class Transaction {
 
 
     async save() {
-
+        console.log(this.companyId);
         try {
             let sql = `
-            INSERT INTO transaction(
+            INSERT INTO account_master(
                 tenantId,
-                transaction_date,
-                transaction_type,
-                payment_type_Id,
-                client_category_name_Id,
-                accountId,
-                amount,
-                description,
+                account_name,
+                group_name_Id,
+                join_date,
+                exit_date,
+                account_type_Id,
+                status,
                 createdBy,
                 createdOn,
                 updatedBy,
-                updatedOn
+                updatedOn,
+                companyId
             )
             VALUES(
                 '${this.tenantId}',
-                '${this.transaction_date}',
-                '${this.transaction_type}',
-                '${this.payment_type_Id}',
-                '${this.client_category_name_Id}',
-                '${this.accountId}',
-                '${this.amount}',
-                '${this.description}',
+                '${this.account_name}',
+                '${this.group_name_Id}',
+                '${this.join_date}',
+                '${this.exit_date}',
+                '${this.account_type_Id}',
+                '${this.status}',
                 '${this.createdBy}',
                 '${this.dateandtime()}',
                 '${this.updatedBy}',
-                '${this.dateandtime()}'
+                '${this.dateandtime()}',
+                '${this.companyId}'
             )`;
-            return db.execute(sql)
-
+            return db.execute(sql);
         } catch (error) {
             throw error;
         }
-    };
+    }
+
 
     static findAll(tenantId) {
         let sql = `

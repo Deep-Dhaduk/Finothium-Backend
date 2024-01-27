@@ -21,8 +21,7 @@ class reports {
             console.error('Error in findAll:', error);
             throw error;
         }
-    }
-
+    };
 
     static async findAllClient(tenantId) {
         try {

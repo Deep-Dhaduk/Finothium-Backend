@@ -3,6 +3,7 @@ const { createClientSchema } = require('../validation/client.validation');
 const { getDecodeToken } = require('../middlewares/decoded');
 
 const CreateClient = async (req, res) => {
+    const token = getDecodeToken(req)
     try {
 
         const { error } = createClientSchema.validate(req.body);
@@ -11,7 +12,12 @@ const CreateClient = async (req, res) => {
         }
 
         let { tenantId, clientName, status, createdBy, updatedBy } = req.body;
+
+        const companyId = token.decodedToken.company.companyId;
+
         let client = new Client(tenantId, clientName, status, createdBy, updatedBy);
+
+        client.companyId = companyId;
 
         client = await client.save()
 
@@ -43,17 +49,11 @@ const ListClient = async (req, res, next) => {
         }
 
         const clientResult = await Client.findAll(token.tenantId);
-        const tokenCompanyId = token && token.decodedToken.companyId;
 
-        const verifiedClientList = clientResult[0].filter(
-            client => {
-                return client.companyId == tokenCompanyId && client.status == 1;
-            }
-        );
         let responseData = {
             success: true,
             message: 'Client List Successfully!',
-            data: verifiedClientList
+            data: clientResult[0]
         };
 
         if (q) {

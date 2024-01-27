@@ -4,6 +4,11 @@ const auth = require('../middlewares/auth');
 const router = express.Router();
 
 router.post(
+    "/filter-paymentReport",
+    auth.verifyToken,
+    Reportcontroller.ListPaymentReport
+);
+router.get(
     "/list-payment",
     auth.verifyToken,
     Reportcontroller.ListPaymentReport

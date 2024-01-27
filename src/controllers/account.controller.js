@@ -3,35 +3,40 @@ const { createAccountSchema } = require('../validation/account.validation');
 const { getDecodeToken } = require('../middlewares/decoded');
 
 const CreateAccount = async (req, res) => {
-    try {
+    const token = getDecodeToken(req);
 
+    try {
         const { error } = createAccountSchema.validate(req.body);
         if (error) {
             return res.status(400).json({ success: false, message: error.message });
         }
 
         let { tenantId, account_name, group_name_Id, join_date, exit_date, account_type_Id, status, createdBy, updatedBy } = req.body;
+
+        const companyId = token.decodedToken.company.companyId;
+
         let account = new Account(tenantId, account_name, group_name_Id, join_date, exit_date, account_type_Id, status, createdBy, updatedBy);
 
-        account = await account.save()
+        account.companyId = companyId;
+
+        account = await account.save();
 
         res.status(200).json({
             success: true,
-            message: "Account create successfully!",
+            message: "Account created successfully!",
             record: { account }
         });
     } catch (error) {
         res.status(400).json({
             success: false,
             message: error.message,
-        })
+        });
         console.log(error);
     }
-}
+};
 
 const ListAccount = async (req, res, next) => {
     const token = getDecodeToken(req);
-    const tenantId = token.tenantId;
     try {
         const { q = '', id } = req.query;
 

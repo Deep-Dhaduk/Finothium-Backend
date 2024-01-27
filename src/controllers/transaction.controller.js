@@ -3,6 +3,7 @@ const { createTransactionSchema } = require('../validation/transaction.validatio
 const { getDecodeToken } = require('../middlewares/decoded');
 
 const CreateTransaction = async (req, res) => {
+    const token = getDecodeToken(req)
     try {
 
         const { error } = createTransactionSchema.validate(req.body);
@@ -11,7 +12,12 @@ const CreateTransaction = async (req, res) => {
         };
 
         let { tenantId, transaction_date, transaction_type, payment_type_Id, client_category_name_Id, accountId, amount, description, createdBy, updatedBy } = req.body;
+
+        const companyId = token.decodedToken.company.companyId;
+
         let transaction = new Transaction(tenantId, transaction_date, transaction_type, payment_type_Id, client_category_name_Id, accountId, amount, description, createdBy, updatedBy);
+
+        transaction.companyId = companyId;
 
         transaction = await transaction.save()
 
@@ -27,7 +33,7 @@ const CreateTransaction = async (req, res) => {
         })
         console.log(error);
     }
-}
+};
 
 const ListTransaction = async (req, res, next) => {
     const token = getDecodeToken(req)
@@ -53,11 +59,11 @@ const ListTransaction = async (req, res, next) => {
 
         if (q) {
             const queryLowered = q.toLowerCase();
-    const filteredData = transactionResult[0].filter(transaction =>
-        (transaction.transaction_type && transaction.transaction_type.toLowerCase().includes(queryLowered)) ||
-        (transaction.payment_type_Id && transaction.payment_type_Id.toLowerCase().includes(queryLowered)) ||
-        (transaction.client_category_name_Id && transaction.client_category_name_Id.toLowerCase().includes(queryLowered))
-    );
+            const filteredData = transactionResult[0].filter(transaction =>
+                (transaction.transaction_type && transaction.transaction_type.toLowerCase().includes(queryLowered)) ||
+                (transaction.payment_type_Id && transaction.payment_type_Id.toLowerCase().includes(queryLowered)) ||
+                (transaction.client_category_name_Id && transaction.client_category_name_Id.toLowerCase().includes(queryLowered))
+            );
 
             if (filteredData.length > 0) {
                 responseData = {
@@ -115,7 +121,7 @@ const deleteTransaction = async (req, res, next) => {
 
 const updateTransaction = async (req, res, next) => {
     try {
-        let { tenantId, transaction_date, transaction_type, payment_type_Id, client_category_name_Id, accountId, amount, description,createdBy, updatedBy } = req.body;
+        let { tenantId, transaction_date, transaction_type, payment_type_Id, client_category_name_Id, accountId, amount, description, createdBy, updatedBy } = req.body;
 
         let transaction = new Transaction(tenantId, transaction_date, transaction_type, payment_type_Id, client_category_name_Id, accountId, amount, description, createdBy, updatedBy);
         let Id = req.params.id;

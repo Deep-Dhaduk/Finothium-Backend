@@ -63,4 +63,10 @@ router.post(
     UserController.resetPassword
 );
 
+router.post(
+    "/change-company",
+    auth.verifyToken,
+    UserController.changeCompany
+);
+
 module.exports = router;

@@ -1,12 +1,13 @@
 const db = require('../db/dbconnection')
 
 class Client {
-    constructor(tenantId, clientName, status, createdBy, updatedBy) {
+    constructor(tenantId, clientName, status, createdBy, updatedBy, companyId) {
         this.tenantId = tenantId;
         this.clientName = clientName;
         this.status = status;
         this.createdBy = createdBy;
         this.updatedBy = updatedBy;
+        this.companyId = companyId;
     }
 
     dateandtime = () => {
@@ -33,7 +34,8 @@ class Client {
                 createdBy,
                 createdOn,
                 updatedBy,
-                updatedOn
+                updatedOn,
+                companyId
             )
             VALUES(
                 '${this.tenantId}',
@@ -42,7 +44,8 @@ class Client {
                 '${this.createdBy}',
                 '${this.dateandtime()}',
                 '${this.updatedBy}',
-                '${this.dateandtime()}'
+                '${this.dateandtime()}',
+                ${this.companyId}
             )`;
             return db.execute(sql)
 

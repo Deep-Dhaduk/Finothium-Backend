@@ -1,7 +1,7 @@
 const db = require('../db/dbconnection')
 
 class Account {
-    constructor(tenantId, account_name, group_name_Id, join_date, exit_date, account_type_Id, status, createdBy, updatedBy) {
+    constructor(tenantId, account_name, group_name_Id, join_date, exit_date, account_type_Id, status, createdBy, updatedBy, companyId) {
         this.tenantId = tenantId;
         this.account_name = account_name;
         this.group_name_Id = group_name_Id;
@@ -11,6 +11,8 @@ class Account {
         this.status = status;
         this.createdBy = createdBy;
         this.updatedBy = updatedBy;
+        this.companyId = companyId;
+
     }
 
     dateandtime = () => {
@@ -28,6 +30,7 @@ class Account {
 
 
     async save() {
+        console.log(this.companyId);
         try {
             let sql = `
             INSERT INTO account_master(
@@ -41,7 +44,8 @@ class Account {
                 createdBy,
                 createdOn,
                 updatedBy,
-                updatedOn
+                updatedOn,
+                companyId
             )
             VALUES(
                 '${this.tenantId}',
@@ -54,7 +58,8 @@ class Account {
                 '${this.createdBy}',
                 '${this.dateandtime()}',
                 '${this.updatedBy}',
-                '${this.dateandtime()}'
+                '${this.dateandtime()}',
+                '${this.companyId}'
             )`;
             return db.execute(sql)
 
@@ -84,6 +89,16 @@ class Account {
         `;
         return db.execute(sql);
     }
+
+    static findByAccountId(id) {
+        let sql = `
+            SELECT *
+            FROM account_master
+            WHERE account_id = ${id.accountId}
+        `;
+        return db.execute(sql);
+    }
+
     static delete(id) {
         let sql = `DELETE FROM account_master WHERE account_id = ${id}`;
         return db.execute(sql)

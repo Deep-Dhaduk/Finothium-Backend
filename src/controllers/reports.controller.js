@@ -16,8 +16,7 @@ const ListPaymentReport = async (req, res, next) => {
         const { tenantId, companyId } = tokenInfo.decodedToken;
         const { startDate, endDate, clientCategory } = req.body; // Modified this line
 
-        // Add companyId check to ensure the companyId in the token matches the one used in the query
-        if (companyId && req.body.companyId && companyId !== req.body.companyId) { // Modified this line
+        if (companyId && req.body.companyId && companyId !== req.body.companyId) {
             return res.status(403).json({
                 success: false,
                 message: 'Unauthorized: CompanyId in token does not match the requested companyId',
@@ -44,7 +43,7 @@ const ListPaymentReport = async (req, res, next) => {
             );
 
             responseData = {
-                responseData,
+                ...responseData,
                 data: filteredByClientCategory,
                 total: filteredByClientCategory.length,
             };
@@ -83,7 +82,6 @@ const ListPaymentReport = async (req, res, next) => {
         next(error);
     }
 };
-
 
 const ListClientReport = async (req, res, next) => {
     const tokenInfo = getDecodeToken(req);

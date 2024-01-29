@@ -61,8 +61,7 @@ const ListClient = async (req, res, next) => {
             const filteredData = clientResult[0].filter(
                 client =>
                     client.clientName.toLowerCase().includes(queryLowered) ||
-                    (client.status.toLowerCase() === "active" && "active".includes(queryLowered))
-
+                    (typeof client.status === 'string' && client.status.toLowerCase() === "active" && "active".includes(queryLowered))
             );
 
             if (filteredData.length > 0) {
@@ -78,8 +77,8 @@ const ListClient = async (req, res, next) => {
                     data: [],
                     total: 0
                 };
-            };
-        };
+            }
+        }
 
         res.status(200).json(responseData);
 

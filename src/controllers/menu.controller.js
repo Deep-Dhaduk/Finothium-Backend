@@ -54,7 +54,7 @@ const ListMenu = async (req, res, next) => {
             const queryLowered = q.toLowerCase();
             const filteredData = menuResult[0].filter(
                 menu =>
-                (typeof parentmenu.status === 'string' && parentmenu.status.toLowerCase() === "active" && "active".includes(queryLowered))
+                    (typeof parentmenu.status === 'string' && parentmenu.status.toLowerCase() === "active" && "active".includes(queryLowered))
             );
 
             if (filteredData.length > 0) {
@@ -113,8 +113,8 @@ const deleteMenu = async (req, res, next) => {
 
 const updateMenu = async (req, res, next) => {
     try {
-        let { tenantId, role_id, menuItems, updatedBy } = req.body;
-        let menu = new Menu(tenantId, role_id, menuItems, updatedBy)
+        let { tenantId, role_id, menuItems, createdBy, updatedBy } = req.body;
+        let menu = new Menu(tenantId, role_id, menuItems, createdBy, updatedBy)
         let Id = req.params.id;
         let [findmenu, _] = await Menu.findById(Id);
         if (!findmenu) {

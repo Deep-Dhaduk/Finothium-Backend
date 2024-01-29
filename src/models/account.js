@@ -90,6 +90,15 @@ class Account {
         return db.execute(sql);
     }
 
+    static findBycompanyId(id) {
+        let sql = `
+            SELECT *
+            FROM account_master
+            WHERE companyId = ${id}
+        `;
+        return db.execute(sql);
+    }
+
     static findByAccountId(id) {
         let sql = `
             SELECT *

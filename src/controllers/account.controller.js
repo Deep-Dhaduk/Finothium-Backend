@@ -37,6 +37,7 @@ const CreateAccount = async (req, res) => {
 
 const ListAccount = async (req, res, next) => {
     const token = getDecodeToken(req);
+    const companyId = token.decodedToken.company.companyId
     try {
         const { q = '', id } = req.query;
 
@@ -50,7 +51,8 @@ const ListAccount = async (req, res, next) => {
             return res.status(200).json({ success: true, message: 'Account found', data: account[0][0] });
         }
 
-        const accountResult = await Account.findAll(token.tenantId);
+        // const accountResult = await Account.findAll(token.tenantId);
+        const accountResult = await Account.findBycompanyId(companyId);
 
         let responseData = {
             success: true,

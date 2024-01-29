@@ -29,18 +29,17 @@ class Menu {
 
                 if (existingMenu) {
                     let sql = `
-                        UPDATE menu_master SET
-                        tenantId='${this.tenantId}',
-                        role_id='${this.role_id}',
-                        allow_access='${item.allow_access}',
-                        allow_add='${item.allow_add}',
-                        allow_edit='${item.allow_edit}',
-                        allow_delete='${item.allow_delete}',
-                        createdBy='${this.createdBy}',
-                        updatedOn='${this.dateandtime()}'
-                        updatedBy='${this.updatedBy}',
-                        WHERE child_id = '${item.child_id}'`;
-
+                            UPDATE menu_master SET
+                            tenantId='${this.tenantId}',
+                            role_id='${this.role_id}',
+                            allow_access='${item.allow_access}',
+                            allow_add='${item.allow_add}',
+                            allow_edit='${item.allow_edit}',
+                            allow_delete='${item.allow_delete}',
+                            createdBy='${this.createdBy}',
+                            updatedOn='${this.dateandtime()}',
+                            updatedBy='${this.updatedBy}'
+                            WHERE child_id = '${item.child_id}'`;
                     await db.execute(sql);
                 } else {
                     let sql = `
@@ -94,29 +93,53 @@ class Menu {
         }
         return db.execute(sql)
     };
+
     static findById(id) {
         let sql = `SELECT * FROM menu_master WHERE id = ${id}`;
         return db.execute(sql)
     };
+
     static delete(id) {
         let sql = `DELETE FROM menu_master WHERE id = ${id}`;
         return db.execute(sql)
     };
 
     async update(id) {
-        let sql = `UPDATE menu_master SET
-                tenantId='${this.tenantId}',
-                role_id='${this.role_id}',
-                child_id='${this.child_id}',
-                allow_access='${this.allow_access}',
-                allow_add='${this.allow_add}',
-                allow_edit='${this.allow_edit}',
-                allow_delete='${this.allow_delete}',
-                updatedBy='${this.updatedBy}',
-                updatedOn='${this.dateandtime()}'
-                WHERE id = ${id}`;
-        return db.execute(sql);
-    };
+        try {
+            let sql = `
+                UPDATE menu_master SET
+                tenantId=?,
+                role_id=?,
+                child_id=?,
+                allow_access=?,
+                allow_add=?,
+                allow_edit=?,
+                allow_delete=?,
+                createdBy=?,
+                updatedBy=?,
+                updatedOn=?
+                WHERE id = ?`
+
+            let values = [
+                this.tenantId,
+                this.role_id,
+                this.child_id,  // Assuming this property exists in your class
+                this.allow_access,
+                this.allow_add,
+                this.allow_edit,
+                this.allow_delete,
+                this.createdBy,
+                this.updatedBy,
+                this.dateandtime(),
+                id
+            ];
+
+            await db.execute(sql, values);
+        } catch (error) {
+            throw error;
+        }
+    }
+
 };
 
 module.exports = Menu;

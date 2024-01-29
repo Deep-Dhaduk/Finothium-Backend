@@ -92,20 +92,50 @@ class CompanyAccess {
         }
         return db.execute(sql)
     }
+
     static findById(id) {
         let sql = `SELECT * FROM company_access WHERE id = ${id}`;
         return db.execute(sql)
     }
+
     static delete(id) {
         let sql = `DELETE FROM company_access WHERE id = ${id}`;
         return db.execute(sql)
     }
 
     async update(id) {
-        let sql = `UPDATE company_access SET tenantId='${this.tenantId}',user_id='${this.user_id}',company_id='${this.company_id}',updatedOn='${this.dateandtime()}' WHERE id = ${id}`;
-        return db.execute(sql)
+        try {
+            // Check if user exists
+            const userExistsSql = `SELECT * FROM user_master WHERE id = '${this.user_id}'`;
+            const [userExistsResult] = await db.execute(userExistsSql);
 
-    };
+            if (userExistsResult.length === 0) {
+                throw new Error(`User with ID '${this.user_id}' not found.`);
+            };
+
+            for (const companyId of this.company_id) {
+                const companyExistsSql = `SELECT * FROM company_master WHERE id = '${companyId}'`;
+                const [companyExistsResult] = await db.execute(companyExistsSql);
+
+                if (companyExistsResult.length === 0) {
+                    throw new Error(`Company with ID '${companyId}' not found.`);
+                }
+            };
+
+            const updateCompanySql = `
+                UPDATE company_access
+                SET tenantId='${this.tenantId}',
+                    user_id='${this.user_id}',
+                    updatedOn='${this.dateandtime()}'
+                WHERE user_id = '${id}'`;
+
+            await db.execute(updateCompanySql);
+
+            return { message: 'CompanyAccess successfully updated.' };
+        } catch (error) {
+            throw error;
+        }
+    }
 
 }
 

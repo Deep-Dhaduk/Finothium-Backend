@@ -200,6 +200,7 @@ const changeCompany = async (req, res) => {
 const findOneRec = async (req, res) => {
     try {
         const tokenInfo = getDecodeToken(req);
+        const baseURL = 'http://localhost:8080';
 
         if (!tokenInfo.success) {
             return res.status(401).json({
@@ -220,15 +221,17 @@ const findOneRec = async (req, res) => {
 
         const userId = userRecord[0].id;
 
-        const tokenCompanyIdArray = tokenInfo.decodedToken.companyId || [];
+        let [user, _] = await User.findOne(userId);
 
-        const responseData = {
-            ...userRecord[0],
-            companyId: tokenCompanyIdArray,
-            id: userId
-        };
+        user[0].companyNames = user[0].companyNames ? user[0].companyNames.split(',') : [];
+        user[0].companyIds = user[0].companyIds ? user[0].companyIds.split(',').map(Number) : [];
 
-        return res.status(200).json({ success: true, data: responseData });
+        if (user[0].profile_image_filename) {
+            user[0].profile_image_filename = `${baseURL}/Images/Profile_Images/${user[0].profile_image_filename}`;
+        }
+
+        return res.status(200).json({ success: true, data:user[0]
+        });
 
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });

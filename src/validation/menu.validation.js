@@ -12,7 +12,8 @@ const createMenuSchema = Joi.object({
     tenantId: Joi.number().integer().required(),
     role_id: Joi.number().integer().required(),
     createdBy: Joi.number().integer().required(),
-    menuItems: Joi.array().items(menuItemSchema).min(1),
+    updatedBy: Joi.number().integer().required(),
+    menuItems: Joi.array().items(menuItemSchema).min(1)
 });
 
 module.exports = {

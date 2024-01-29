@@ -11,11 +11,11 @@ const CreateClient = async (req, res) => {
             return res.status(400).json({ success: false, message: error.message });
         }
 
-        let { tenantId, clientName, status, createdBy, updatedBy } = req.body;
+        let { tenantId, clientName, status, createdBy, updatedBy, type } = req.body;
 
         const companyId = token.decodedToken.company.companyId;
 
-        let client = new Client(tenantId, clientName, status, createdBy, updatedBy);
+        let client = new Client(tenantId, clientName, status, createdBy, updatedBy, '', type);
 
         client.companyId = companyId;
 
@@ -122,8 +122,8 @@ const deleteClient = async (req, res, next) => {
 
 const updateClient = async (req, res, next) => {
     try {
-        let { tenantId, clientName, status, createdBy, updatedBy } = req.body;
-        let client = new Client(tenantId, clientName, status, createdBy, updatedBy);
+        let { tenantId, clientName, status, createdBy, updatedBy, type } = req.body;
+        let client = new Client(tenantId, clientName, status, createdBy, updatedBy, '', type);
 
         let Id = req.params.id;
         let [findclient, _] = await Client.findById(Id);

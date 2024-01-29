@@ -12,7 +12,6 @@ class Account {
         this.createdBy = createdBy;
         this.updatedBy = updatedBy;
         this.companyId = companyId;
-
     }
 
     dateandtime = () => {
@@ -70,10 +69,10 @@ class Account {
 
     static findAll(tenantId) {
         let sql = `
-            SELECT a.*, c.name as group_name, ct.name as account_type_name
-            FROM account_master a
-            LEFT JOIN common_master c ON a.group_name_Id = c.common_id
-            LEFT JOIN common_master ct ON a.account_type_Id = ct.common_id
+        SELECT a.*, c.name AS group_name, ct.name AS account_type_name
+        FROM account_master a
+        LEFT JOIN common_master c ON a.group_name_Id = c.common_id
+        LEFT JOIN common_master ct ON a.account_type_Id = ct.common_id
         `;
         if (tenantId) {
             sql += ` WHERE a.tenantId = '${tenantId}'`;
@@ -92,8 +91,10 @@ class Account {
 
     static findBycompanyId(id) {
         let sql = `
-            SELECT *
-            FROM account_master
+        SELECT a.*, c.name AS group_name, ct.name AS account_type_name
+        FROM account_master a
+        LEFT JOIN common_master c ON a.group_name_Id = c.common_id
+        LEFT JOIN common_master ct ON a.account_type_Id = ct.common_id
             WHERE companyId = ${id}
         `;
         return db.execute(sql);

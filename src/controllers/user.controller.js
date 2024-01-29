@@ -10,7 +10,6 @@ const emailService = require('../service/email.service');
 const { createUserSchema } = require('../validation/user.validation');
 const { getDecodeToken } = require('../middlewares/decoded');
 
-
 const CreateUser = async (req, res) => {
     try {
         const { error } = createUserSchema.validate(req.body);
@@ -230,7 +229,8 @@ const findOneRec = async (req, res) => {
             user[0].profile_image_filename = `${baseURL}/Images/Profile_Images/${user[0].profile_image_filename}`;
         }
 
-        return res.status(200).json({ success: true, data:user[0]
+        return res.status(200).json({
+            success: true, data: user[0]
         });
 
     } catch (error) {
@@ -379,27 +379,47 @@ const deleteUser = async (req, res, next) => {
 
 const updateUser = async (req, res, next) => {
     try {
-        let { tenantId, username, fullname, email, password, confirmpassword, profile_image, companyId, status, createdBy, updatedBy, roleId } = req.body;
-
+        const { tenantId, username, fullname, email, password, confirmpassword, profile_image, companyId, status, createdBy, updatedBy, roleId } = req.body;
+        const userId = req.params.id;
         if (!companyId) {
             throw new Error("companyId is required for updating user.");
         }
 
         const companyIdArray = Array.isArray(companyId) ? companyId : [companyId];
 
-        let user = new User(tenantId, username, fullname, email, password, confirmpassword, profile_image, companyIdArray, status, createdBy, updatedBy, roleId);
-        let userId = req.params.id;
-        let [finduser, _] = await User.findById(userId);
-        if (!finduser) {
-            throw new Error("User not found!");
-        }
+        let user = new User(tenantId, username, fullname, email, password, confirmpassword, '', companyIdArray, status, createdBy, updatedBy, roleId);
 
-        let updateuser = await user.update(userId);
+        if (profile_image) {
+            const matches = profile_image.match(/^data:(image\/([a-zA-Z]+));base64,(.+)$/);
+
+            if (!matches || matches.length !== 4) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Invalid profile_image format'
+                });
+            }
+
+            const contentType = matches[1];
+            const fileExtension = matches[2];
+            const base64Data = matches[3];
+
+            const buffer = Buffer.from(base64Data, 'base64');
+
+            const fileName = `${Date.now()}-profile.${fileExtension}`;
+            const filePath = path.join(__dirname, '../public/Images/Profile_Images', fileName);
+
+            fs.mkdirSync(path.dirname(filePath), { recursive: true });
+
+            fs.writeFileSync(filePath, buffer);
+
+            user.profile_image_filename = fileName;
+        }
+        let updateUserResult = await user.update(userId);
 
         res.status(200).json({
             success: true,
             message: "User Successfully Updated",
-            record: { updateuser },
+            record: { updateUserResult },
             returnOriginal: false,
             runValidators: true
         });

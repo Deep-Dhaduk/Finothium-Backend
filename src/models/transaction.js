@@ -1,18 +1,18 @@
 const db = require('../db/dbconnection')
 
 class Transaction {
-    constructor(tenantId, transaction_date, transaction_type, payment_type_Id, client_category_name_Id, accountId, amount, description, createdBy, updatedBy, companyId) {
+    constructor(tenantId, transaction_date, transaction_type, payment_type_Id, accountId, amount, description, createdBy, updatedBy, companyId, clientId) {
         this.tenantId = tenantId;
         this.transaction_date = transaction_date;
         this.transaction_type = transaction_type;
         this.payment_type_Id = payment_type_Id;
-        this.client_category_name_Id = client_category_name_Id;
         this.accountId = accountId;
         this.amount = amount;
         this.description = description;
         this.createdBy = createdBy;
         this.updatedBy = updatedBy;
         this.companyId = companyId;
+        this.clientId = clientId;
     }
 
     dateandtime = () => {
@@ -37,7 +37,6 @@ class Transaction {
                 transaction_date,
                 transaction_type,
                 payment_type_Id,
-                client_category_name_Id,
                 accountId,
                 amount,
                 description,
@@ -45,14 +44,14 @@ class Transaction {
                 createdOn,
                 updatedBy,
                 updatedOn,
-                companyId
+                companyId,
+                clientId
             )
             VALUES(
                 '${this.tenantId}',
                 '${this.transaction_date}',
                 '${this.transaction_type}',
                 '${this.payment_type_Id}',
-                '${this.client_category_name_Id}',
                 '${this.accountId}',
                 '${this.amount}',
                 '${this.description}',
@@ -60,7 +59,8 @@ class Transaction {
                 '${this.dateandtime()}',
                 '${this.updatedBy}',
                 '${this.dateandtime()}',
-                '${this.companyId}'
+                '${this.companyId}',
+                '${this.clientId}'
             )`;
             return db.execute(sql);
         } catch (error) {
@@ -73,12 +73,12 @@ class Transaction {
         let sql = `
             SELECT t.*,
                    cp.name as payment_type_name,
-                   cc.name as client_category_name,
-                   a.account_name as account_name
+                   a.account_name as account_name,
+                   cn.clientName as client_name
             FROM transaction t
             LEFT JOIN common_master cp ON t.payment_type_Id = cp.common_id
-            LEFT JOIN common_master cc ON t.client_category_name_Id = cc.common_id
             LEFT JOIN account_master a ON t.accountId = a.account_id
+            LEFT JOIN client_master cn ON t.clientId = cn.clientId
         `;
         if (tenantId) {
             sql += ` WHERE t.tenantId = '${tenantId}'`;
@@ -96,7 +96,7 @@ class Transaction {
     }
 
     async update(id) {
-        let sql = `UPDATE transaction SET tenantId='${this.tenantId}', transaction_date='${this.transaction_date}', transaction_type='${this.transaction_type}', payment_type_Id='${this.payment_type_Id}', client_category_name_Id='${this.client_category_name_Id}', accountId='${this.accountId}', amount='${this.amount}', description='${this.description}', createdBy='${this.createdBy}',updatedBy='${this.updatedBy}', updatedOn='${this.dateandtime()}' WHERE transactionId = ${id}`;
+        let sql = `UPDATE transaction SET tenantId='${this.tenantId}', transaction_date='${this.transaction_date}', transaction_type='${this.transaction_type}', payment_type_Id='${this.payment_type_Id}',accountId='${this.accountId}', amount='${this.amount}', description='${this.description}', createdBy='${this.createdBy}',updatedBy='${this.updatedBy}', updatedOn='${this.dateandtime()}', clientId='${this.clientId}' WHERE transactionId = ${id}`;
         return db.execute(sql);
     }
 }

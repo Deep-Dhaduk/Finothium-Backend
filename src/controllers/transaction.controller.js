@@ -11,11 +11,11 @@ const CreateTransaction = async (req, res) => {
             return res.status(400).json({ success: false, message: error.message });
         };
 
-        let { tenantId, transaction_date, transaction_type, payment_type_Id, client_category_name_Id, accountId, amount, description, createdBy, updatedBy } = req.body;
+        let { tenantId, transaction_date, transaction_type, payment_type_Id, accountId, amount, description, createdBy, updatedBy, clientId } = req.body;
 
         const companyId = token.decodedToken.company.companyId;
 
-        let transaction = new Transaction(tenantId, transaction_date, transaction_type, payment_type_Id, client_category_name_Id, accountId, amount, description, createdBy, updatedBy);
+        let transaction = new Transaction(tenantId, transaction_date, transaction_type, payment_type_Id, accountId, amount, description, createdBy, updatedBy, '', clientId);
 
         transaction.companyId = companyId;
 
@@ -62,7 +62,7 @@ const ListTransaction = async (req, res, next) => {
             const filteredData = transactionResult[0].filter(transaction =>
                 (transaction.transaction_type && transaction.transaction_type.toLowerCase().includes(queryLowered)) ||
                 (transaction.payment_type_Id && transaction.payment_type_Id.toLowerCase().includes(queryLowered)) ||
-                (transaction.client_category_name_Id && transaction.client_category_name_Id.toLowerCase().includes(queryLowered))
+                (transactio && transactio.toLowerCase().includes(queryLowered))
             );
 
             if (filteredData.length > 0) {
@@ -121,9 +121,9 @@ const deleteTransaction = async (req, res, next) => {
 
 const updateTransaction = async (req, res, next) => {
     try {
-        let { tenantId, transaction_date, transaction_type, payment_type_Id, client_category_name_Id, accountId, amount, description, createdBy, updatedBy } = req.body;
+        let { tenantId, transaction_date, transaction_type, payment_type_Id, accountId, amount, description, createdBy, updatedBy, clientId } = req.body;
 
-        let transaction = new Transaction(tenantId, transaction_date, transaction_type, payment_type_Id, client_category_name_Id, accountId, amount, description, createdBy, updatedBy);
+        let transaction = new Transaction(tenantId, transaction_date, transaction_type, payment_type_Id, accountId, amount, description, createdBy, updatedBy, '', clientId);
         let Id = req.params.id;
         let [findtransaction, _] = await Transaction.findById(Id);
         if (!findtransaction) {

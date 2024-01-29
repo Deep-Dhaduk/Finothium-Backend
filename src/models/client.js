@@ -1,13 +1,14 @@
 const db = require('../db/dbconnection')
 
 class Client {
-    constructor(tenantId, clientName, status, createdBy, updatedBy, companyId) {
+    constructor(tenantId, clientName, status, createdBy, updatedBy, companyId, type) {
         this.tenantId = tenantId;
         this.clientName = clientName;
         this.status = status;
         this.createdBy = createdBy;
         this.updatedBy = updatedBy;
         this.companyId = companyId;
+        this.type = type;
     }
 
     dateandtime = () => {
@@ -35,7 +36,8 @@ class Client {
                 createdOn,
                 updatedBy,
                 updatedOn,
-                companyId
+                companyId,
+                type
             )
             VALUES(
                 '${this.tenantId}',
@@ -45,7 +47,8 @@ class Client {
                 '${this.dateandtime()}',
                 '${this.updatedBy}',
                 '${this.dateandtime()}',
-                ${this.companyId}
+                '${this.companyId}',
+                '${this.type}'
             )`;
             return db.execute(sql)
 
@@ -71,7 +74,7 @@ class Client {
     }
 
     async update(id) {
-        let sql = `UPDATE client_master SET tenantId='${this.tenantId}',clientName='${this.clientName}',status='${this.status}',createdBy='${this.createdBy}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}' WHERE clientId = ${id}`;
+        let sql = `UPDATE client_master SET tenantId='${this.tenantId}',clientName='${this.clientName}',status='${this.status}',createdBy='${this.createdBy}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}',type='${this.type}' WHERE clientId = ${id}`;
         return db.execute(sql)
 
     };

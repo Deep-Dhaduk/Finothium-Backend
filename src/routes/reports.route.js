@@ -3,13 +3,13 @@ const Reportcontroller = require('../controllers/reports.controller');
 const auth = require('../middlewares/auth');
 const router = express.Router();
 
-router.post(
-    "/filter-paymentReport",
+router.get(
+    "/list-payment",
     auth.verifyToken,
     Reportcontroller.ListPaymentReport
 );
-router.get(
-    "/list-payment",
+router.post(
+    "/filter-paymentReport",
     auth.verifyToken,
     Reportcontroller.ListPaymentReport
 );
@@ -20,8 +20,20 @@ router.get(
     Reportcontroller.ListClientReport
 );
 
+router.post(
+    "/filter-clientReport",
+    auth.verifyToken,
+    Reportcontroller.ListClientReport
+);
+
 router.get(
     "/list-category",
+    auth.verifyToken,
+    Reportcontroller.ListCategoryReport
+);
+
+router.post(
+    "/filter-categoryReport",
     auth.verifyToken,
     Reportcontroller.ListCategoryReport
 );
@@ -32,14 +44,32 @@ router.get(
     Reportcontroller.ListAccountReport
 );
 
+router.post(
+    "/filter-accountReport",
+    auth.verifyToken,
+    Reportcontroller.ListAccountReport
+);
+
 router.get(
     "/list-group",
     auth.verifyToken,
     Reportcontroller.ListGroupReport
 );
 
+router.post(
+    "/filter-groupReport",
+    auth.verifyToken,
+    Reportcontroller.ListGroupReport
+);
+
 router.get(
     "/list-company",
+    auth.verifyToken,
+    Reportcontroller.ListCompanyReport
+);
+
+router.post(
+    "/filter-companyReport",
     auth.verifyToken,
     Reportcontroller.ListCompanyReport
 );

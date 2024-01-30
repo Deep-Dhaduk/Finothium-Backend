@@ -28,7 +28,7 @@ const CreateCompany = async (req, res) => {
         });
         console.log(error);
     }
-}
+};
 
 const ListCompany = async (req, res, next) => {
     const token = getDecodeToken(req)
@@ -116,7 +116,7 @@ const deleteCompany = async (req, res, next) => {
         console.log(error);
         next(error)
     }
-}
+};
 
 const updateCompany = async (req, res, next) => {
     try {
@@ -137,7 +137,7 @@ const updateCompany = async (req, res, next) => {
         console.log(error);
         next(error)
     }
-}
+};
 
 module.exports = {
     CreateCompany,

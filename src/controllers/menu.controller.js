@@ -109,7 +109,7 @@ const deleteMenu = async (req, res, next) => {
         console.log(error);
         next(error)
     }
-}
+};
 
 const updateMenu = async (req, res, next) => {
     try {
@@ -130,7 +130,7 @@ const updateMenu = async (req, res, next) => {
         console.log(error);
         next(error)
     }
-}
+};
 
 module.exports = {
     CreateMenu,

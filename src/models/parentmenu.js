@@ -51,8 +51,7 @@ class Parentmenu {
         } catch (error) {
             throw error;
         }
-    }
-
+    };
 
     static findAll(tenantId) {
         let sql = "SELECT * FROM parentmenu_master";
@@ -60,15 +59,17 @@ class Parentmenu {
             sql += ` WHERE tenantId = '${tenantId}'`;
         }
         return db.execute(sql)
-    }
+    };
+
     static findById(id) {
         let sql = `SELECT * FROM parentmenu_master WHERE id = ${id}`;
         return db.execute(sql)
-    }
+    };
+
     static delete(id) {
         let sql = `DELETE FROM parentmenu_master WHERE id = ${id}`;
         return db.execute(sql)
-    }
+    };
 
     async update(id) {
         let sql = `UPDATE parentmenu_master SET tenantId='${this.tenantId}',menu_name='${this.menu_name}',display_rank='${this.display_rank}',status='${this.status}',createdBy='${this.createdBy}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}' WHERE id = ${id}`;

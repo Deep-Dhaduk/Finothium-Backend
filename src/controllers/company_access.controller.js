@@ -23,7 +23,8 @@ const CreateCompanyAccess = async (req, res) => {
         })
         console.log(error);
     }
-}
+};
+
 const ListCreateCompanyAccess = async (req, res, next) => {
     const token = getDecodeToken(req)
     try {
@@ -105,7 +106,7 @@ const deleteCompanyAccess = async (req, res, next) => {
         console.log(error);
         next(error)
     }
-}
+};
 
 const updateCompanyAccess = async (req, res, next) => {
     try {

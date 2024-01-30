@@ -56,7 +56,8 @@ const ListTenant = async (req, res, next) => {
                     tenant.tenantname.toLowerCase().includes(queryLowered) ||
                     tenant.personname.toLowerCase().includes(queryLowered) ||
                     tenant.address.toLowerCase().includes(queryLowered) ||
-                    (typeof tenant.status === 'string' && tenant.status.toLowerCase() === "active" && "active".includes(queryLowered))
+                    (typeof tenant.status === 'number' && tenant.status === 1 && "active".includes(queryLowered)) ||
+                    (typeof tenant.status === 'number' && tenant.status === 0 && "inactive".includes(queryLowered))
             );
             if (filteredData.length > 0) {
                 responseData = {
@@ -131,9 +132,7 @@ const updateTenant = async (req, res, next) => {
         console.log(error);
         next(error)
     }
-}
-
-
+};
 
 module.exports = {
     CreateTenant,

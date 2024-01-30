@@ -72,7 +72,7 @@ class Company {
         } catch (error) {
             throw error;
         }
-    }
+    };
 
     static findAll(tenantId) {
         let sql = "SELECT * FROM company_master";
@@ -80,15 +80,17 @@ class Company {
             sql += ` WHERE tenantId = '${tenantId}'`;
         }
         return db.execute(sql)
-    }
+    };
+
     static findById(id) {
         let sql = `SELECT * FROM company_master WHERE id = ${id}`;
         return db.execute(sql)
-    }
+    };
+
     static delete(id) {
         let sql = `DELETE FROM company_master WHERE id = ${id}`;
         return db.execute(sql)
-    }
+    };
 
     async update(id) {
         let sql = `UPDATE company_master SET
@@ -108,14 +110,13 @@ class Company {
                 updatedOn='${this.dateandtime()}'
                 WHERE id = ${id}`;
         return db.execute(sql);
-    }
+    };
 
     static async exists(id) {
         let sql = `SELECT * FROM company_master WHERE id = ${id}`;
         const [result] = await db.execute(sql);
         return result.length > 0;
-    }
-
+    };
 };
 
 module.exports = Company;

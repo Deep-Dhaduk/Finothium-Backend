@@ -14,8 +14,7 @@ const ListPaymentReport = async (req, res, next) => {
     try {
         const { q = '' } = req.query;
         const { tenantId, companyId } = tokenInfo.decodedToken;
-        const { startDate, endDate, clientCategory } = req.body; // Modified this line
-
+        const { startDate, endDate, paymentTypeName } = req.body;
         if (companyId && req.body.companyId && companyId !== req.body.companyId) {
             return res.status(403).json({
                 success: false,
@@ -24,8 +23,8 @@ const ListPaymentReport = async (req, res, next) => {
         }
 
         let report;
-        if (startDate && endDate) {
-            report = await Report.findAllPayment(tenantId, startDate, endDate);
+        if (startDate && endDate && paymentTypeName) {
+            report = await Report.findAllPayment(tenantId, startDate, endDate, paymentTypeName);
         } else {
             report = await Report.findAllPayment(tenantId);
         }
@@ -36,28 +35,15 @@ const ListPaymentReport = async (req, res, next) => {
             data: report[0]
         };
 
-        if (clientCategory) {
-            const filteredByClientCategory = responseData.data.filter(payment =>
-                payment.client_category_name &&
-                payment.client_category_name.toLowerCase() === clientCategory.toLowerCase()
-            );
-
-            responseData = {
-                ...responseData,
-                data: filteredByClientCategory,
-                total: filteredByClientCategory.length,
-            };
-        }
-
         if (q) {
             const queryLowered = q.toLowerCase();
             const filteredData = responseData.data.filter(payment =>
                 (payment.payment_type_name && payment.payment_type_name.toLowerCase().includes(queryLowered)) ||
-                (payment.client_category_name && payment.client_category_name.toLowerCase().includes(queryLowered)) ||
                 (payment.account_name && payment.account_name.toLowerCase().includes(queryLowered)) ||
                 (payment.PaidAmount && payment.PaidAmount.toString().toLowerCase().includes(queryLowered)) ||
                 (payment.ReceiveAmount && payment.ReceiveAmount.toString().toLowerCase().includes(queryLowered)) ||
-                (payment.description && payment.description.toLowerCase().includes(queryLowered))
+                (payment.description && payment.description.toLowerCase().includes(queryLowered)) ||
+                (payment.clientName && payment.clientName.toLowerCase().includes(queryLowered))
             );
 
             if (filteredData.length > 0) {
@@ -96,31 +82,41 @@ const ListClientReport = async (req, res, next) => {
     try {
         const { q = '' } = req.query;
         const { tenantId, companyId } = tokenInfo.decodedToken;
+        const { startDate, endDate, clientName } = req.body;
 
-        // Add companyId check to ensure the companyId in the token matches the one used in the query
-        if (companyId && req.query.companyId && companyId !== req.query.companyId) {
+        if (companyId && req.body.companyId && companyId !== req.body.companyId) {
             return res.status(403).json({
                 success: false,
                 message: 'Unauthorized: CompanyId in token does not match the requested companyId',
             });
         }
 
-        const report = await Report.findAllClient(tenantId, companyId);
+        let report;
+        if (startDate && endDate) {
+            report = await Report.findAllClient(tenantId, startDate, endDate, clientName);
+        } else {
+            report = await Report.findAllClient(tenantId, null, null, clientName);
+        }
+
+        // Filter out records where clientName is null
+        // const filteredReport = report[0].filter(record => record.clientName !== null);
+
         let responseData = {
             success: true,
-            message: 'Client Report List Successfully!',
-            data: report[0],
+            message: 'Client Client List Successfully!',
+            // data: filteredReport // Send the filtered report
+            data: report[0]
         };
 
         if (q) {
             const queryLowered = q.toLowerCase();
-            const filteredData = report[0].filter(client =>
-                (client.client_category_name && client.client_category_name.toLowerCase().includes(queryLowered)) ||
-                (client.payment_type && client.payment_type.toLowerCase().includes(queryLowered)) ||
+            const filteredData = responseData.data.filter(client =>
+                (client.payment_type_name && client.payment_type_name.toLowerCase().includes(queryLowered)) ||
                 (client.account_name && client.account_name.toLowerCase().includes(queryLowered)) ||
-                (client.paid_amount && client.paid_amount.toLowerCase().includes(queryLowered)) ||
-                (client.receive_amount && client.receive_amount.toLowerCase().includes(queryLowered)) ||
-                (client.description && client.description.toLowerCase().includes(queryLowered))
+                (client.PaidAmount && client.PaidAmount.toString().toLowerCase().includes(queryLowered)) ||
+                (client.ReceiveAmount && client.ReceiveAmount.toString().toLowerCase().includes(queryLowered)) ||
+                (client.description && client.description.toLowerCase().includes(queryLowered)) ||
+                (client.clientName && client.clientName.toLowerCase().includes(queryLowered))
             );
 
             if (filteredData.length > 0) {
@@ -159,31 +155,37 @@ const ListCategoryReport = async (req, res, next) => {
     try {
         const { q = '' } = req.query;
         const { tenantId, companyId } = tokenInfo.decodedToken;
+        const { startDate, endDate, categoryName } = req.body;
 
-        // Add companyId check to ensure the companyId in the token matches the one used in the query
-        if (companyId && req.query.companyId && companyId !== req.query.companyId) {
+        if (companyId && req.body.companyId && companyId !== req.body.companyId) {
             return res.status(403).json({
                 success: false,
                 message: 'Unauthorized: CompanyId in token does not match the requested companyId',
             });
         }
 
-        const report = await Report.findAllCategory(tenantId, companyId);
+        let report;
+        if (startDate && endDate && categoryName) {
+            report = await Report.findAllCategory(tenantId, startDate, endDate, categoryName);
+        } else {
+            report = await Report.findAllCategory(tenantId);
+        }
+
         let responseData = {
             success: true,
             message: 'Category Report List Successfully!',
-            data: report[0],
+            data: report[0]
         };
 
         if (q) {
             const queryLowered = q.toLowerCase();
-            const filteredData = report[0].filter(category =>
-                (category.client_category_name && category.client_category_name.toLowerCase().includes(queryLowered)) ||
-                (category.payment_type && category.payment_type.toLowerCase().includes(queryLowered)) ||
+            const filteredData = responseData.data.filter(category =>
+                (category.payment_type_name && category.payment_type_name.toLowerCase().includes(queryLowered)) ||
                 (category.account_name && category.account_name.toLowerCase().includes(queryLowered)) ||
-                (category.paid_amount && category.paid_amount.toLowerCase().includes(queryLowered)) ||
-                (category.receive_amount && category.receive_amount.toLowerCase().includes(queryLowered)) ||
-                (category.description && category.description.toLowerCase().includes(queryLowered))
+                (category.PaidAmount && category.PaidAmount.toString().toLowerCase().includes(queryLowered)) ||
+                (category.ReceiveAmount && category.ReceiveAmount.toString().toLowerCase().includes(queryLowered)) ||
+                (category.description && category.description.toLowerCase().includes(queryLowered)) ||
+                (category.clientName && category.clientName.toLowerCase().includes(queryLowered))
             );
 
             if (filteredData.length > 0) {
@@ -222,31 +224,37 @@ const ListAccountReport = async (req, res, next) => {
     try {
         const { q = '' } = req.query;
         const { tenantId, companyId } = tokenInfo.decodedToken;
+        const { startDate, endDate, accountName } = req.body;
 
-        // Add companyId check to ensure the companyId in the token matches the one used in the query
-        if (companyId && req.query.companyId && companyId !== req.query.companyId) {
+        if (companyId && req.body.companyId && companyId !== req.body.companyId) {
             return res.status(403).json({
                 success: false,
                 message: 'Unauthorized: CompanyId in token does not match the requested companyId',
             });
         }
 
-        const report = await Report.findAllAccount(tenantId, companyId);
+        let report;
+        if (startDate && endDate && accountName) {
+            report = await Report.findAllAccount(tenantId, startDate, endDate, accountName);
+        } else {
+            report = await Report.findAllAccount(tenantId);
+        }
+
         let responseData = {
             success: true,
             message: 'Account Report List Successfully!',
-            data: report[0],
+            data: report[0]
         };
 
         if (q) {
             const queryLowered = q.toLowerCase();
-            const filteredData = report[0].filter(account =>
-                (account.client_category_name && account.client_category_name.toLowerCase().includes(queryLowered)) ||
-                (account.payment_type && account.payment_type.toLowerCase().includes(queryLowered)) ||
+            const filteredData = responseData.data.filter(account =>
+                (account.payment_type_name && account.payment_type_name.toLowerCase().includes(queryLowered)) ||
                 (account.account_name && account.account_name.toLowerCase().includes(queryLowered)) ||
-                (account.paid_amount && account.paid_amount.toLowerCase().includes(queryLowered)) ||
-                (account.receive_amount && account.receive_amount.toLowerCase().includes(queryLowered)) ||
-                (account.description && account.description.toLowerCase().includes(queryLowered))
+                (account.PaidAmount && account.PaidAmount.toString().toLowerCase().includes(queryLowered)) ||
+                (account.ReceiveAmount && account.ReceiveAmount.toString().toLowerCase().includes(queryLowered)) ||
+                (account.description && account.description.toLowerCase().includes(queryLowered)) ||
+                (account.clientName && account.clientName.toLowerCase().includes(queryLowered))
             );
 
             if (filteredData.length > 0) {
@@ -285,31 +293,37 @@ const ListGroupReport = async (req, res, next) => {
     try {
         const { q = '' } = req.query;
         const { tenantId, companyId } = tokenInfo.decodedToken;
+        const { startDate, endDate } = req.body;
 
-        // Add companyId check to ensure the companyId in the token matches the one used in the query
-        if (companyId && req.query.companyId && companyId !== req.query.companyId) {
+        if (companyId && req.body.companyId && companyId !== req.body.companyId) {
             return res.status(403).json({
                 success: false,
                 message: 'Unauthorized: CompanyId in token does not match the requested companyId',
             });
         }
 
-        const report = await Report.findAllGroup(tenantId, companyId);
+        let report;
+        if (startDate && endDate) {
+            report = await Report.findAllGroup(tenantId, startDate, endDate);
+        } else {
+            report = await Report.findAllGroup(tenantId);
+        }
+
         let responseData = {
             success: true,
-            message: 'Category Report List Successfully!',
-            data: report[0],
+            message: 'Group Report List Successfully!',
+            data: report[0]
         };
 
         if (q) {
             const queryLowered = q.toLowerCase();
-            const filteredData = report[0].filter(group =>
-                (group.client_category_name && group.client_category_name.toLowerCase().includes(queryLowered)) ||
-                (group.payment_type && group.payment_type.toLowerCase().includes(queryLowered)) ||
+            const filteredData = responseData.data.filter(group =>
+                (group.payment_type_name && group.payment_type_name.toLowerCase().includes(queryLowered)) ||
                 (group.account_name && group.account_name.toLowerCase().includes(queryLowered)) ||
-                (group.paid_amount && group.paid_amount.toLowerCase().includes(queryLowered)) ||
-                (group.receive_amount && group.receive_amount.toLowerCase().includes(queryLowered)) ||
-                (group.description && group.description.toLowerCase().includes(queryLowered))
+                (group.PaidAmount && group.PaidAmount.toString().toLowerCase().includes(queryLowered)) ||
+                (group.ReceiveAmount && group.ReceiveAmount.toString().toLowerCase().includes(queryLowered)) ||
+                (group.description && group.description.toLowerCase().includes(queryLowered)) ||
+                (group.clientName && group.clientName.toLowerCase().includes(queryLowered))
             );
 
             if (filteredData.length > 0) {
@@ -348,31 +362,37 @@ const ListCompanyReport = async (req, res, next) => {
     try {
         const { q = '' } = req.query;
         const { tenantId, companyId } = tokenInfo.decodedToken;
+        const { startDate, endDate } = req.body;
 
-        // Add companyId check to ensure the companyId in the token matches the one used in the query
-        if (companyId && req.query.companyId && companyId !== req.query.companyId) {
+        if (companyId && req.body.companyId && companyId !== req.body.companyId) {
             return res.status(403).json({
                 success: false,
                 message: 'Unauthorized: CompanyId in token does not match the requested companyId',
             });
         }
 
-        const report = await Report.findAllCompany(tenantId, companyId);
+        let report;
+        if (startDate && endDate) {
+            report = await Report.findAllCompany(tenantId, startDate, endDate);
+        } else {
+            report = await Report.findAllCompany(tenantId);
+        }
+
         let responseData = {
             success: true,
             message: 'Company Report List Successfully!',
-            data: report[0],
+            data: report[0]
         };
 
         if (q) {
             const queryLowered = q.toLowerCase();
-            const filteredData = report[0].filter(company =>
-                (company.client_category_name && company.client_category_name.toLowerCase().includes(queryLowered)) ||
-                (company.payment_type && company.payment_type.toLowerCase().includes(queryLowered)) ||
+            const filteredData = responseData.data.filter(company =>
+                (company.payment_type_name && company.payment_type_name.toLowerCase().includes(queryLowered)) ||
                 (company.account_name && company.account_name.toLowerCase().includes(queryLowered)) ||
-                (company.paid_amount && company.paid_amount.toLowerCase().includes(queryLowered)) ||
-                (company.receive_amount && company.receive_amount.toLowerCase().includes(queryLowered)) ||
-                (company.description && company.description.toLowerCase().includes(queryLowered))
+                (company.PaidAmount && company.PaidAmount.toString().toLowerCase().includes(queryLowered)) ||
+                (company.ReceiveAmount && company.ReceiveAmount.toString().toLowerCase().includes(queryLowered)) ||
+                (company.description && company.description.toLowerCase().includes(queryLowered)) ||
+                (company.clientName && company.clientName.toLowerCase().includes(queryLowered))
             );
 
             if (filteredData.length > 0) {

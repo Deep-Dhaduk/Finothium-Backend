@@ -60,15 +60,17 @@ class Common {
             sql += ` WHERE tenantId = '${tenantId}'`;
         }
         return db.execute(sql)
-    }
+    };
+
     static findById(id) {
         let sql = `SELECT * FROM common_master WHERE common_id = ${id}`;
         return db.execute(sql)
-    }
+    };
+
     static delete(id) {
         let sql = `DELETE FROM common_master WHERE common_id = ${id}`;
         return db.execute(sql)
-    }
+    };
 
     async update(id) {
         let sql = `UPDATE common_master SET tenantId='${this.tenantId}',name='${this.name}',type='${this.type}',status='${this.status}',createdBy='${this.createdBy}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}' WHERE common_id = ${id}`;

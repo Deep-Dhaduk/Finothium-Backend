@@ -63,15 +63,17 @@ class Client {
             sql += ` WHERE tenantId = '${tenantId}'`;
         }
         return db.execute(sql)
-    }
+    };
+
     static findById(id) {
         let sql = `SELECT * FROM client_master WHERE clientId = ${id}`;
         return db.execute(sql)
-    }
+    };
+
     static delete(id) {
         let sql = `DELETE FROM client_master WHERE clientId = ${id}`;
         return db.execute(sql)
-    }
+    };
 
     async update(id) {
         let sql = `UPDATE client_master SET tenantId='${this.tenantId}',clientName='${this.clientName}',status='${this.status}',createdBy='${this.createdBy}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}',type='${this.type}' WHERE clientId = ${id}`;

@@ -154,6 +154,34 @@ class User {
             await db.execute(sql);
 
             if (this.companyId && Array.isArray(this.companyId) && this.companyId.length > 0) {
+                const existingCompaniesSql = `SELECT company_id FROM company_access WHERE user_id = '${id}'`;
+                const [existingCompaniesResult] = await db.execute(existingCompaniesSql);
+                const existingCompanyIds = existingCompaniesResult.map(item => item.company_id);
+
+                for (const companyId of existingCompanyIds) {
+                    const updateCompanySql = `
+                        UPDATE company_access
+                        SET tenantId='${this.tenantId}',
+                            user_id='${id}',
+                            updatedOn='${this.dateandtime()}'
+                        WHERE user_id = '${id}' AND company_id = '${companyId}'`;
+
+                    await db.execute(updateCompanySql);
+                };
+
+                const newCompanies = this.companyId.filter(companyId => !existingCompanyIds.includes(companyId));
+                for (const newCompanyId of newCompanies) {
+                    const addCompanySql = `
+                        INSERT INTO company_access(tenantId, user_id, company_id, createdOn, updatedOn)
+                        VALUES('${this.tenantId}', '${id}', '${newCompanyId}', '${this.dateandtime()}', '${this.dateandtime()}')`;
+                    await db.execute(addCompanySql);
+                }
+
+                const removedCompanies = existingCompanyIds.filter(companyId => !this.companyId.includes(companyId));
+                for (const removedCompanyId of removedCompanies) {
+                    const removeCompanySql = `DELETE FROM company_access WHERE user_id = '${id}' AND company_id = '${removedCompanyId}'`;
+                    await db.execute(removeCompanySql);
+                }
             }
 
             return { message: 'User and associated company access successfully updated.' };

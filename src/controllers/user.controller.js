@@ -380,7 +380,6 @@ const deleteUser = async (req, res, next) => {
 const updateUser = async (req, res, next) => {
     try {
         const { tenantId, username, fullname, email, password, confirmpassword, profile_image, companyId, status, createdBy, updatedBy, roleId } = req.body;
-        const userId = req.params.id;
         if (!companyId) {
             throw new Error("companyId is required for updating user.");
         }
@@ -388,6 +387,7 @@ const updateUser = async (req, res, next) => {
         const companyIdArray = Array.isArray(companyId) ? companyId : [companyId];
 
         let user = new User(tenantId, username, fullname, email, password, confirmpassword, '', companyIdArray, status, createdBy, updatedBy, roleId);
+        const userId = req.params.id;
 
         if (profile_image) {
             const matches = profile_image.match(/^data:(image\/([a-zA-Z]+));base64,(.+)$/);

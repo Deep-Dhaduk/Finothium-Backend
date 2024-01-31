@@ -14,7 +14,7 @@ const ListPaymentReport = async (req, res, next) => {
     try {
         const { q = '' } = req.query;
         const { tenantId, companyId } = tokenInfo.decodedToken;
-        const { startDate, endDate, paymentTypeName } = req.body;
+        const { startDate, endDate, paymentTypeIds } = req.body;
         if (companyId && req.body.companyId && companyId !== req.body.companyId) {
             return res.status(403).json({
                 success: false,
@@ -23,8 +23,8 @@ const ListPaymentReport = async (req, res, next) => {
         }
 
         let report;
-        if (startDate && endDate && paymentTypeName) {
-            report = await Report.findAllPayment(tenantId, startDate, endDate, paymentTypeName);
+        if (startDate && endDate && paymentTypeIds) {
+            report = await Report.findAllPayment(tenantId, startDate, endDate, paymentTypeIds);
         } else {
             report = await Report.findAllPayment(tenantId);
         }
@@ -82,8 +82,7 @@ const ListClientReport = async (req, res, next) => {
     try {
         const { q = '' } = req.query;
         const { tenantId, companyId } = tokenInfo.decodedToken;
-        const { startDate, endDate, clientName } = req.body;
-
+        const { startDate, endDate, clientTypeIds } = req.body;
         if (companyId && req.body.companyId && companyId !== req.body.companyId) {
             return res.status(403).json({
                 success: false,
@@ -92,19 +91,15 @@ const ListClientReport = async (req, res, next) => {
         }
 
         let report;
-        if (startDate && endDate) {
-            report = await Report.findAllClient(tenantId, startDate, endDate, clientName);
+        if (startDate && endDate && clientTypeIds) {
+            report = await Report.findAllClient(tenantId, startDate, endDate, clientTypeIds);
         } else {
-            report = await Report.findAllClient(tenantId, null, null, clientName);
+            report = await Report.findAllClient(tenantId);
         }
-
-        // Filter out records where clientName is null
-        // const filteredReport = report[0].filter(record => record.clientName !== null);
 
         let responseData = {
             success: true,
-            message: 'Client Client List Successfully!',
-            // data: filteredReport // Send the filtered report
+            message: 'Client Report List Successfully!',
             data: report[0]
         };
 
@@ -155,8 +150,7 @@ const ListCategoryReport = async (req, res, next) => {
     try {
         const { q = '' } = req.query;
         const { tenantId, companyId } = tokenInfo.decodedToken;
-        const { startDate, endDate, categoryName } = req.body;
-
+        const { startDate, endDate, categoryTypeIds } = req.body;
         if (companyId && req.body.companyId && companyId !== req.body.companyId) {
             return res.status(403).json({
                 success: false,
@@ -165,8 +159,8 @@ const ListCategoryReport = async (req, res, next) => {
         }
 
         let report;
-        if (startDate && endDate && categoryName) {
-            report = await Report.findAllCategory(tenantId, startDate, endDate, categoryName);
+        if (startDate && endDate && categoryTypeIds) {
+            report = await Report.findAllCategory(tenantId, startDate, endDate, categoryTypeIds);
         } else {
             report = await Report.findAllCategory(tenantId);
         }
@@ -224,8 +218,7 @@ const ListAccountReport = async (req, res, next) => {
     try {
         const { q = '' } = req.query;
         const { tenantId, companyId } = tokenInfo.decodedToken;
-        const { startDate, endDate, accountName } = req.body;
-
+        const { startDate, endDate, accountTypeIds } = req.body;
         if (companyId && req.body.companyId && companyId !== req.body.companyId) {
             return res.status(403).json({
                 success: false,
@@ -234,8 +227,8 @@ const ListAccountReport = async (req, res, next) => {
         }
 
         let report;
-        if (startDate && endDate && accountName) {
-            report = await Report.findAllAccount(tenantId, startDate, endDate, accountName);
+        if (startDate && endDate && accountTypeIds) {
+            report = await Report.findAllAccount(tenantId, startDate, endDate, accountTypeIds);
         } else {
             report = await Report.findAllAccount(tenantId);
         }
@@ -245,7 +238,6 @@ const ListAccountReport = async (req, res, next) => {
             message: 'Account Report List Successfully!',
             data: report[0]
         };
-
         if (q) {
             const queryLowered = q.toLowerCase();
             const filteredData = responseData.data.filter(account =>

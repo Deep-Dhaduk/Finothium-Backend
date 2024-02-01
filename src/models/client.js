@@ -76,7 +76,7 @@ class Client {
     };
 
     async update(id) {
-        let sql = `UPDATE client_master SET tenantId='${this.tenantId}',clientName='${this.clientName}',status='${this.status}',createdBy='${this.createdBy}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}',type='${this.type}' WHERE clientId = ${id}`;
+        let sql = `UPDATE client_master SET tenantId='${this.tenantId}',clientName='${this.clientName}',status='${this.status}',createdBy='${this.createdBy}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}',companyId='${this.companyId}',type='${this.type}' WHERE clientId = ${id}`;
         return db.execute(sql)
 
     };

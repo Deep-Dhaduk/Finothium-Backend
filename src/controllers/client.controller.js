@@ -11,9 +11,10 @@ const CreateClient = async (req, res) => {
             return res.status(400).json({ success: false, message: error.message });
         }
 
-        let { tenantId, clientName, status, createdBy, updatedBy, type } = req.body;
+        let { clientName, status, createdBy, updatedBy, type } = req.body;
 
         const companyId = token.decodedToken.company.companyId;
+        const tenantId = token.decodedToken.company.companyId;
 
         let client = new Client(tenantId, clientName, status, createdBy, updatedBy, '', type);
 
@@ -33,7 +34,7 @@ const CreateClient = async (req, res) => {
         })
         console.log(error);
     }
-}
+};
 
 const ListClient = async (req, res, next) => {
     const token = getDecodeToken(req)
@@ -118,12 +119,18 @@ const deleteClient = async (req, res, next) => {
         console.log(error);
         next(error)
     }
-}
+};
 
 const updateClient = async (req, res, next) => {
     try {
-        let { tenantId, clientName, status, createdBy, updatedBy, type } = req.body;
-        let client = new Client(tenantId, clientName, status, createdBy, updatedBy, '', type);
+        const token = getDecodeToken(req)
+
+        let { clientName, status, createdBy, updatedBy, type } = req.body;
+
+        const tenantId = token.decodedToken.company.companyId;
+        const companyId = token.decodedToken.company.companyId;
+
+        let client = new Client(tenantId, clientName, status, createdBy, updatedBy, companyId, type);
 
         let Id = req.params.id;
         let [findclient, _] = await Client.findById(Id);

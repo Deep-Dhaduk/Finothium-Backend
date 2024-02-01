@@ -4,13 +4,17 @@ const { getDecodeToken } = require('../middlewares/decoded');
 
 const CreateRole = async (req, res) => {
     try {
+        const token = getDecodeToken(req);
 
         const { error } = createRoleSchema.validate(req.body);
         if (error) {
             return res.status(400).json({ success: false, message: error.message });
         };
 
-        let { tenantId, rolename, status, createdBy, updatedBy } = req.body;
+        let { rolename, status, createdBy, updatedBy } = req.body;
+
+        const tenantId = token.decodedToken.company.companyId;
+
         let role = new Role(tenantId, rolename, status, createdBy, updatedBy);
 
         role = await role.save()
@@ -27,7 +31,7 @@ const CreateRole = async (req, res) => {
         })
         console.log(error);
     }
-}
+};
 
 const ListRole = async (req, res, next) => {
     const token = getDecodeToken(req)
@@ -111,11 +115,16 @@ const deleteRole = async (req, res, next) => {
         console.log(error);
         next(error)
     }
-}
+};
 
 const updateRole = async (req, res, next) => {
     try {
-        let { tenantId, rolename, status, createdBy, updatedBy } = req.body;
+        const token = getDecodeToken(req);
+
+        let { rolename, status, createdBy, updatedBy } = req.body;
+
+        const tenantId = token.decodedToken.company.companyId;
+
         let role = new Role(tenantId, rolename, status, createdBy, updatedBy)
         let Id = req.params.id;
         let [findrole, _] = await Role.findById(Id);
@@ -132,7 +141,7 @@ const updateRole = async (req, res, next) => {
         console.log(error);
         next(error)
     }
-}
+};
 
 module.exports = {
     CreateRole,

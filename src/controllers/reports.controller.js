@@ -25,6 +25,8 @@ const ListPaymentReport = async (req, res, next) => {
         let report;
         if (startDate && endDate && paymentTypeIds) {
             report = await Report.findAllPayment(tenantId, startDate, endDate, paymentTypeIds);
+        } else if (startDate && endDate) {
+            report = await Report.findAllPayment(tenantId, startDate, endDate, null);
         } else {
             report = await Report.findAllPayment(tenantId);
         }
@@ -93,6 +95,9 @@ const ListClientReport = async (req, res, next) => {
         let report;
         if (startDate && endDate && clientTypeIds) {
             report = await Report.findAllClient(tenantId, startDate, endDate, clientTypeIds);
+            report[0] = report[0].filter(client => client.clientId !== null && client.clientName !== null);
+        } else if (startDate && endDate) {
+            report = await Report.findAllAccount(tenantId, startDate, endDate, null);
         } else {
             report = await Report.findAllClient(tenantId);
         }
@@ -161,6 +166,9 @@ const ListCategoryReport = async (req, res, next) => {
         let report;
         if (startDate && endDate && categoryTypeIds) {
             report = await Report.findAllCategory(tenantId, startDate, endDate, categoryTypeIds);
+            report[0] = report[0].filter(client => client.clientId !== null && client.clientName !== null);
+        } else if (startDate && endDate) {
+            report = await Report.findAllCategory(tenantId, startDate, endDate, null);
         } else {
             report = await Report.findAllCategory(tenantId);
         }
@@ -229,6 +237,8 @@ const ListAccountReport = async (req, res, next) => {
         let report;
         if (startDate && endDate && accountTypeIds) {
             report = await Report.findAllAccount(tenantId, startDate, endDate, accountTypeIds);
+        } else if (startDate && endDate) {
+            report = await Report.findAllAccount(tenantId, startDate, endDate, null);
         } else {
             report = await Report.findAllAccount(tenantId);
         }

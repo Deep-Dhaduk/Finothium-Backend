@@ -3,14 +3,17 @@ const { createChildmenuSchema } = require('../validation/childmenu.validation');
 const { getDecodeToken } = require('../middlewares/decoded');
 
 const CreateChildmenu = async (req, res) => {
-    try {
+    const token = getDecodeToken(req);
 
+    try {
         const { error } = createChildmenuSchema.validate(req.body);
         if (error) {
             return res.status(400).json({ success: false, message: error.message });
         }
 
-        let { tenantId, menu_name, parent_id, display_rank, status, createdBy, updatedBy } = req.body;
+        let { menu_name, parent_id, display_rank, status, createdBy, updatedBy } = req.body;
+
+        const tenantId = token.decodedToken.tenantId;
 
         let childmenu = new Childmenu(tenantId, menu_name, parent_id, display_rank, status, createdBy, updatedBy);
 
@@ -28,7 +31,7 @@ const CreateChildmenu = async (req, res) => {
         })
         console.log(error);
     }
-}
+};
 
 const ListChildmenu = async (req, res, next) => {
     const token = getDecodeToken(req)

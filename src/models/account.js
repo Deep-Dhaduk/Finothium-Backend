@@ -29,7 +29,6 @@ class Account {
 
 
     async save() {
-        console.log(this.companyId);
         try {
             let sql = `
             INSERT INTO account_master(

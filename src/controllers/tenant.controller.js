@@ -26,7 +26,7 @@ const CreateTenant = async (req, res) => {
         })
         console.log(error);
     }
-}
+};
 
 const ListTenant = async (req, res, next) => {
     try {
@@ -111,7 +111,7 @@ const deleteTenant = async (req, res, next) => {
         console.log(error);
         next(error)
     }
-}
+};
 
 const updateTenant = async (req, res, next) => {
     try {

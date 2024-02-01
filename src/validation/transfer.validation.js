@@ -1,7 +1,6 @@
 const Joi = require('joi');
 
 const createTransferSchema = Joi.object({
-    tenantId: Joi.number().integer().required(),
     transactionDate: Joi.string().required(),
     paymentType_Id: Joi.number().integer().required(),
     fromAccount: Joi.number().integer().required(),

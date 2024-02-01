@@ -1,7 +1,6 @@
 const Joi = require('joi');
 
 const createCompanySchema = Joi.object({
-    tenantId: Joi.number().integer().required(),
     company_name: Joi.string().required(),
     legal_name: Joi.string().required(),
     authorize_person_name: Joi.string().required(),

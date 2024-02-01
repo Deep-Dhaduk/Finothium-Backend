@@ -3,14 +3,18 @@ const { createCommonSchema } = require('../validation/common.validation');
 const { getDecodeToken } = require('../middlewares/decoded');
 
 const CreateCommon = async (req, res) => {
-    try {
+    const token = getDecodeToken(req)
 
+    try {
         const { error } = createCommonSchema.validate(req.body);
         if (error) {
             return res.status(400).json({ success: false, message: error.message });
         }
 
-        let { tenantId, name, type, status, createdBy, updatedBy } = req.body;
+        let { name, type, status, createdBy, updatedBy } = req.body;
+
+        const tenantId = token.decodedToken.company.companyId;
+
         let common = new Common(tenantId, name, type, status, createdBy, updatedBy);
 
         common = await common.save()
@@ -27,7 +31,7 @@ const CreateCommon = async (req, res) => {
         })
         console.log(error);
     }
-}
+};
 
 const ListCommon = async (req, res, next) => {
     const token = getDecodeToken(req)
@@ -115,11 +119,14 @@ const deleteCommon = async (req, res, next) => {
         console.log(error);
         next(error)
     }
-}
+};
 
 const updateCommon = async (req, res, next) => {
     try {
-        let { tenantId, name, type, status, createdBy, updatedBy } = req.body;
+        let { name, type, status, createdBy, updatedBy } = req.body;
+
+        const tenantId = token.decodedToken.company.companyId;
+
         let common = new Common(tenantId, name, type, status, createdBy, updatedBy)
         let Id = req.params.id;
         let [findcommon, _] = await Common.findById(Id)
@@ -138,7 +145,7 @@ const updateCommon = async (req, res, next) => {
         console.log(error);
         next(error)
     }
-}
+};
 
 module.exports = {
     CreateCommon,

@@ -12,12 +12,14 @@ const { getDecodeToken } = require('../middlewares/decoded');
 
 const CreateUser = async (req, res) => {
     try {
+        const token = getDecodeToken(req)
+
         const { error } = createUserSchema.validate(req.body);
         if (error) {
             return res.status(400).json({ success: false, message: error.message });
         }
 
-        let { tenantId, username, fullname, email, password, confirmpassword, profile_image, companies, status, createdBy, updatedBy, roleId } = req.body;
+        let { username, fullname, email, password, confirmpassword, profile_image, companies, status, createdBy, updatedBy, roleId } = req.body;
 
         if (!Array.isArray(companies)) {
             return res.status(400).json({
@@ -25,6 +27,7 @@ const CreateUser = async (req, res) => {
                 message: "Companies must be an array of integers (companyId)."
             });
         };
+        const tenantId = token.decodedToken.company.companyId;
 
         let user = new User(tenantId, username, fullname, email, password, confirmpassword, profile_image, null, status, createdBy, updatedBy, roleId);
 
@@ -167,7 +170,7 @@ async function getCompanyName(Cid) {
     const companyInfo = await Company.findById(Cid);
     let companyName = companyInfo[0][0].company_name;
     return companyName;
-}
+};
 
 const changeCompany = async (req, res) => {
     try {
@@ -375,16 +378,20 @@ const deleteUser = async (req, res, next) => {
         console.log(error);
         next(error)
     }
-}
+};
 
 const updateUser = async (req, res, next) => {
     try {
-        const { tenantId, username, fullname, email, password, confirmpassword, profile_image, companyId, status, createdBy, updatedBy, roleId } = req.body;
+        const token = getDecodeToken(req)
+
+        const { username, fullname, email, password, confirmpassword, profile_image, companyId, status, createdBy, updatedBy, roleId } = req.body;
         if (!companyId) {
             throw new Error("companyId is required for updating user.");
         }
 
         const companyIdArray = Array.isArray(companyId) ? companyId : [companyId];
+
+        const tenantId = token.decodedToken.company.companyId;
 
         let user = new User(tenantId, username, fullname, email, password, confirmpassword, '', companyIdArray, status, createdBy, updatedBy, roleId);
         const userId = req.params.id;

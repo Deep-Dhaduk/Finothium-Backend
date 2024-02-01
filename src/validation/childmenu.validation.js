@@ -1,7 +1,6 @@
 const Joi = require('joi');
 
 const createChildmenuSchema = Joi.object({
-    tenantId: Joi.number().integer().required(),
     menu_name: Joi.string().required(),
     parent_id: Joi.number().integer().required(),
     display_rank: Joi.number().integer().required(),

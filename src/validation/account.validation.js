@@ -1,7 +1,6 @@
 const Joi = require('joi');
 
 const createAccountSchema = Joi.object({
-    tenantId: Joi.number().integer().required(),
     account_name: Joi.string().required(),
     group_name_Id: Joi.number().integer().required(),
     join_date: Joi.string().required(),

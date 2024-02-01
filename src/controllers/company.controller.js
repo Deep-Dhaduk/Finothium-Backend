@@ -4,13 +4,16 @@ const { getDecodeToken } = require('../middlewares/decoded');
 
 const CreateCompany = async (req, res) => {
     try {
+        const token = getDecodeToken(req);
 
         const { error } = createCompanySchema.validate(req.body);
         if (error) {
             return res.status(400).json({ success: false, message: error.message });
         };
 
-        let { tenantId, company_name, legal_name, authorize_person_name, address, contact_no, email, website, pan, gstin, status, createdBy, updatedBy } = req.body;
+        let { company_name, legal_name, authorize_person_name, address, contact_no, email, website, pan, gstin, status, createdBy, updatedBy } = req.body;
+
+        const tenantId = token.decodedToken.company.companyId;
 
         let company = new Company(tenantId, company_name, legal_name, authorize_person_name, address, contact_no, email, website, pan, gstin, status, createdBy, updatedBy);
 
@@ -120,7 +123,12 @@ const deleteCompany = async (req, res, next) => {
 
 const updateCompany = async (req, res, next) => {
     try {
-        let { tenantId, company_name, legal_name, authorize_person_name, address, contact_no, email, website, pan, gstin, status, createdBy, updatedBy } = req.body;
+        const token = getDecodeToken(req);
+
+        let { company_name, legal_name, authorize_person_name, address, contact_no, email, website, pan, gstin, status, createdBy, updatedBy } = req.body;
+
+        const tenantId = token.decodedToken.company.companyId;
+
         let company = new Company(tenantId, company_name, legal_name, authorize_person_name, address, contact_no, email, website, pan, gstin, status, createdBy, updatedBy)
         let Id = req.params.id;
         let [findcompany, _] = await Company.findById(Id);

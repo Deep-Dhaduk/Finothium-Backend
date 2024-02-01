@@ -9,7 +9,6 @@ const menuItemSchema = Joi.object({
 });
 
 const createMenuSchema = Joi.object({
-    tenantId: Joi.number().integer().required(),
     role_id: Joi.number().integer().required(),
     createdBy: Joi.number().integer().required(),
     updatedBy: Joi.number().integer().required(),

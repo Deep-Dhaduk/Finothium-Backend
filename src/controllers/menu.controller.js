@@ -4,12 +4,17 @@ const { getDecodeToken } = require('../middlewares/decoded');
 
 const CreateMenu = async (req, res) => {
     try {
+        const token = getDecodeToken(req);
+
         const { error } = createMenuSchema.validate(req.body);
         if (error) {
             return res.status(400).json({ success: false, message: error.message });
         }
 
-        const { tenantId, role_id, menuItems, createdBy, updatedBy } = req.body;
+        const { role_id, menuItems, createdBy, updatedBy } = req.body;
+
+        const tenantId = token.decodedToken.company.companyId;
+
         const menu = new Menu(tenantId, role_id, menuItems, createdBy, updatedBy);
 
         const result = await menu.save();
@@ -113,7 +118,12 @@ const deleteMenu = async (req, res, next) => {
 
 const updateMenu = async (req, res, next) => {
     try {
-        let { tenantId, role_id, menuItems, createdBy, updatedBy } = req.body;
+        const token = getDecodeToken(req);
+
+        let { role_id, menuItems, createdBy, updatedBy } = req.body;
+
+        const tenantId = token.decodedToken.company.companyId;
+
         let menu = new Menu(tenantId, role_id, menuItems, createdBy, updatedBy)
         let Id = req.params.id;
         let [findmenu, _] = await Menu.findById(Id);

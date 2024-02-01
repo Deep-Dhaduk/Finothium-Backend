@@ -3,7 +3,7 @@ const { createTransactionSchema } = require('../validation/transaction.validatio
 const { getDecodeToken } = require('../middlewares/decoded');
 
 const CreateTransaction = async (req, res) => {
-    const token = getDecodeToken(req)
+    const token = getDecodeToken(req);
     try {
 
         const { error } = createTransactionSchema.validate(req.body);
@@ -11,9 +11,10 @@ const CreateTransaction = async (req, res) => {
             return res.status(400).json({ success: false, message: error.message });
         };
 
-        let { tenantId, transaction_date, transaction_type, payment_type_Id, accountId, amount, description, createdBy, updatedBy, clientId } = req.body;
+        let { transaction_date, transaction_type, payment_type_Id, accountId, amount, description, createdBy, updatedBy, clientId } = req.body;
 
         const companyId = token.decodedToken.company.companyId;
+        const tenantId = token.decodedToken.company.companyId;
 
         let transaction = new Transaction(tenantId, transaction_date, transaction_type, payment_type_Id, accountId, amount, description, createdBy, updatedBy, '', clientId);
 
@@ -117,13 +118,18 @@ const deleteTransaction = async (req, res, next) => {
         console.log(error);
         next(error)
     }
-}
+};
 
 const updateTransaction = async (req, res, next) => {
     try {
-        let { tenantId, transaction_date, transaction_type, payment_type_Id, accountId, amount, description, createdBy, updatedBy, clientId } = req.body;
+        const token = getDecodeToken(req);
 
-        let transaction = new Transaction(tenantId, transaction_date, transaction_type, payment_type_Id, accountId, amount, description, createdBy, updatedBy, '', clientId);
+        let { transaction_date, transaction_type, payment_type_Id, accountId, amount, description, createdBy, updatedBy, clientId } = req.body;
+
+        const companyId = token.decodedToken.company.companyId;
+        const tenantId = token.decodedToken.company.companyId;
+
+        let transaction = new Transaction(tenantId, transaction_date, transaction_type, payment_type_Id, accountId, amount, description, createdBy, updatedBy, companyId, clientId);
         let Id = req.params.id;
         let [findtransaction, _] = await Transaction.findById(Id);
         if (!findtransaction) {
@@ -139,7 +145,7 @@ const updateTransaction = async (req, res, next) => {
         console.log(error);
         next(error)
     }
-}
+};
 
 module.exports = {
     CreateTransaction,

@@ -4,13 +4,18 @@ const { getDecodeToken } = require('../middlewares/decoded');
 
 const CreateParentmenu = async (req, res) => {
 
-    const { error } = createParentMenuSchema.validate(req.body);
-    if (error) {
-        return res.status(400).json({ success: false, message: error.message });
-    };
-
     try {
-        let { tenantId, menu_name, display_rank, status, createdBy, updatedBy } = req.body;
+        const token = getDecodeToken(req);
+
+        const { error } = createParentMenuSchema.validate(req.body);
+        if (error) {
+            return res.status(400).json({ success: false, message: error.message });
+        };
+
+        let { menu_name, display_rank, status, createdBy, updatedBy } = req.body;
+
+        const tenantId = token.decodedToken.company.companyId;
+
         let parentmenu = new Parentmenu(tenantId, menu_name, display_rank, status, createdBy, updatedBy);
 
         parentmenu = await parentmenu.save()
@@ -27,7 +32,7 @@ const CreateParentmenu = async (req, res) => {
         })
         console.log(error);
     }
-}
+};
 
 const ListParentmenu = async (req, res, next) => {
     const token = getDecodeToken(req)
@@ -111,11 +116,16 @@ const deleteParentmenu = async (req, res, next) => {
         console.log(error);
         next(error)
     }
-}
+};
 
 const updateParentmenu = async (req, res, next) => {
     try {
-        let { tenantId, menu_name, display_rank, status, createdBy, updatedBy } = req.body;
+        const token = getDecodeToken(req);
+
+        let { menu_name, display_rank, status, createdBy, updatedBy } = req.body;
+
+        const tenantId = token.decodedToken.company.companyId;
+
         let parentmenu = new Parentmenu(tenantId, menu_name, display_rank, status, createdBy, updatedBy)
         let Id = req.params.id;
         let [findparentmenu, _] = await Parentmenu.findById(Id);
@@ -132,7 +142,7 @@ const updateParentmenu = async (req, res, next) => {
         console.log(error);
         next(error)
     }
-}
+};
 
 module.exports = {
     CreateParentmenu,

@@ -11,9 +11,10 @@ const CreateAccount = async (req, res) => {
             return res.status(400).json({ success: false, message: error.message });
         }
 
-        let { tenantId, account_name, group_name_Id, join_date, exit_date, account_type_Id, status, createdBy, updatedBy } = req.body;
+        const { account_name, group_name_Id, join_date, exit_date, account_type_Id, status, createdBy, updatedBy } = req.body;
 
         const companyId = token.decodedToken.company.companyId;
+        const tenantId = token.decodedToken.tenantId;
 
         let account = new Account(tenantId, account_name, group_name_Id, join_date, exit_date, account_type_Id, status, createdBy, updatedBy);
 
@@ -123,7 +124,12 @@ const deleteAccount = async (req, res, next) => {
 
 const updateAccount = async (req, res, next) => {
     try {
-        let { tenantId, account_name, group_name_Id, join_date, exit_date, account_type_Id, status, createdBy, updatedBy } = req.body;
+        const token = getDecodeToken(req);
+
+        let { account_name, group_name_Id, join_date, exit_date, account_type_Id, status, createdBy, updatedBy } = req.body;
+
+        const tenantId = token.decodedToken.tenantId;
+
         let account = new Account(tenantId, account_name, group_name_Id, join_date, exit_date, account_type_Id, status, createdBy, updatedBy);
 
         let Id = req.params.id;

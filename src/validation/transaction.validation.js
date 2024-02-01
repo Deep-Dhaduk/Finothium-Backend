@@ -1,7 +1,6 @@
 const Joi = require('joi');
 
 const createTransactionSchema = Joi.object({
-    tenantId: Joi.number().integer().required(),
     transaction_date: Joi.string().required(),
     transaction_type: Joi.string().required(),
     payment_type_Id: Joi.number().integer().required(),

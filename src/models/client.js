@@ -57,13 +57,32 @@ class Client {
         }
     };
 
-    static findAll(tenantId) {
+    static findAll(tenantId, type, id) {
         let sql = "SELECT * FROM client_master";
         if (tenantId) {
             sql += ` WHERE tenantId = '${tenantId}'`;
         }
-        return db.execute(sql)
+        if (type) {
+            if (tenantId) {
+                sql += ` AND type = '${type}'`;
+            } else {
+                sql += ` WHERE type = '${type}'`;
+            }
+        }
+        if (id) {
+            sql += ` AND companyId = '${id}'`;
+        }
+        sql += " ORDER BY clientName ASC";
+        return db.execute(sql);
     };
+
+    static findBycompanyId(id) {
+        let sql = `
+        SELECT * FROM client_master
+            WHERE companyId = ${id}
+        `;;
+        return db.execute(sql);
+    }
 
     static findById(id) {
         let sql = `SELECT * FROM client_master WHERE clientId = ${id}`;

@@ -13,7 +13,7 @@ const CreateCompany = async (req, res) => {
 
         let { company_name, legal_name, authorize_person_name, address, contact_no, email, website, pan, gstin, status, createdBy, updatedBy } = req.body;
 
-        const tenantId = token.decodedToken.company.companyId;
+        const tenantId = token.decodedToken.tenantId;
 
         let company = new Company(tenantId, company_name, legal_name, authorize_person_name, address, contact_no, email, website, pan, gstin, status, createdBy, updatedBy);
 
@@ -127,7 +127,7 @@ const updateCompany = async (req, res, next) => {
 
         let { company_name, legal_name, authorize_person_name, address, contact_no, email, website, pan, gstin, status, createdBy, updatedBy } = req.body;
 
-        const tenantId = token.decodedToken.company.companyId;
+        const tenantId = token.decodedToken.tenantId;
 
         let company = new Company(tenantId, company_name, legal_name, authorize_person_name, address, contact_no, email, website, pan, gstin, status, createdBy, updatedBy)
         let Id = req.params.id;

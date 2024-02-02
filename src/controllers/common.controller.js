@@ -13,7 +13,7 @@ const CreateCommon = async (req, res) => {
 
         let { name, type, status, createdBy, updatedBy } = req.body;
 
-        const tenantId = token.decodedToken.company.companyId;
+        const tenantId = token.decodedToken.tenantId;
 
         let common = new Common(tenantId, name, type, status, createdBy, updatedBy);
 
@@ -37,6 +37,7 @@ const ListCommon = async (req, res, next) => {
     const token = getDecodeToken(req)
     try {
         const { q = '', id } = req.query;
+        const { type } = req.body;
 
         if (id) {
             const common = await Common.findById(id)
@@ -49,7 +50,7 @@ const ListCommon = async (req, res, next) => {
             return res.status(200).json({ success: true, message: 'Common found', data: common[0][0] });
         }
 
-        const commonResult = await Common.findAll(token.tenantId);
+        const commonResult = await Common.findAll(token.tenantId, type);
         let responseData = {
             success: true,
             message: 'Common List Successfully!',
@@ -122,10 +123,12 @@ const deleteCommon = async (req, res, next) => {
 };
 
 const updateCommon = async (req, res, next) => {
+    const token = getDecodeToken(req)
+
     try {
         let { name, type, status, createdBy, updatedBy } = req.body;
 
-        const tenantId = token.decodedToken.company.companyId;
+        const tenantId = token.decodedToken.tenantId;
 
         let common = new Common(tenantId, name, type, status, createdBy, updatedBy)
         let Id = req.params.id;

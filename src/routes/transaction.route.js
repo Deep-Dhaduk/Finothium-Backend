@@ -10,7 +10,7 @@ router.post(
     Transactioncontroller.CreateTransaction
 );
 
-router.get(
+router.post(
     "/list-transaction",
     auth.verifyToken,
     Transactioncontroller.ListTransaction

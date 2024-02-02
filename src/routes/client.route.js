@@ -10,7 +10,7 @@ router.post(
     Clientcontroller.CreateClient
 );
 
-router.get(
+router.post(
     "/list-client",
     auth.verifyToken,
     Clientcontroller.ListClient

@@ -14,7 +14,7 @@ const CreateTransaction = async (req, res) => {
         let { transaction_date, transaction_type, payment_type_Id, accountId, amount, description, createdBy, updatedBy, clientId } = req.body;
 
         const companyId = token.decodedToken.company.companyId;
-        const tenantId = token.decodedToken.company.companyId;
+        const tenantId = token.decodedToken.tenantId;
 
         let transaction = new Transaction(tenantId, transaction_date, transaction_type, payment_type_Id, accountId, amount, description, createdBy, updatedBy, '', clientId);
 
@@ -40,6 +40,7 @@ const ListTransaction = async (req, res, next) => {
     const token = getDecodeToken(req)
     try {
         const { q = '', id } = req.query;
+        const { type } = req.body
 
         if (id) {
             const transaction = await Transaction.findById(id);
@@ -51,7 +52,7 @@ const ListTransaction = async (req, res, next) => {
             return res.status(200).json({ success: true, message: 'Transaction found', data: transaction[0][0] });
         }
 
-        const transactionResult = await Transaction.findAll(token.tenantId);
+        const transactionResult = await Transaction.findAll(token.tenantId, type);
         let responseData = {
             success: true,
             message: 'Transaction List Successfully!',
@@ -121,13 +122,13 @@ const deleteTransaction = async (req, res, next) => {
 };
 
 const updateTransaction = async (req, res, next) => {
+    const token = getDecodeToken(req);
     try {
-        const token = getDecodeToken(req);
 
         let { transaction_date, transaction_type, payment_type_Id, accountId, amount, description, createdBy, updatedBy, clientId } = req.body;
 
         const companyId = token.decodedToken.company.companyId;
-        const tenantId = token.decodedToken.company.companyId;
+        const tenantId = token.decodedToken.tenantId;
 
         let transaction = new Transaction(tenantId, transaction_date, transaction_type, payment_type_Id, accountId, amount, description, createdBy, updatedBy, companyId, clientId);
         let Id = req.params.id;

@@ -10,7 +10,7 @@ router.post(
     Commoncontroller.CreateCommon
 );
 
-router.get(
+router.post(
     "/list-common",
     auth.verifyToken,
     Commoncontroller.ListCommon

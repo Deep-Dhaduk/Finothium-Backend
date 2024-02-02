@@ -118,8 +118,12 @@ const deleteChildmenu = async (req, res, next) => {
 }
 
 const updateChildmenu = async (req, res, next) => {
+    const token = getDecodeToken(req);
     try {
-        let { tenantId, menu_name, parent_id, display_rank, status, createdBy, updatedBy } = req.body;
+        let { menu_name, parent_id, display_rank, status, createdBy, updatedBy } = req.body;
+
+        const tenantId = token.decodedToken.tenantId;
+
         let childmenu = new Childmenu(tenantId, menu_name, parent_id, display_rank, status, createdBy, updatedBy)
         let Id = req.params.id;
         let [findchildmenu, _] = await Childmenu.findById(Id);

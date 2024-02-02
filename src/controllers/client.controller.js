@@ -14,7 +14,7 @@ const CreateClient = async (req, res) => {
         let { clientName, status, createdBy, updatedBy, type } = req.body;
 
         const companyId = token.decodedToken.company.companyId;
-        const tenantId = token.decodedToken.company.companyId;
+        const tenantId = token.decodedToken.tenantId;
 
         let client = new Client(tenantId, clientName, status, createdBy, updatedBy, '', type);
 
@@ -37,20 +37,21 @@ const CreateClient = async (req, res) => {
 };
 
 const ListClient = async (req, res, next) => {
-    const token = getDecodeToken(req)
+    const token = getDecodeToken(req);
+    const companyId = token.decodedToken.company.companyId;
+
     try {
         const { q = '', id } = req.query;
+        const { type } = req.body;
 
         if (id) {
             const client = await Client.findById(id);
-
             if (client[0].length === 0) {
                 return res.status(404).json({ success: false, message: 'Client not found' });
             }
         }
 
-        const clientResult = await Client.findAll(token.tenantId);
-
+        const clientResult = await Client.findAll(token.tenantId, type, companyId);
         let responseData = {
             success: true,
             message: 'Client List Successfully!',
@@ -68,8 +69,7 @@ const ListClient = async (req, res, next) => {
             if (filteredData.length > 0) {
                 responseData = {
                     ...responseData,
-                    data: filteredData,
-                    total: filteredData.length
+                    data: filteredData
                 };
             } else {
                 responseData = {
@@ -127,7 +127,7 @@ const updateClient = async (req, res, next) => {
 
         let { clientName, status, createdBy, updatedBy, type } = req.body;
 
-        const tenantId = token.decodedToken.company.companyId;
+        const tenantId = token.decodedToken.tenantId;
         const companyId = token.decodedToken.company.companyId;
 
         let client = new Client(tenantId, clientName, status, createdBy, updatedBy, companyId, type);

@@ -54,10 +54,17 @@ class Common {
         }
     };
 
-    static findAll(tenantId) {
+    static findAll(tenantId, type) {
         let sql = "SELECT * FROM common_master";
         if (tenantId) {
             sql += ` WHERE tenantId = '${tenantId}'`;
+        }
+        if (type) {
+            if (tenantId) {
+                sql += ` AND type = '${type}'`;
+            } else {
+                sql += ` WHERE type = '${type}'`;
+            }
         }
         return db.execute(sql)
     };

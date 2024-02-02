@@ -66,7 +66,7 @@ class Account {
         }
     }
 
-    static findAll(tenantId) {
+    static findAll(tenantId, companyId) {
         let sql = `
         SELECT a.*, c.name AS group_name, ct.name AS account_type_name
         FROM account_master a
@@ -75,26 +75,22 @@ class Account {
         `;
         if (tenantId) {
             sql += ` WHERE a.tenantId = '${tenantId}'`;
+        } else if (tenantId) {
+            sql += ` WHERE a.tenantId = '${tenantId}'`;
         }
+        if (companyId) {
+            sql += ` WHERE companyId = '${companyId}'`;
+        }
+        sql += " ORDER BY group_name, account_name";
         return db.execute(sql);
     };
+
 
     static findById(id) {
         let sql = `
             SELECT *
             FROM account_master
             WHERE account_id = ${id}
-        `;
-        return db.execute(sql);
-    }
-
-    static findBycompanyId(id) {
-        let sql = `
-        SELECT a.*, c.name AS group_name, ct.name AS account_type_name
-        FROM account_master a
-        LEFT JOIN common_master c ON a.group_name_Id = c.common_id
-        LEFT JOIN common_master ct ON a.account_type_Id = ct.common_id
-            WHERE companyId = ${id}
         `;
         return db.execute(sql);
     }

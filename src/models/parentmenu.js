@@ -58,6 +58,7 @@ class Parentmenu {
         if (tenantId) {
             sql += ` WHERE tenantId = '${tenantId}'`;
         }
+        sql += " ORDER BY display_rank ASC";
         return db.execute(sql)
     };
 

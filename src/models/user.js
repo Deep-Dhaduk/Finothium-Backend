@@ -88,7 +88,8 @@ class User {
         if (tenantId) {
             sql += ` WHERE u.tenantId = '${tenantId}'`;
         }
-        sql += ' GROUP BY u.id';
+        sql += 'GROUP BY u.id';
+        sql += " ORDER BY fullname ASC";
         return db.execute(sql);
     }
 

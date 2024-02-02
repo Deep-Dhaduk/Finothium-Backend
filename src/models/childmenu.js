@@ -59,13 +59,15 @@ class Childmenu {
     static findAll(tenantId) {
         let sql = `
             SELECT c.*,
-                   p.menu_name as parent_menu_name
+                   p.menu_name as parent_menu_name,
+                   p.display_rank as parent_display_rank
             FROM childmenu_master c
             LEFT JOIN parentmenu_master p ON c.parent_id = p.id
         `;
         if (tenantId) {
             sql += ` WHERE c.tenantId = '${tenantId}'`;
         }
+        sql += " ORDER BY parent_display_rank, display_rank ASC";
         return db.execute(sql);
     };
 

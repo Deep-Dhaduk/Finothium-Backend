@@ -3,8 +3,8 @@ const { createRoleSchema } = require('../validation/role.validation');
 const { getDecodeToken } = require('../middlewares/decoded');
 
 const CreateRole = async (req, res) => {
+    const token = getDecodeToken(req);
     try {
-        const token = getDecodeToken(req);
 
         const { error } = createRoleSchema.validate(req.body);
         if (error) {
@@ -13,7 +13,7 @@ const CreateRole = async (req, res) => {
 
         let { rolename, status, createdBy, updatedBy } = req.body;
 
-        const tenantId = token.decodedToken.company.companyId;
+        const tenantId = token.decodedToken.tenantId;
 
         let role = new Role(tenantId, rolename, status, createdBy, updatedBy);
 
@@ -118,12 +118,11 @@ const deleteRole = async (req, res, next) => {
 };
 
 const updateRole = async (req, res, next) => {
+    const token = getDecodeToken(req);
     try {
-        const token = getDecodeToken(req);
-
         let { rolename, status, createdBy, updatedBy } = req.body;
 
-        const tenantId = token.decodedToken.company.companyId;
+        const tenantId = token.decodedToken.tenantId;
 
         let role = new Role(tenantId, rolename, status, createdBy, updatedBy)
         let Id = req.params.id;

@@ -11,13 +11,12 @@ const { createUserSchema } = require('../validation/user.validation');
 const { getDecodeToken } = require('../middlewares/decoded');
 
 const CreateUser = async (req, res) => {
+    const token = getDecodeToken(req)
     try {
-        const token = getDecodeToken(req)
-
         const { error } = createUserSchema.validate(req.body);
         if (error) {
             return res.status(400).json({ success: false, message: error.message });
-        }
+        };
 
         let { username, fullname, email, password, confirmpassword, profile_image, companies, status, createdBy, updatedBy, roleId } = req.body;
 
@@ -27,7 +26,8 @@ const CreateUser = async (req, res) => {
                 message: "Companies must be an array of integers (companyId)."
             });
         };
-        const tenantId = token.decodedToken.company.companyId;
+
+        const tenantId = token.decodedToken.tenantId;
 
         let user = new User(tenantId, username, fullname, email, password, confirmpassword, profile_image, null, status, createdBy, updatedBy, roleId);
 
@@ -381,17 +381,17 @@ const deleteUser = async (req, res, next) => {
 };
 
 const updateUser = async (req, res, next) => {
+    const token = getDecodeToken(req)
     try {
-        const token = getDecodeToken(req)
 
         const { username, fullname, email, password, confirmpassword, profile_image, companyId, status, createdBy, updatedBy, roleId } = req.body;
         if (!companyId) {
             throw new Error("companyId is required for updating user.");
-        }
+        };
 
         const companyIdArray = Array.isArray(companyId) ? companyId : [companyId];
 
-        const tenantId = token.decodedToken.company.companyId;
+        const tenantId = token.decodedToken.tenantId;
 
         let user = new User(tenantId, username, fullname, email, password, confirmpassword, '', companyIdArray, status, createdBy, updatedBy, roleId);
         const userId = req.params.id;

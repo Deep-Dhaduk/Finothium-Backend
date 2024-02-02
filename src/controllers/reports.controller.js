@@ -13,7 +13,8 @@ const ListPaymentReport = async (req, res, next) => {
 
     try {
         const { q = '' } = req.query;
-        const { tenantId, companyId } = tokenInfo.decodedToken;
+        const companyId = tokenInfo.decodedToken.company.companyId;
+        const { tenantId } = tokenInfo.decodedToken;
         const { startDate, endDate, paymentTypeIds } = req.body;
         if (companyId && req.body.companyId && companyId !== req.body.companyId) {
             return res.status(403).json({
@@ -24,11 +25,11 @@ const ListPaymentReport = async (req, res, next) => {
 
         let report;
         if (startDate && endDate && paymentTypeIds) {
-            report = await Report.findAllPayment(tenantId, startDate, endDate, paymentTypeIds);
+            report = await Report.findAllPayment(tenantId, companyId, startDate, endDate, paymentTypeIds);
         } else if (startDate && endDate) {
-            report = await Report.findAllPayment(tenantId, startDate, endDate, null);
+            report = await Report.findAllPayment(tenantId, companyId, startDate, endDate, null);
         } else {
-            report = await Report.findAllPayment(tenantId);
+            report = await Report.findAllPayment(tenantId, companyId);
         }
 
         let responseData = {
@@ -83,7 +84,8 @@ const ListClientReport = async (req, res, next) => {
 
     try {
         const { q = '' } = req.query;
-        const { tenantId, companyId } = tokenInfo.decodedToken;
+        const companyId = tokenInfo.decodedToken.company.companyId;
+        const { tenantId } = tokenInfo.decodedToken;
         const { startDate, endDate, clientTypeIds } = req.body;
         if (companyId && req.body.companyId && companyId !== req.body.companyId) {
             return res.status(403).json({
@@ -94,12 +96,12 @@ const ListClientReport = async (req, res, next) => {
 
         let report;
         if (startDate && endDate && clientTypeIds) {
-            report = await Report.findAllClient(tenantId, startDate, endDate, clientTypeIds);
+            report = await Report.findAllClient(tenantId, companyId, startDate, endDate, clientTypeIds);
             report[0] = report[0].filter(client => client.clientId !== null && client.clientName !== null);
         } else if (startDate && endDate) {
-            report = await Report.findAllAccount(tenantId, startDate, endDate, null);
+            report = await Report.findAllAccount(tenantId, companyId, startDate, endDate, null);
         } else {
-            report = await Report.findAllClient(tenantId);
+            report = await Report.findAllClient(tenantId, companyId);
         }
 
         let responseData = {
@@ -154,7 +156,8 @@ const ListCategoryReport = async (req, res, next) => {
 
     try {
         const { q = '' } = req.query;
-        const { tenantId, companyId } = tokenInfo.decodedToken;
+        const companyId = tokenInfo.decodedToken.company.companyId
+        const { tenantId } = tokenInfo.decodedToken;
         const { startDate, endDate, categoryTypeIds } = req.body;
         if (companyId && req.body.companyId && companyId !== req.body.companyId) {
             return res.status(403).json({
@@ -165,12 +168,11 @@ const ListCategoryReport = async (req, res, next) => {
 
         let report;
         if (startDate && endDate && categoryTypeIds) {
-            report = await Report.findAllCategory(tenantId, startDate, endDate, categoryTypeIds);
-            report[0] = report[0].filter(client => client.clientId !== null && client.clientName !== null);
+            report = await Report.findAllCategory(tenantId, companyId, startDate, endDate, categoryTypeIds);
         } else if (startDate && endDate) {
-            report = await Report.findAllCategory(tenantId, startDate, endDate, null);
+            report = await Report.findAllCategory(tenantId, companyId, startDate, endDate, null);
         } else {
-            report = await Report.findAllCategory(tenantId);
+            report = await Report.findAllCategory(tenantId, companyId);
         }
 
         let responseData = {
@@ -178,7 +180,6 @@ const ListCategoryReport = async (req, res, next) => {
             message: 'Category Report List Successfully!',
             data: report[0]
         };
-
         if (q) {
             const queryLowered = q.toLowerCase();
             const filteredData = responseData.data.filter(category =>
@@ -225,7 +226,8 @@ const ListAccountReport = async (req, res, next) => {
 
     try {
         const { q = '' } = req.query;
-        const { tenantId, companyId } = tokenInfo.decodedToken;
+        const companyId = tokenInfo.decodedToken.company.companyId
+        const { tenantId } = tokenInfo.decodedToken;
         const { startDate, endDate, accountTypeIds } = req.body;
         if (companyId && req.body.companyId && companyId !== req.body.companyId) {
             return res.status(403).json({
@@ -236,11 +238,11 @@ const ListAccountReport = async (req, res, next) => {
 
         let report;
         if (startDate && endDate && accountTypeIds) {
-            report = await Report.findAllAccount(tenantId, startDate, endDate, accountTypeIds);
+            report = await Report.findAllAccount(tenantId, companyId, startDate, endDate, accountTypeIds);
         } else if (startDate && endDate) {
-            report = await Report.findAllAccount(tenantId, startDate, endDate, null);
+            report = await Report.findAllAccount(tenantId, companyId, startDate, endDate, null);
         } else {
-            report = await Report.findAllAccount(tenantId);
+            report = await Report.findAllAccount(tenantId, companyId);
         }
 
         let responseData = {
@@ -294,7 +296,8 @@ const ListGroupReport = async (req, res, next) => {
 
     try {
         const { q = '' } = req.query;
-        const { tenantId, companyId } = tokenInfo.decodedToken;
+        const companyId = tokenInfo.decodedToken.company.companyId;
+        const { tenantId } = tokenInfo.decodedToken;
         const { startDate, endDate } = req.body;
 
         if (companyId && req.body.companyId && companyId !== req.body.companyId) {
@@ -306,9 +309,9 @@ const ListGroupReport = async (req, res, next) => {
 
         let report;
         if (startDate && endDate) {
-            report = await Report.findAllGroup(tenantId, startDate, endDate);
+            report = await Report.findAllGroup(tenantId, companyId, startDate, endDate);
         } else {
-            report = await Report.findAllGroup(tenantId);
+            report = await Report.findAllGroup(tenantId, companyId);
         }
 
         let responseData = {
@@ -351,80 +354,10 @@ const ListGroupReport = async (req, res, next) => {
     }
 };
 
-const ListCompanyReport = async (req, res, next) => {
-    const tokenInfo = getDecodeToken(req);
-
-    if (!tokenInfo.success) {
-        return res.status(401).json({
-            success: false,
-            message: tokenInfo.message,
-        });
-    }
-
-    try {
-        const { q = '' } = req.query;
-        const { tenantId, companyId } = tokenInfo.decodedToken;
-        const { startDate, endDate } = req.body;
-
-        if (companyId && req.body.companyId && companyId !== req.body.companyId) {
-            return res.status(403).json({
-                success: false,
-                message: 'Unauthorized: CompanyId in token does not match the requested companyId',
-            });
-        }
-
-        let report;
-        if (startDate && endDate) {
-            report = await Report.findAllCompany(tenantId, startDate, endDate);
-        } else {
-            report = await Report.findAllCompany(tenantId);
-        }
-
-        let responseData = {
-            success: true,
-            message: 'Company Report List Successfully!',
-            data: report[0]
-        };
-
-        if (q) {
-            const queryLowered = q.toLowerCase();
-            const filteredData = responseData.data.filter(company =>
-                (company.payment_type_name && company.payment_type_name.toLowerCase().includes(queryLowered)) ||
-                (company.account_name && company.account_name.toLowerCase().includes(queryLowered)) ||
-                (company.PaidAmount && company.PaidAmount.toString().toLowerCase().includes(queryLowered)) ||
-                (company.ReceiveAmount && company.ReceiveAmount.toString().toLowerCase().includes(queryLowered)) ||
-                (company.description && company.description.toLowerCase().includes(queryLowered)) ||
-                (company.clientName && company.clientName.toLowerCase().includes(queryLowered))
-            );
-
-            if (filteredData.length > 0) {
-                responseData = {
-                    ...responseData,
-                    data: filteredData,
-                    total: filteredData.length,
-                };
-            } else {
-                responseData = {
-                    ...responseData,
-                    message: 'No matching Company Report found',
-                    data: [],
-                    total: 0,
-                };
-            }
-        }
-
-        res.status(200).json(responseData);
-    } catch (error) {
-        console.log(error);
-        next(error);
-    }
-};
-
 module.exports = {
     ListPaymentReport,
     ListClientReport,
     ListCategoryReport,
     ListAccountReport,
-    ListGroupReport,
-    ListCompanyReport
+    ListGroupReport
 }

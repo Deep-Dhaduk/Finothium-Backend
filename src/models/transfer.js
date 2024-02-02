@@ -81,6 +81,7 @@ class Transfer {
         if (tenantId) {
             sql += ` WHERE t.tenantId = '${tenantId}'`;
         }
+        sql += " ORDER BY transactionDate DESC";
         return db.execute(sql);
     }
 

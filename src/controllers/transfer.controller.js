@@ -3,8 +3,8 @@ const { createTransferSchema } = require('../validation/transfer.validation');
 const { getDecodeToken } = require('../middlewares/decoded');
 
 const CreateTransfer = async (req, res) => {
+    const token = getDecodeToken(req)
     try {
-        const token = getDecodeToken(req)
         const { error } = createTransferSchema.validate(req.body);
         if (error) {
             return res.status(400).json({ success: false, message: error.message });
@@ -13,7 +13,7 @@ const CreateTransfer = async (req, res) => {
         let { transactionDate, paymentType_Id, fromAccount, toAccount, amount, description, createdBy, updatedBy } = req.body;
 
         const companyId = token.decodedToken.company.companyId;
-        const tenantId = token.decodedToken.company.companyId;
+        const tenantId = token.decodedToken.tenantId;
 
         let transfer = new Transfer(tenantId, transactionDate, paymentType_Id, fromAccount, toAccount, amount, description, createdBy, updatedBy);
 
@@ -122,13 +122,13 @@ const deleteTransfer = async (req, res, next) => {
 };
 
 const updateTransfer = async (req, res, next) => {
+    const token = getDecodeToken(req)
     try {
-        const token = getDecodeToken(req)
 
         let { transactionDate, paymentType_Id, fromAccount, toAccount, amount, description, createdBy, updatedBy } = req.body;
 
         const companyId = token.decodedToken.company.companyId;
-        const tenantId = token.decodedToken.company.companyId;
+        const tenantId = token.decodedToken.tenantId;
 
         let transfer = new Transfer(tenantId, transactionDate, paymentType_Id, fromAccount, toAccount, amount, description, createdBy, updatedBy, companyId)
         let Id = req.params.id;

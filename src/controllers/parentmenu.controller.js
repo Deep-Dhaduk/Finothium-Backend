@@ -4,9 +4,8 @@ const { getDecodeToken } = require('../middlewares/decoded');
 
 const CreateParentmenu = async (req, res) => {
 
+    const token = getDecodeToken(req);
     try {
-        const token = getDecodeToken(req);
-
         const { error } = createParentMenuSchema.validate(req.body);
         if (error) {
             return res.status(400).json({ success: false, message: error.message });
@@ -14,7 +13,7 @@ const CreateParentmenu = async (req, res) => {
 
         let { menu_name, display_rank, status, createdBy, updatedBy } = req.body;
 
-        const tenantId = token.decodedToken.company.companyId;
+        const tenantId = token.decodedToken.tenantId;
 
         let parentmenu = new Parentmenu(tenantId, menu_name, display_rank, status, createdBy, updatedBy);
 
@@ -124,7 +123,7 @@ const updateParentmenu = async (req, res, next) => {
 
         let { menu_name, display_rank, status, createdBy, updatedBy } = req.body;
 
-        const tenantId = token.decodedToken.company.companyId;
+        const tenantId = token.decodedToken.tenantId;
 
         let parentmenu = new Parentmenu(tenantId, menu_name, display_rank, status, createdBy, updatedBy)
         let Id = req.params.id;

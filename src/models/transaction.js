@@ -68,8 +68,7 @@ class Transaction {
         }
     }
 
-
-    static findAll(tenantId) {
+    static findAll(tenantId, type) {
         let sql = `
             SELECT t.*,
                    cp.name as payment_type_name,
@@ -83,6 +82,14 @@ class Transaction {
         if (tenantId) {
             sql += ` WHERE t.tenantId = '${tenantId}'`;
         }
+        if (type) {
+            if (tenantId) {
+                sql += ` AND transaction_type = '${type}'`;
+            } else {
+                sql += ` WHERE transaction_type = '${type}'`;
+            }
+        }
+        sql += " ORDER BY transaction_date DESC";
         return db.execute(sql);
     };
 

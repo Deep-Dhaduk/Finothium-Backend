@@ -13,7 +13,7 @@ const CreateMenu = async (req, res) => {
 
         const { role_id, menuItems, createdBy, updatedBy } = req.body;
 
-        const tenantId = token.decodedToken.company.companyId;
+        const tenantId = token.decodedToken.tenantId;
 
         const menu = new Menu(tenantId, role_id, menuItems, createdBy, updatedBy);
 
@@ -122,7 +122,7 @@ const updateMenu = async (req, res, next) => {
 
         let { role_id, menuItems, createdBy, updatedBy } = req.body;
 
-        const tenantId = token.decodedToken.company.companyId;
+        const tenantId = token.decodedToken.tenantId;
 
         let menu = new Menu(tenantId, role_id, menuItems, createdBy, updatedBy)
         let Id = req.params.id;

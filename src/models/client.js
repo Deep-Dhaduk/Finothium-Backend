@@ -58,23 +58,32 @@ class Client {
     };
 
     static findAll(tenantId, type, id) {
-        let sql = "SELECT * FROM client_master";
+        let sql = "SELECT *, DATE_SUB(createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn, DATE_SUB(updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn FROM client_master";
+        let whereClause = "";
+
         if (tenantId) {
-            sql += ` WHERE tenantId = '${tenantId}'`;
+            whereClause += ` WHERE tenantId = '${tenantId}'`;
         }
         if (type) {
-            if (tenantId) {
-                sql += ` AND type = '${type}'`;
+            if (whereClause !== "") {
+                whereClause += ` AND type = '${type}'`;
             } else {
-                sql += ` WHERE type = '${type}'`;
+                whereClause += ` WHERE type = '${type}'`;
             }
         }
         if (id) {
-            sql += ` AND companyId = '${id}'`;
+            if (whereClause !== "") {
+                whereClause += ` AND companyId = '${id}'`;
+            } else {
+                whereClause += ` WHERE companyId = '${id}'`;
+            }
         }
-        sql += " ORDER BY clientName ASC";
+
+        sql += whereClause + " ORDER BY clientName ASC";
         return db.execute(sql);
     };
+
+
 
     static findBycompanyId(id) {
         let sql = `

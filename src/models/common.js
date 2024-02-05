@@ -55,7 +55,7 @@ class Common {
     };
 
     static findAll(tenantId, type) {
-        let sql = "SELECT * FROM common_master";
+        let sql = "SELECT *, DATE_SUB(createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn, DATE_SUB(updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn FROM common_master";
         if (tenantId) {
             sql += ` WHERE tenantId = '${tenantId}'`;
         }

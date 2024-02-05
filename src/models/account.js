@@ -68,7 +68,9 @@ class Account {
 
     static findAll(tenantId, companyId) {
         let sql = `
-        SELECT a.*, c.name AS group_name, ct.name AS account_type_name
+        SELECT a.*, c.name AS group_name, ct.name AS account_type_name,
+        DATE_SUB(a.createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn,
+        DATE_SUB(a.updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn
         FROM account_master a
         LEFT JOIN common_master c ON a.group_name_Id = c.common_id
         LEFT JOIN common_master ct ON a.account_type_Id = ct.common_id
@@ -84,7 +86,6 @@ class Account {
         sql += " ORDER BY group_name, account_name";
         return db.execute(sql);
     };
-
 
     static findById(id) {
         let sql = `

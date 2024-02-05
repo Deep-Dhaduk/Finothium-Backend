@@ -72,7 +72,9 @@ class Transfer {
             SELECT t.*,
                    cp.name as paymentType_name,
                    af.account_name as fromAccount_name,
-                   at.account_name as toAccount_name
+                   at.account_name as toAccount_name,
+                   DATE_SUB(t.createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn,
+                   DATE_SUB(t.updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn
             FROM transfer t
             LEFT JOIN common_master cp ON t.paymentType_Id = cp.common_id
             LEFT JOIN account_master af ON t.fromAccount = af.account_id

@@ -5,6 +5,7 @@ const { getDecodeToken } = require('../middlewares/decoded');
 const CreateMenu = async (req, res) => {
     try {
         const token = getDecodeToken(req);
+        const roleId = token.decodedToken.roleId;
 
         const { error } = createMenuSchema.validate(req.body);
         if (error) {
@@ -34,7 +35,8 @@ const CreateMenu = async (req, res) => {
 };
 
 const ListMenu = async (req, res, next) => {
-    const token = getDecodeToken(req)
+    const token = getDecodeToken(req);
+    const roleId = token.decodedToken.roleId;
     try {
         const { q = '', id } = req.query;
 
@@ -48,7 +50,7 @@ const ListMenu = async (req, res, next) => {
             return res.status(200).json({ success: true, message: 'Menu found', data: menu[0][0] });
         }
 
-        const menuResult = await Menu.findAll(token.tenantId);
+        const menuResult = await Menu.findAll(token.tenantId, roleId);
         let responseData = {
             success: true,
             message: 'Menu List Successfully!',
@@ -57,9 +59,8 @@ const ListMenu = async (req, res, next) => {
 
         if (q) {
             const queryLowered = q.toLowerCase();
-            const filteredData = menuResult[0].filter(
-                menu =>
-                    (typeof parentmenu.status === 'string' && parentmenu.status.toLowerCase() === "active" && "active".includes(queryLowered))
+            const filteredData = menuResult[0].filter(menu =>
+                (typeof menu.status === 'string' && menu.status.toLowerCase() === "active" && menu.name.includes(queryLowered))`${menu.name} ${menu.description}`
             );
 
             if (filteredData.length > 0) {
@@ -79,7 +80,6 @@ const ListMenu = async (req, res, next) => {
         }
 
         res.status(200).json(responseData);
-
     } catch (error) {
         console.log(error);
         next(error);

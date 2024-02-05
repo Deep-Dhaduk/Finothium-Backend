@@ -79,7 +79,9 @@ class User {
         let sql = `
             SELECT u.*,
                    r.roleName,
-                   GROUP_CONCAT(c.company_name) AS companyNames
+                   GROUP_CONCAT(c.company_name) AS companyNames,
+                   DATE_SUB(u.createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn,
+                   DATE_SUB(u.updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn
             FROM user_master u
             LEFT JOIN role_master r ON u.roleId = r.id
             LEFT JOIN company_access ca ON u.id = ca.user_id

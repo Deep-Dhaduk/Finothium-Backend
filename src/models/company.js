@@ -75,7 +75,7 @@ class Company {
     };
 
     static findAll(tenantId) {
-        let sql = "SELECT * FROM company_master";
+        let sql = "SELECT *, DATE_SUB(createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn, DATE_SUB(updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn FROM company_master";
         if (tenantId) {
             sql += ` WHERE tenantId = '${tenantId}'`;
         }

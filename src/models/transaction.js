@@ -73,7 +73,9 @@ class Transaction {
             SELECT t.*,
                    cp.name as payment_type_name,
                    a.account_name as account_name,
-                   cn.clientName as client_name
+                   cn.clientName as client_name,
+                   DATE_SUB(t.createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn,
+                   DATE_SUB(t.updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn
             FROM transaction t
             LEFT JOIN common_master cp ON t.payment_type_Id = cp.common_id
             LEFT JOIN account_master a ON t.accountId = a.account_id

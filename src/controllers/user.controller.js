@@ -257,8 +257,8 @@ const ListUser = async (req, res, next) => {
             return res.status(200).json({ success: true, message: 'User found', data: user[0][0] });
         }
 
-        const existingTokenPayload = getDecodeToken(req).decodedToken;
-        const companyId = existingTokenPayload.company.companyId;
+        const existingTokenPayload = getDecodeToken(req)
+        const companyId = existingTokenPayload.decodedToken.company.companyId;
 
         const userResult = await User.findAll(token.tenantId);
         let responseData = {

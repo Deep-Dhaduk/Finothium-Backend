@@ -67,7 +67,7 @@ class Tenant {
     }
 
     static findAll() {
-        let sql = "SELECT * FROM tenant_master";
+        let sql = "SELECT *, DATE_SUB(createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn, DATE_SUB(updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn FROM tenant_master";
         return db.execute(sql)
     }
     static findById(id) {

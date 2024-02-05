@@ -51,7 +51,7 @@ class Role {
     }
 
     static findAll(tenantId) {
-        let sql = "SELECT * FROM role_master";
+        let sql = "SELECT *, DATE_SUB(createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn, DATE_SUB(updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn FROM role_master";
         if (tenantId) {
             sql += ` WHERE tenantId = '${tenantId}'`;
         }

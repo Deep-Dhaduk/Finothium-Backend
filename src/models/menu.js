@@ -86,12 +86,22 @@ class Menu {
         return result[0][0];
     }
 
-    static findAll(tenantId) {
-        let sql = "SELECT * FROM menu_master";
-        if (tenantId) {
-            sql += ` WHERE tenantId = '${tenantId}'`;
-        }
-        return db.execute(sql)
+    static findAll(tenantId, roleId) {
+        let sql = `
+            SELECT m.*,
+                   c.menu_name AS child_menu_name,
+                   c.parent_id,
+                   p.menu_name AS parent_menu_name,
+                   DATE_SUB(c.createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn,
+                   DATE_SUB(c.updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn
+            FROM menu_master m
+            LEFT JOIN childmenu_master c ON m.child_id = c.id
+            LEFT JOIN parentmenu_master p ON c.parent_id = p.id
+            WHERE m.role_id = ?`;
+            if (tenantId) {
+                sql += ` WHERE m.tenantId = '${tenantId}'`;
+            };
+        return db.execute(sql, [roleId]);
     };
 
     static findById(id) {

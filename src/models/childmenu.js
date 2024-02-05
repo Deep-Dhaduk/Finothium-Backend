@@ -60,7 +60,9 @@ class Childmenu {
         let sql = `
             SELECT c.*,
                    p.menu_name as parent_menu_name,
-                   p.display_rank as parent_display_rank
+                   p.display_rank as parent_display_rank,
+                   DATE_SUB(c.createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn,
+                   DATE_SUB(c.updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn
             FROM childmenu_master c
             LEFT JOIN parentmenu_master p ON c.parent_id = p.id
         `;

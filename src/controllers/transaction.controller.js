@@ -40,7 +40,9 @@ const ListTransaction = async (req, res, next) => {
     const token = getDecodeToken(req)
     try {
         const { q = '', id } = req.query;
-        const { type } = req.body
+        const companyId = token.decodedToken.company.companyId;
+        const { tenantId } = token.decodedToken;
+        const { startDate, endDate, type, paymentTypeIds, clientTypeIds, accountTypeIds } = req.body
 
         if (id) {
             const transaction = await Transaction.findById(id);
@@ -52,11 +54,19 @@ const ListTransaction = async (req, res, next) => {
             return res.status(200).json({ success: true, message: 'Transaction found', data: transaction[0][0] });
         }
 
-        const transactionResult = await Transaction.findAll(token.tenantId, type);
+        let transaction;
+
+        if (startDate && endDate && paymentTypeIds && clientTypeIds && accountTypeIds) {
+            transaction = await Transaction.findAll(tenantId, companyId, startDate, endDate, type, paymentTypeIds, clientTypeIds, accountTypeIds);
+        } else if (startDate && endDate) {
+            transaction = await Transaction.findAll(tenantId, companyId, startDate, endDate, type, null, null, null);
+        } else {
+            transaction = await Transaction.findAll(tenantId, companyId, null, null, type, null, null, null);
+        }
         let responseData = {
             success: true,
             message: 'Transaction List Successfully!',
-            data: transactionResult[0]
+            data: transaction[0]
         };
 
         if (q) {

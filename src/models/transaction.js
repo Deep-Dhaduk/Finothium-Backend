@@ -68,31 +68,34 @@ class Transaction {
         }
     }
 
-    static findAll(tenantId, type) {
-        let sql = `
-            SELECT t.*,
-                   cp.name as payment_type_name,
-                   a.account_name as account_name,
-                   cn.clientName as client_name,
-                   DATE_SUB(t.createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn,
-                   DATE_SUB(t.updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn
-            FROM transaction t
-            LEFT JOIN common_master cp ON t.payment_type_Id = cp.common_id
-            LEFT JOIN account_master a ON t.accountId = a.account_id
-            LEFT JOIN client_master cn ON t.clientId = cn.clientId
-        `;
-        if (tenantId) {
-            sql += ` WHERE t.tenantId = '${tenantId}'`;
-        }
-        if (type) {
-            if (tenantId) {
-                sql += ` AND transaction_type = '${type}'`;
+    static async findAll(tenantId, companyId, startDate = null, endDate = null, type = null, paymentTypeIds = null, clientTypeIds = null, accountTypeIds = null) {
+        try {
+            let sql;
+            let params;
+
+            if (startDate && endDate && paymentTypeIds && clientTypeIds && accountTypeIds &&
+                Array.isArray(paymentTypeIds) && Array.isArray(clientTypeIds) && Array.isArray(accountTypeIds) &&
+                paymentTypeIds.length > 0 && clientTypeIds.length > 0 && accountTypeIds.length > 0) {
+
+                const paymentTypeIdsString = paymentTypeIds.join(',');
+                const clientTypeIdsString = clientTypeIds.join(',');
+                const accountTypeIdsString = accountTypeIds.join(',');
+                sql = `CALL transaction(?, ?, ?, ?, ?, ?, ?, ?)`;
+                params = [tenantId, companyId, startDate, endDate, type, paymentTypeIdsString, clientTypeIdsString, accountTypeIdsString];
+            } else if (startDate && endDate && !paymentTypeIds && !clientTypeIds && !accountTypeIds) {
+                sql = "CALL transaction(?, ?, ?, ?, NULL, NULL, NULL, NULL)";
+                params = [tenantId, companyId, startDate, endDate, null, null, null];
             } else {
-                sql += ` WHERE transaction_type = '${type}'`;
+                sql = "CALL transaction(?, ?, ?, ?, NULL, NULL, NULL, NULL)";
+                params = [tenantId, companyId, null, null, null, null, null];
             }
-        }
-        sql += " ORDER BY transaction_date DESC";
-        return db.execute(sql);
+
+            const [result, _] = await db.execute(sql, params, { nullUndefined: true });
+            return result;
+        } catch (error) {
+            console.error('Error in findAllAccount:', error);
+            throw error;
+        };
     };
 
     static findById(id) {

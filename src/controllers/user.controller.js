@@ -166,7 +166,7 @@ const loginUser = async (req, res) => {
     }
 };
 
-async function getCompanyName(Cid) {
+const getCompanyName = async (Cid) => {
     const companyInfo = await Company.findById(Cid);
     let companyName = companyInfo[0][0].company_name;
     return companyName;

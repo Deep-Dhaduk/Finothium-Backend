@@ -133,7 +133,7 @@ class Menu {
             let values = [
                 this.tenantId,
                 this.role_id,
-                this.child_id,  // Assuming this property exists in your class
+                this.child_id,
                 this.allow_access,
                 this.allow_add,
                 this.allow_edit,

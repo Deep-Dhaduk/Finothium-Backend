@@ -56,9 +56,9 @@ const ListTransaction = async (req, res, next) => {
 
         let transaction;
 
-        if (startDate && endDate && paymentTypeIds && clientTypeIds && accountTypeIds) {
-            transaction = await Transaction.findAll(tenantId, companyId, startDate, endDate, type, paymentTypeIds, clientTypeIds, accountTypeIds);
-        } else if (startDate && endDate) {
+        if (startDate && endDate && type) {
+            transaction = await Transaction.findAll(tenantId, companyId, startDate, endDate, type, paymentTypeIds || null, clientTypeIds || null, accountTypeIds || null);
+        } else if (startDate && endDate && type && !paymentTypeIds && !clientTypeIds && !accountTypeIds) {
             transaction = await Transaction.findAll(tenantId, companyId, startDate, endDate, type, null, null, null);
         } else {
             transaction = await Transaction.findAll(tenantId, companyId, null, null, type, null, null, null);

@@ -55,6 +55,11 @@ const ListParentmenu = async (req, res, next) => {
             data: parentmenuResult[0]
         };
 
+        responseData.data = responseData.data.map(parentmenu => {
+            const { tenantId, ...rest } = parentmenu;
+            return rest;
+        })
+
         if (q) {
             const queryLowered = q.toLowerCase();
             const filteredData = parentmenuResult[0].filter(

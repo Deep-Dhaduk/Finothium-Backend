@@ -74,10 +74,31 @@ class Common {
         return db.execute(sql)
     };
 
-    static delete(id) {
-        let sql = `DELETE FROM common_master WHERE common_id = ${id}`;
-        return db.execute(sql)
-    };
+    static async delete(commonId) {
+        try {
+            const [accountResults] = await db.execute(`SELECT COUNT(*) AS count FROM account_master WHERE group_name_Id = ${commonId} OR account_type_Id = ${commonId}`);
+
+            if (accountResults[0].count > 0) {
+                return { success: false, message: 'Cannot delete common record. It is being used in the account_master table.' };
+            }
+
+            const [transactionResults] = await db.execute(`SELECT COUNT(*) AS count FROM transaction WHERE payment_type_id = ${commonId}`);
+
+            if (transactionResults[0].count > 0) {
+                return { success: false, message: 'Cannot delete common record. It is being used in the transaction table.' };
+            }
+
+            const [deleteResults] = await db.execute(`DELETE FROM common_master WHERE common_id = ${commonId}`);
+
+            if (deleteResults.affectedRows > 0) {
+                return { success: true, message: 'Common record deleted successfully.' };
+            } else {
+                return { success: false, message: 'Failed to delete common record.' };
+            }
+        } catch (error) {
+            throw error;
+        }
+    }
 
     async update(id) {
         let sql = `UPDATE common_master SET tenantId='${this.tenantId}',name='${this.name}',type='${this.type}',status='${this.status}',createdBy='${this.createdBy}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}' WHERE common_id = ${id}`;

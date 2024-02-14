@@ -67,25 +67,32 @@ class Transfer {
         }
     };
 
-    static findAll(tenantId) {
-        let sql = `
-            SELECT t.*,
-                   cp.name as paymentType_name,
-                   af.account_name as fromAccount_name,
-                   at.account_name as toAccount_name,
-                   DATE_SUB(t.createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn,
-                   DATE_SUB(t.updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn
-            FROM transfer t
-            LEFT JOIN common_master cp ON t.paymentType_Id = cp.common_id
-            LEFT JOIN account_master af ON t.fromAccount = af.account_id
-            LEFT JOIN account_master at ON t.toAccount = at.account_id
-        `;
-        if (tenantId) {
-            sql += ` WHERE t.tenantId = '${tenantId}'`;
-        }
-        sql += " ORDER BY transactionDate DESC";
-        return db.execute(sql);
-    }
+    static async findAll(tenantId, companyId, startDate = null, endDate = null, paymentTypeIds = null, accountTypeIds = null) {
+        try {
+            let sql;
+            let params;
+
+            if (startDate !== null && endDate !== null && paymentTypeIds !== null && accountTypeIds !== null && Array.isArray(paymentTypeIds) && Array.isArray(accountTypeIds) && paymentTypeIds.length > 0 && accountTypeIds.length > 0) {
+                const paymentTypeIdsString = paymentTypeIds.join(',');
+                const accountTypeIdsString = accountTypeIds.join(',');
+
+                sql = `CALL transfer(?, ?, ?, ?, ?, ?)`;
+                params = [tenantId, companyId, startDate, endDate, paymentTypeIdsString, accountTypeIdsString];
+            } else if (startDate !== null && endDate !== null) {
+                sql = "CALL transfer(?, ?, ?, ?, ?, ?)";
+                params = [tenantId, companyId, startDate, endDate, null, null];
+            } else {
+                sql = "CALL transfer(?, ?, ?, ?, ?, ?)";
+                params = [tenantId, companyId, null, null, null, null];
+            }
+
+            const [result, _] = await db.execute(sql, params, { nullUndefined: true });
+            return result;
+        } catch (error) {
+            console.error('Error in findAllAccount:', error);
+            throw error;
+        };
+    };
 
     static findById(id) {
         let sql = `SELECT * FROM transfer WHERE transfer_id = ${id}`;

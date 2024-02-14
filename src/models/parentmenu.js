@@ -67,10 +67,25 @@ class Parentmenu {
         return db.execute(sql)
     };
 
-    static delete(id) {
-        let sql = `DELETE FROM parentmenu_master WHERE id = ${id}`;
-        return db.execute(sql)
-    };
+    static async delete(parentId) {
+        try {
+            const [parentResults] = await db.execute(`SELECT COUNT(*) AS count FROM childmenu_master WHERE parent_id = ${parentId}`);
+
+            if (parentResults[0].count > 0) {
+                return { success: false, message: 'Cannot delete parent record. It is being used in the childmenu_master table.' };
+            }
+
+            const [deleteResults] = await db.execute(`DELETE FROM parentmenu_master WHERE id = ${parentId}`);
+
+            if (deleteResults.affectedRows > 0) {
+                return { success: true, message: 'Parent record deleted successfully.' };
+            } else {
+                return { success: false, message: 'Failed to delete parent record.' };
+            }
+        } catch (error) {
+            throw error;
+        }
+    }
 
     async update(id) {
         let sql = `UPDATE parentmenu_master SET tenantId='${this.tenantId}',menu_name='${this.menu_name}',display_rank='${this.display_rank}',status='${this.status}',createdBy='${this.createdBy}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}' WHERE id = ${id}`;

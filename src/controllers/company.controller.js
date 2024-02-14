@@ -55,6 +55,11 @@ const ListCompany = async (req, res, next) => {
             data: companyResult[0]
         };
 
+        responseData.data = responseData.data.map(company => {
+            const { tenantId, ...rest } = company;
+            return rest;
+        })
+
         if (q) {
             const queryLowered = q.toLowerCase();
             const filteredData = companyResult[0].filter(

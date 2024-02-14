@@ -10,7 +10,7 @@ router.post(
     Transfercontroller.CreateTransfer
 );
 
-router.get(
+router.post(
     "/list-transfer",
     auth.verifyToken,
     Transfercontroller.ListTransfer

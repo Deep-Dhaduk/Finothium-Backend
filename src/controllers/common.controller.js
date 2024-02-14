@@ -57,6 +57,11 @@ const ListCommon = async (req, res, next) => {
             data: commonResult[0]
         };
 
+        responseData.data = responseData.data.map(common => {
+            const { tenantId, ...rest } = common;
+            return rest;
+        })
+
         if (q) {
             const queryLowered = q.toLowerCase();
             const filteredData = commonResult[0].filter(

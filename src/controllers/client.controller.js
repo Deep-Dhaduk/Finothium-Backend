@@ -49,14 +49,20 @@ const ListClient = async (req, res, next) => {
             if (client[0].length === 0) {
                 return res.status(404).json({ success: false, message: 'Client not found' });
             }
-        }
+        };
 
         const clientResult = await Client.findAll(token.tenantId, type, companyId);
+
         let responseData = {
             success: true,
             message: 'Client List Successfully!',
             data: clientResult[0]
         };
+
+        responseData.data = responseData.data.map(client => {
+            const { tenantId, ...rest } = client;
+            return rest;
+        });
 
         if (q) {
             const queryLowered = q.toLowerCase();

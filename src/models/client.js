@@ -83,18 +83,19 @@ class Client {
         return db.execute(sql);
     };
 
-
-
     static findBycompanyId(id) {
         let sql = `
         SELECT * FROM client_master
             WHERE companyId = ${id}
         `;;
         return db.execute(sql);
-    }
+    };
 
-    static findById(id) {
+    static findById(id, type) {
         let sql = `SELECT * FROM client_master WHERE clientId = ${id}`;
+        if (type) {
+            sql += ` AND type = '${type}'`;
+        }
         return db.execute(sql)
     };
 

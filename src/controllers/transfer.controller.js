@@ -36,22 +36,34 @@ const CreateTransfer = async (req, res) => {
 };
 
 const ListTransfer = async (req, res, next) => {
-    const token = getDecodeToken(req)
+    const tokenInfo = getDecodeToken(req);
 
     try {
         const { q = '', id } = req.query;
+        const companyId = tokenInfo.decodedToken.company.companyId;
+        const { tenantId } = tokenInfo.decodedToken;
+        const { startDate, endDate, paymentTypeIds, accountTypeIds } = req.body;
 
         if (id) {
             const transfer = await Transfer.findById(id);
 
-            if (transfer[0].length === 0) {
+            if (transfer.length === 0) {
                 return res.status(404).json({ success: false, message: 'Transfer not found' });
             }
 
-            return res.status(200).json({ success: true, message: 'Transfer found', data: transfer[0][0] });
+            return res.status(200).json({ success: true, message: 'Transfer found', data: transfer[0] });
         }
 
-        const transferResult = await Transfer.findAll(token.tenantId);
+        let transferResult;
+
+        if (startDate && endDate && accountTypeIds) {
+            transferResult = await Transfer.findAll(tenantId, companyId, startDate, endDate, paymentTypeIds, accountTypeIds);
+        } else if (startDate && endDate) {
+            transferResult = await Transfer.findAll(tenantId, companyId, startDate, endDate, null, null);
+        } else {
+            transferResult = await Transfer.findAll(tenantId, companyId, null, null, null, null);
+        }
+
         let responseData = {
             success: true,
             message: 'Transfer List Successfully!',
@@ -86,7 +98,7 @@ const ListTransfer = async (req, res, next) => {
         res.status(200).json(responseData);
 
     } catch (error) {
-        console.log(error);
+        console.error('Error in ListTransfer:', error);
         next(error);
     }
 };

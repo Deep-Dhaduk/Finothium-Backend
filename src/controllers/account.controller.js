@@ -53,13 +53,17 @@ const ListAccount = async (req, res, next) => {
         }
 
         const accountResult = await Account.findAll(token.tenantId, companyId);
-        // const accountResult = await Account.findBycompanyId(companyId);
 
         let responseData = {
             success: true,
             message: 'Account List Successfully!',
             data: accountResult[0]
         };
+
+        responseData.data = responseData.data.map(account => {
+            const { tenantId, ...rest } = account;
+            return rest;
+        })
 
         if (q) {
             const queryLowered = q.toLowerCase();

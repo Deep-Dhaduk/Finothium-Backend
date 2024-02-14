@@ -57,6 +57,11 @@ const ListMenu = async (req, res, next) => {
             data: menuResult[0]
         };
 
+        responseData.data = responseData.data.map(menu => {
+            const { tenantId, ...rest } = menu;
+            return rest;
+        })
+
         if (q) {
             const queryLowered = q.toLowerCase();
             const filteredData = menuResult[0].filter(menu =>

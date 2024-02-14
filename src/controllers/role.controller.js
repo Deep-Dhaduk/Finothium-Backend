@@ -55,6 +55,11 @@ const ListRole = async (req, res, next) => {
             data: roleResult[0]
         };
 
+        responseData.data = responseData.data.map(role => {
+            const { tenantId, ...rest } = role;
+            return rest;
+        });
+
         if (q) {
             const queryLowered = q.toLowerCase();
             const filteredData = roleResult[0].filter(

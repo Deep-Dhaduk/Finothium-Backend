@@ -73,35 +73,30 @@ class Transaction {
             let sql;
             let params;
 
-            if (startDate && endDate && paymentTypeIds && clientTypeIds && accountTypeIds &&
-                Array.isArray(paymentTypeIds) && Array.isArray(clientTypeIds) && Array.isArray(accountTypeIds) &&
-                paymentTypeIds.length > 0 && clientTypeIds.length > 0 && accountTypeIds.length > 0) {
-
-                const paymentTypeIdsString = paymentTypeIds.join(',');
-                const clientTypeIdsString = clientTypeIds.join(',');
-                const accountTypeIdsString = accountTypeIds.join(',');
+            if (startDate && endDate && type) {
                 sql = `CALL transaction(?, ?, ?, ?, ?, ?, ?, ?)`;
-                params = [tenantId, companyId, startDate, endDate, type, paymentTypeIdsString, clientTypeIdsString, accountTypeIdsString];
-            } else if (startDate && endDate && !paymentTypeIds && !clientTypeIds && !accountTypeIds) {
-                sql = "CALL transaction(?, ?, ?, ?, NULL, NULL, NULL, NULL)";
-                params = [tenantId, companyId, startDate, endDate, null, null, null];
+                params = [tenantId, companyId, startDate, endDate, type, paymentTypeIds || null, clientTypeIds || null, accountTypeIds || null];
+            } else if (startDate && endDate && type && !paymentTypeIds && !clientTypeIds && !accountTypeIds) {
+                sql = "CALL transaction(?, ?, ?, ?, ?, NULL, NULL, NULL)";
+                params = [tenantId, companyId, startDate, endDate, type, null, null, null];
             } else {
                 sql = "CALL transaction(?, ?, ?, ?, NULL, NULL, NULL, NULL)";
-                params = [tenantId, companyId, null, null, null, null, null];
+                params = [tenantId, companyId, null, null, type, null, null, null];
             }
 
             const [result, _] = await db.execute(sql, params, { nullUndefined: true });
             return result;
         } catch (error) {
-            console.error('Error in findAllAccount:', error);
+            console.error('Error in findAll:', error);
             throw error;
-        };
-    };
+        }
+    }
 
     static findById(id) {
         let sql = `SELECT * FROM transaction WHERE transactionId = ${id}`;
         return db.execute(sql)
-    }
+    };
+
     static delete(id) {
         let sql = `DELETE FROM transaction WHERE transactionId = ${id}`;
         return db.execute(sql)

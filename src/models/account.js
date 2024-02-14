@@ -105,10 +105,38 @@ class Account {
         return db.execute(sql);
     }
 
-    static delete(id) {
-        let sql = `DELETE FROM account_master WHERE account_id = ${id}`;
-        return db.execute(sql)
+    static async delete(accountId) {
+        try {
+            const [accountResults] = await db.execute(`SELECT COUNT(*) AS count FROM transaction WHERE accountId = ${accountId}`);
+
+            if (accountResults[0].count > 0) {
+                return { success: false, message: 'Cannot delete account record. It is being used in the transaction table.' };
+            }
+
+            const [fromAccountResults] = await db.execute(`SELECT COUNT(*) AS count FROM transfer WHERE fromAccount = ${accountId}`);
+
+            if (fromAccountResults[0].count > 0) {
+                return { success: false, message: 'Cannot delete account record. It is being used in the transfer table.' };
+            }
+
+            const [toAccountResults] = await db.execute(`SELECT COUNT(*) AS count FROM transfer WHERE toAccount = ${accountId}`);
+
+            if (toAccountResults[0].count > 0) {
+                return { success: false, message: 'Cannot delete account record. It is being used in the transfer table.' };
+            }
+
+            const [deleteResults] = await db.execute(`DELETE FROM account_master WHERE account_id = ${accountId}`);
+
+            if (deleteResults.affectedRows > 0) {
+                return { success: true, message: 'account record deleted successfully.' };
+            } else {
+                return { success: false, message: 'Failed to delete account record.' };
+            }
+        } catch (error) {
+            throw error;
+        }
     }
+
 
     async update(id) {
         let sql = `UPDATE account_master SET tenantId='${this.tenantId}',account_name='${this.account_name}',group_name_Id='${this.group_name_Id}',join_date='${this.join_date}',exit_date='${this.exit_date}',account_type_Id='${this.account_type_Id}',status='${this.status}',createdBy='${this.createdBy}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}' WHERE account_id = ${id}`;

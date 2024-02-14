@@ -57,13 +57,30 @@ class Role {
         }
         return db.execute(sql)
     }
+
     static findById(id) {
         let sql = `SELECT * FROM role_master WHERE id = ${id}`;
         return db.execute(sql)
     }
-    static delete(id) {
-        let sql = `DELETE FROM role_master WHERE id = ${id}`;
-        return db.execute(sql)
+
+    static async delete(roleId) {
+        try {
+            const [roleResults] = await db.execute(`SELECT COUNT(*) AS count FROM user_master WHERE roleId = ${roleId}`);
+
+            if (roleResults[0].count > 0) {
+                return { success: false, message: 'Cannot delete role record. It is being used in the user_master table.' };
+            }
+
+            const [deleteResults] = await db.execute(`DELETE FROM role_master WHERE id = ${roleId}`);
+
+            if (deleteResults.affectedRows > 0) {
+                return { success: true, message: 'role record deleted successfully.' };
+            } else {
+                return { success: false, message: 'Failed to delete role record.' };
+            }
+        } catch (error) {
+            throw error;
+        }
     }
 
     async update(id) {

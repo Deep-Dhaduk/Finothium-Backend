@@ -72,15 +72,12 @@ class Transfer {
             let sql;
             let params;
 
-            if (startDate !== null && endDate !== null && paymentTypeIds !== null && accountTypeIds !== null && Array.isArray(paymentTypeIds) && Array.isArray(accountTypeIds) && paymentTypeIds.length > 0 && accountTypeIds.length > 0) {
-                const paymentTypeIdsString = paymentTypeIds.join(',');
-                const accountTypeIdsString = accountTypeIds.join(',');
-
+            if (startDate && endDate) {
                 sql = `CALL transfer(?, ?, ?, ?, ?, ?)`;
-                params = [tenantId, companyId, startDate, endDate, paymentTypeIdsString, accountTypeIdsString];
-            } else if (startDate !== null && endDate !== null) {
-                sql = "CALL transfer(?, ?, ?, ?, ?, ?)";
-                params = [tenantId, companyId, startDate, endDate, null, null];
+                params = [tenantId, companyId, startDate, endDate, paymentTypeIds ? paymentTypeIds.join(',') : null, accountTypeIds ? accountTypeIds.join(',') : null];
+            } else if (startDate && endDate && !paymentTypeIds && !accountTypeIds) {
+                sql = "CALL transfer(?, ?, ?, ?, NULL, NULL)";
+                params = [tenantId, companyId, startDate, endDate];
             } else {
                 sql = "CALL transfer(?, ?, ?, ?, ?, ?)";
                 params = [tenantId, companyId, null, null, null, null];
@@ -106,7 +103,6 @@ class Transfer {
     async update(id) {
         let sql = `UPDATE transfer SET tenantId='${this.tenantId}',transactionDate='${this.transactionDate}',paymentType_Id='${this.paymentType_Id}',fromAccount='${this.fromAccount}',toAccount='${this.toAccount}',amount='${this.amount}',description='${this.description}',createdBy='${this.createdBy}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}' WHERE transfer_id = ${id}`;
         return db.execute(sql)
-
     };
 }
 

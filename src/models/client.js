@@ -83,6 +83,34 @@ class Client {
         return db.execute(sql);
     };
 
+    static findActiveAll(tenantId, type, id) {
+        let sql = "SELECT *, DATE_SUB(createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn, DATE_SUB(updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn FROM client_master";
+        let whereClause = "";
+
+        if (tenantId) {
+            whereClause += ` WHERE tenantId = '${tenantId}' AND status = 1`;
+        } else {
+            whereClause += " WHERE status = 1";
+        }
+        if (type) {
+            if (whereClause !== "") {
+                whereClause += ` AND type = '${type}'`;
+            } else {
+                whereClause += ` WHERE type = '${type}'`;
+            }
+        }
+        if (id) {
+            if (whereClause !== "") {
+                whereClause += ` AND companyId = '${id}'`;
+            } else {
+                whereClause += ` WHERE companyId = '${id}'`;
+            }
+        }
+
+        sql += whereClause + " ORDER BY clientName ASC";
+        return db.execute(sql);
+    };
+
     static findBycompanyId(id) {
         let sql = `
         SELECT * FROM client_master

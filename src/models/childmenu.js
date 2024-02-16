@@ -73,6 +73,25 @@ class Childmenu {
         return db.execute(sql);
     };
 
+    static findActiveAll(tenantId) {
+        let sql = `
+            SELECT c.*,
+                   p.menu_name as parent_menu_name,
+                   p.display_rank as parent_display_rank,
+                   DATE_SUB(c.createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn,
+                   DATE_SUB(c.updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn
+            FROM childmenu_master c
+            LEFT JOIN parentmenu_master p ON c.parent_id = p.id
+        `;
+        if (tenantId) {
+            sql += ` WHERE c.tenantId = '${tenantId}'AND status = 1`;
+        } else {
+            sql += " WHERE status = 1";
+        }
+        sql += " ORDER BY parent_display_rank, display_rank ASC";
+        return db.execute(sql);
+    };
+
     static findById(id) {
         let sql = `SELECT * FROM childmenu_master WHERE id = ${id}`;
         return db.execute(sql)

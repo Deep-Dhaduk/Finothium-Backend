@@ -1,5 +1,5 @@
 const Childmenu = require('../models/childmenu');
-const { createChildmenuSchema } = require('../validation/childmenu.validation');
+const { createChildmenuSchema, updateChildmenuSchema } = require('../validation/childmenu.validation');
 const { getDecodeToken } = require('../middlewares/decoded');
 
 const CreateChildmenu = async (req, res) => {
@@ -92,6 +92,65 @@ const ListChildmenu = async (req, res, next) => {
     }
 };
 
+const ActiveChildmenu = async (req, res, next) => {
+    const token = getDecodeToken(req)
+    try {
+        const { q = '', id } = req.query;
+
+        if (id) {
+            const childmenu = await Childmenu.findById(id);
+
+            if (childmenu[0].length === 0) {
+                return res.status(404).json({ success: false, message: 'Childmenu not found' });
+            }
+
+            return res.status(200).json({ success: true, message: 'Childmenu found', data: childmenu[0][0] });
+        }
+
+        const childmenuResult = await Childmenu.findActiveAll(token.tenantId);
+        let responseData = {
+            success: true,
+            message: 'Childmenu List Successfully!',
+            data: childmenuResult[0]
+        };
+
+        responseData.data = responseData.data.map(childmenu => {
+            const { tenantId, ...rest } = childmenu;
+            return rest;
+        })
+
+        if (q) {
+            const queryLowered = q.toLowerCase();
+            const filteredData = childmenuResult[0].filter(
+                childmenu =>
+                    childmenu.menu_name.toLowerCase().includes(queryLowered) ||
+                    (typeof childmenu.status === 'string' && childmenu.status.toLowerCase() === "active" && "active".includes(queryLowered)) ||
+                    (childmenu.display_rank && childmenu.display_rank.toString().includes(queryLowered))
+            );
+            if (filteredData.length > 0) {
+                responseData = {
+                    ...responseData,
+                    data: filteredData,
+                    total: filteredData.length
+                };
+            } else {
+                responseData = {
+                    ...responseData,
+                    message: 'No matching childmenu found',
+                    data: [],
+                    total: 0
+                };
+            }
+        }
+
+        res.status(200).json(responseData);
+
+    } catch (error) {
+        console.log(error);
+        next(error);
+    }
+};
+
 const getChildmenuById = async (req, res, next) => {
     try {
         let Id = req.params.id;
@@ -125,6 +184,12 @@ const deleteChildmenu = async (req, res, next) => {
 const updateChildmenu = async (req, res, next) => {
     const token = getDecodeToken(req);
     try {
+
+        const { error } = updateChildmenuSchema.validate(req.body);
+        if (error) {
+            return res.status(400).json({ success: false, message: error.message });
+        };
+
         let { menu_name, parent_id, display_rank, status, createdBy, updatedBy } = req.body;
 
         const tenantId = token.decodedToken.tenantId;
@@ -150,6 +215,7 @@ const updateChildmenu = async (req, res, next) => {
 module.exports = {
     CreateChildmenu,
     ListChildmenu,
+    ActiveChildmenu,
     getChildmenuById,
     deleteChildmenu,
     updateChildmenu

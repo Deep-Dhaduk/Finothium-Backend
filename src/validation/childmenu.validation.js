@@ -9,6 +9,16 @@ const createChildmenuSchema = Joi.object({
     updatedBy: Joi.number().integer().required()
 });
 
+const updateChildmenuSchema = Joi.object({
+    menu_name: Joi.string().required(),
+    parent_id: Joi.number().integer().required(),
+    display_rank: Joi.number().integer().required(),
+    status: Joi.number().integer().required(),
+    createdBy: Joi.number().integer().required(),
+    updatedBy: Joi.number().integer().required()
+});
+
 module.exports = {
-    createChildmenuSchema
+    createChildmenuSchema,
+    updateChildmenuSchema
 };

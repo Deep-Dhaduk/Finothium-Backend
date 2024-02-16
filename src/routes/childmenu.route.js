@@ -17,6 +17,12 @@ router.get(
 );
 
 router.get(
+    "/active-childmenu",
+    auth.verifyToken,
+    Childmenucontroller.ActiveChildmenu
+);
+
+router.get(
     "/list-childmenu/:id",
     auth.verifyToken,
     Childmenucontroller.getChildmenuById

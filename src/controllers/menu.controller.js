@@ -5,7 +5,6 @@ const { getDecodeToken } = require('../middlewares/decoded');
 const CreateMenu = async (req, res) => {
     try {
         const token = getDecodeToken(req);
-        const roleId = token.decodedToken.roleId;
 
         const { error } = createMenuSchema.validate(req.body);
         if (error) {
@@ -41,7 +40,7 @@ const ListMenu = async (req, res, next) => {
         const { q = '', id } = req.query;
 
         if (id) {
-            const menu = await Menu.findById(id);
+            const menu = await Menu.findById(id, roleId);
 
             if (menu[0].length === 0) {
                 return res.status(404).json({ success: false, message: 'Menu not found' });
@@ -50,7 +49,7 @@ const ListMenu = async (req, res, next) => {
             return res.status(200).json({ success: true, message: 'Menu found', data: menu[0][0] });
         }
 
-        const menuResult = await Menu.findAll(token.tenantId, roleId);
+        const menuResult = await Menu.findAll(token.tenantId, null);
         let responseData = {
             success: true,
             message: 'Menu List Successfully!',
@@ -58,7 +57,7 @@ const ListMenu = async (req, res, next) => {
         };
 
         responseData.data = responseData.data.map(menu => {
-            const { tenantId, ...rest } = menu;
+            const { id, tenantId, ...rest } = menu;
             return rest;
         })
 

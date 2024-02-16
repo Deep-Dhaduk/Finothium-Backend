@@ -16,6 +16,12 @@ router.post(
     Commoncontroller.ListCommon
 );
 
+router.post(
+    "/active-common",
+    auth.verifyToken,
+    Commoncontroller.Activecommon
+);
+
 router.get(
     "/list-common/:id",
     auth.verifyToken,

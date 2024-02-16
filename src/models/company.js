@@ -79,6 +79,18 @@ class Company {
         if (tenantId) {
             sql += ` WHERE tenantId = '${tenantId}'`;
         }
+        sql += " ORDER BY company_name";
+        return db.execute(sql)
+    };
+
+    static findActiveAll(tenantId) {
+        let sql = "SELECT *, DATE_SUB(createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn, DATE_SUB(updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn FROM company_master";
+        if (tenantId) {
+            sql += ` WHERE tenantId = '${tenantId}' AND status = 1`;
+        } else {
+            sql += " WHERE status = 1";
+        }
+        sql += " ORDER BY company_name";
         return db.execute(sql)
     };
 

@@ -10,12 +10,6 @@ router.get(
 );
 
 router.get(
-    "/dashboard-account-data",
-    auth.verifyToken,
-    Dashboardcontroller.ListDashboardAccountData
-);
-
-router.get(
     "/dashboard-group-data",
     auth.verifyToken,
     Dashboardcontroller.ListDashboardGroupData

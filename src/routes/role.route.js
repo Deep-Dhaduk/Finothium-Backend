@@ -16,6 +16,12 @@ router.get(
 );
 
 router.get(
+    "/active-role",
+    auth.verifyToken,
+    Rolecontroller.ActiveRole
+);
+
+router.get(
     "/list-role/:id",
     auth.verifyToken,
     Rolecontroller.getRoleById

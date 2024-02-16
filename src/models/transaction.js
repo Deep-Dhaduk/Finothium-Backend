@@ -75,12 +75,12 @@ class Transaction {
 
             if (startDate && endDate && type) {
                 sql = `CALL transaction(?, ?, ?, ?, ?, ?, ?, ?)`;
-                params = [tenantId, companyId, startDate, endDate, type, paymentTypeIds || null, clientTypeIds || null, accountTypeIds || null];
+                params = [tenantId, companyId, startDate, endDate, type, paymentTypeIds ? paymentTypeIds.join(',') : null, clientTypeIds ? clientTypeIds.join(',') : null, accountTypeIds ? accountTypeIds.join(',') : null];
             } else if (startDate && endDate && type && !paymentTypeIds && !clientTypeIds && !accountTypeIds) {
                 sql = "CALL transaction(?, ?, ?, ?, ?, NULL, NULL, NULL)";
-                params = [tenantId, companyId, startDate, endDate, type, null, null, null];
+                params = [tenantId, companyId, startDate, endDate, type];
             } else {
-                sql = "CALL transaction(?, ?, ?, ?, NULL, NULL, NULL, NULL)";
+                sql = "CALL transaction(?, ?, ?, ?, ?, ?, ?, ?)";
                 params = [tenantId, companyId, null, null, type, null, null, null];
             }
 

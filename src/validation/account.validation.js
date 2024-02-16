@@ -11,6 +11,17 @@ const createAccountSchema = Joi.object({
     updatedBy: Joi.number().integer().required()
 });
 
+const updateAccountSchema = Joi.object({
+    account_name: Joi.string().required(),
+    group_name_Id: Joi.number().integer().required(),
+    join_date: Joi.string().required(),
+    exit_date: Joi.allow(null).required(),
+    account_type_Id: Joi.number().integer().required(),
+    status: Joi.number().integer().required(),
+    createdBy: Joi.number().integer().required(),
+    updatedBy: Joi.number().integer().required()
+});
 module.exports = {
-    createAccountSchema
+    createAccountSchema,
+    updateAccountSchema
 };

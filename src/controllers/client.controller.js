@@ -1,6 +1,7 @@
 const Client = require("../models/client");
-const { createClientSchema } = require('../validation/client.validation');
+const { createClientSchema, updateClientSchema } = require('../validation/client.validation');
 const { getDecodeToken } = require('../middlewares/decoded');
+const db = require('../db/dbconnection');
 
 const CreateClient = async (req, res) => {
     const token = getDecodeToken(req)
@@ -95,6 +96,65 @@ const ListClient = async (req, res, next) => {
     }
 };
 
+const ActiveClient = async (req, res, next) => {
+    const token = getDecodeToken(req);
+    const companyId = token.decodedToken.company.companyId;
+
+    try {
+        const { q = '', id } = req.query;
+        const { type } = req.body;
+
+        if (id) {
+            const client = await Client.findById(id);
+            if (client[0].length === 0) {
+                return res.status(404).json({ success: false, message: 'Client not found' });
+            }
+        };
+
+        const clientResult = await Client.findActiveAll(token.tenantId, type, companyId);
+
+        let responseData = {
+            success: true,
+            message: 'Client List Successfully!',
+            data: clientResult[0]
+        };
+
+        responseData.data = responseData.data.map(client => {
+            const { tenantId, ...rest } = client;
+            return rest;
+        });
+
+        if (q) {
+            const queryLowered = q.toLowerCase();
+            const filteredData = clientResult[0].filter(
+                client =>
+                    client.clientName.toLowerCase().includes(queryLowered) ||
+                    (typeof client.status === 'string' && client.status.toLowerCase() === "active" && "active".includes(queryLowered))
+            );
+
+            if (filteredData.length > 0) {
+                responseData = {
+                    ...responseData,
+                    data: filteredData
+                };
+            } else {
+                responseData = {
+                    ...responseData,
+                    message: 'No matching Client found',
+                    data: [],
+                    total: 0
+                };
+            }
+        }
+
+        res.status(200).json(responseData);
+
+    } catch (error) {
+        console.log(error);
+        next(error);
+    }
+};
+
 const getClientById = async (req, res, next) => {
     try {
         let Id = req.params.id;
@@ -114,22 +174,34 @@ const getClientById = async (req, res, next) => {
 
 const deleteClient = async (req, res, next) => {
     try {
-        let Id = req.params.id;
-        await Client.delete(Id)
+        let clientId = req.params.id;
+
+        const [clientResults] = await db.execute(`SELECT COUNT(*) AS count FROM transaction WHERE clientId = ${clientId}`);
+
+        if (clientResults[0].count > 0) {
+            return res.status(200).json({ success: false, message: "Data already in use, cannot be modified." });
+        };
+
+        await Client.delete(clientId);
 
         res.status(200).json({
             success: true,
-            message: "Client Delete Successfully!"
+            message: "Account Delete Successfully!"
         });
     } catch (error) {
         console.log(error);
-        next(error)
+        next(error);
     }
 };
 
 const updateClient = async (req, res, next) => {
     try {
         const token = getDecodeToken(req)
+
+        const { error } = updateClientSchema.validate(req.body);
+        if (error) {
+            return res.status(400).json({ success: false, message: error.message });
+        };
 
         let { clientName, status, createdBy, updatedBy, type } = req.body;
 
@@ -159,6 +231,7 @@ const updateClient = async (req, res, next) => {
 module.exports = {
     CreateClient,
     ListClient,
+    ActiveClient,
     getClientById,
     deleteClient,
     updateClient

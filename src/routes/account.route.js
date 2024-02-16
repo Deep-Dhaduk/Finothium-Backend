@@ -17,6 +17,12 @@ router.get(
 );
 
 router.get(
+    "/active-account",
+    auth.verifyToken,
+    Accountcontroller.ActiveAccount
+);
+
+router.get(
     "/list-account/:id",
     auth.verifyToken,
     Accountcontroller.getAccountById

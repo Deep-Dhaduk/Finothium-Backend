@@ -95,6 +95,28 @@ class User {
         return db.execute(sql);
     }
 
+    static findActiveAll(tenantId) {
+        let sql = `
+            SELECT u.*,
+                   r.roleName,
+                   GROUP_CONCAT(c.company_name) AS companyNames,
+                   DATE_SUB(u.createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn,
+                   DATE_SUB(u.updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn
+            FROM user_master u
+            LEFT JOIN role_master r ON u.roleId = r.id
+            LEFT JOIN company_access ca ON u.id = ca.user_id
+            LEFT JOIN company_master c ON ca.company_id = c.id
+        `;
+        if (tenantId) {
+            sql += ` WHERE u.tenantId = '${tenantId}'AND status = 1`;
+        } else {
+            sql += " WHERE status = 1";
+        }
+        sql += 'GROUP BY u.id';
+        sql += " ORDER BY fullname ASC";
+        return db.execute(sql);
+    }
+
     static findById(id) {
         let sql = `SELECT * FROM user_master WHERE id = ${id}`;
         return db.execute(sql)

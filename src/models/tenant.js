@@ -70,10 +70,17 @@ class Tenant {
         let sql = "SELECT *, DATE_SUB(createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn, DATE_SUB(updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn FROM tenant_master";
         return db.execute(sql)
     }
+
+    static findActiveAll() {
+        let sql = "SELECT *, DATE_SUB(createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn, DATE_SUB(updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn FROM tenant_master WHERE status = 1";
+        return db.execute(sql)
+    }
+
     static findById(id) {
         let sql = `SELECT * FROM tenant_master WHERE tenantId = ${id}`;
         return db.execute(sql)
     }
+
     static delete(id) {
         let sql = `DELETE FROM tenant_master WHERE tenantId = ${id}`;
         return db.execute(sql)

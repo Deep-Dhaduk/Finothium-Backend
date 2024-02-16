@@ -16,6 +16,12 @@ router.post(
     Clientcontroller.ListClient
 );
 
+router.post(
+    "/active-client",
+    auth.verifyToken,
+    Clientcontroller.ActiveClient
+);
+
 router.get(
     "/list-client/:id",
     auth.verifyToken,

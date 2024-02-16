@@ -7,8 +7,9 @@ const path = require('path');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt')
 const emailService = require('../service/email.service');
-const { createUserSchema } = require('../validation/user.validation');
+const { createUserSchema, updateUserSchema } = require('../validation/user.validation');
 const { getDecodeToken } = require('../middlewares/decoded');
+const baseURL = process.env.API_BASE_URL;
 
 const CreateUser = async (req, res) => {
     const token = getDecodeToken(req)
@@ -80,6 +81,12 @@ const CreateUser = async (req, res) => {
             }
         });
     } catch (error) {
+        if (error.code === 'ER_DUP_ENTRY' && (error.sqlMessage.includes('email'))) {
+            return res.status(200).json({
+                success: false,
+                message: "Entry with provided email already exists"
+            });
+        }
         res.status(400).json({
             success: false,
             message: error.message
@@ -98,6 +105,9 @@ const loginUser = async (req, res) => {
             return res.status(401).json({
                 message: 'Invalid email or password'
             });
+        }
+        if (user[0].profile_image_filename) {
+            user[0].profile_image_filename = `${baseURL}/Images/Profile_Images/${user[0].profile_image_filename}`;
         }
 
         const isValidPassword = await User.comparePassword(password, user[0].password);
@@ -130,7 +140,6 @@ const loginUser = async (req, res) => {
 
         let selectedCompany = userWithCompanies.companies.length > 0 ? userWithCompanies.companies[0] : null;
 
-        // Remove the companyName property from selectedCompany
         if (selectedCompany) {
             const { companyName, ...companyWithoutName } = selectedCompany;
             selectedCompany = companyWithoutName;
@@ -141,7 +150,7 @@ const loginUser = async (req, res) => {
             email: userWithCompanies.email,
             tenantId: userWithCompanies.tenantId,
             roleId: userWithCompanies.roleId,
-            company: selectedCompany  // Store information about the selected company without companyName
+            company: selectedCompany
         };
 
         const token = jwt.sign(
@@ -202,7 +211,6 @@ const changeCompany = async (req, res) => {
 const findOneRec = async (req, res) => {
     try {
         const tokenInfo = getDecodeToken(req);
-        const baseURL = 'http://localhost:8080';
 
         if (!tokenInfo.success) {
             return res.status(401).json({
@@ -243,7 +251,6 @@ const findOneRec = async (req, res) => {
 
 const ListUser = async (req, res, next) => {
     const token = getDecodeToken(req);
-    const baseURL = 'http://localhost:8080';
     try {
         const { q = '', id } = req.query;
 
@@ -335,10 +342,102 @@ const ListUser = async (req, res, next) => {
     }
 };
 
+const Activeuser = async (req, res, next) => {
+    const token = getDecodeToken(req);
+    try {
+        const { q = '', id } = req.query;
+
+        if (id) {
+            const user = await User.findById(id);
+
+            if (user[0].length === 0) {
+                return res.status(404).json({ success: false, message: 'User not found' });
+            }
+
+            return res.status(200).json({ success: true, message: 'User found', data: user[0][0] });
+        }
+
+        const existingTokenPayload = getDecodeToken(req)
+        const companyId = existingTokenPayload.decodedToken.company.companyId;
+
+        const userResult = await User.findActiveAll(token.tenantId);
+        let responseData = {
+            success: true,
+            message: 'User List Successfully!',
+            data: userResult[0]
+        };
+
+        if (q) {
+            const queryLowered = q.toLowerCase();
+            const filteredData = userResult[0].filter(
+                user =>
+                    user.username.toLowerCase().includes(queryLowered) ||
+                    user.fullname.toLowerCase().includes(queryLowered) ||
+                    user.roleName.toLowerCase().includes(queryLowered) ||
+                    (typeof user.status === 'string' && user.status.toLowerCase() === "active" && "active".includes(queryLowered))
+            );
+            if (filteredData.length > 0) {
+                responseData = {
+                    ...responseData,
+                    data: filteredData,
+                    total: filteredData.length
+                };
+            } else {
+                responseData = {
+                    ...responseData,
+                    message: 'No matching user found',
+                    data: [],
+                    total: 0
+                };
+            }
+        }
+        const companyResult = await CompanyAccess.findAll(token.tenantId);
+        let userResponse = responseData.data;
+        let companyAccessResponse = companyResult[0];
+
+        const userCompaniesMap = {};
+
+        companyAccessResponse.forEach(access => {
+            const userId = access.user_id;
+
+            if (!userCompaniesMap[userId]) {
+                userCompaniesMap[userId] = [];
+            }
+
+            userCompaniesMap[userId].push({ companyId: access.company_id, roleName: access.roleName });
+
+        });
+
+        userResponse = userResponse.filter(user => {
+            const userId = user.id;
+            return userCompaniesMap[userId]?.some(company => company.companyId === companyId);
+        });
+
+        userResponse.forEach(user => {
+            const userId = user.id;
+            if (userCompaniesMap[userId]) {
+                user.companies = userCompaniesMap[userId];
+                if (user.profile_image_filename) {
+                    user.profile_image_filename = `${baseURL}/Images/Profile_Images/${user.profile_image_filename}`;
+                }
+            } else {
+                user.companies = [];
+            }
+        });
+
+        res.status(200).json({
+            data: userResponse
+        });
+
+    } catch (error) {
+        console.log(error);
+        next(error);
+    }
+};
+
 const getUserById = async (req, res, next) => {
     try {
         let userId = req.params.id;
-        const baseURL = 'http://localhost:8080';
 
         let [user, _] = await User.findOne(userId);
 
@@ -383,6 +482,11 @@ const deleteUser = async (req, res, next) => {
 const updateUser = async (req, res, next) => {
     const token = getDecodeToken(req)
     try {
+
+        const { error } = updateUserSchema.validate(req.body);
+        if (error) {
+            return res.status(400).json({ success: false, message: error.message });
+        };
 
         const { username, fullname, email, password, confirmpassword, profile_image, companyId, status, createdBy, updatedBy, roleId } = req.body;
         if (!companyId) {
@@ -587,6 +691,7 @@ const resetPassword = async (req, res) => {
 module.exports = {
     CreateUser,
     ListUser,
+    Activeuser,
     getUserById,
     deleteUser,
     updateUser,

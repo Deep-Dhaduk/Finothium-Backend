@@ -83,9 +83,30 @@ class Account {
         if (companyId) {
             sql += ` WHERE companyId = '${companyId}'`;
         }
-        sql += " ORDER BY group_name, account_name";
+        sql += " ORDER BY group_name, a.account_name";
         return db.execute(sql);
     };
+
+    static findActiveAll(tenantId, companyId) {
+        let sql = `
+        SELECT a.*, c.name AS group_name, ct.name AS account_type_name,
+        DATE_SUB(a.createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn,
+        DATE_SUB(a.updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn
+        FROM account_master a
+        LEFT JOIN common_master c ON a.group_name_Id = c.common_id
+        LEFT JOIN common_master ct ON a.account_type_Id = ct.common_id
+        WHERE a.status = 1
+        `;
+        if (tenantId) {
+            sql += ` AND a.tenantId = '${tenantId}'`;
+        }
+        if (companyId) {
+            sql += ` AND a.companyId = '${companyId}'`;
+        }
+        sql += " ORDER BY a.account_name";
+        return db.execute(sql);
+    };
+
 
     static findById(id) {
         let sql = `
@@ -103,45 +124,16 @@ class Account {
             WHERE account_id = ${id.accountId}
         `;
         return db.execute(sql);
-    }
+    };
 
-    static async delete(accountId) {
-        try {
-            const [accountResults] = await db.execute(`SELECT COUNT(*) AS count FROM transaction WHERE accountId = ${accountId}`);
-
-            if (accountResults[0].count > 0) {
-                return { success: false, message: 'Cannot delete account record. It is being used in the transaction table.' };
-            }
-
-            const [fromAccountResults] = await db.execute(`SELECT COUNT(*) AS count FROM transfer WHERE fromAccount = ${accountId}`);
-
-            if (fromAccountResults[0].count > 0) {
-                return { success: false, message: 'Cannot delete account record. It is being used in the transfer table.' };
-            }
-
-            const [toAccountResults] = await db.execute(`SELECT COUNT(*) AS count FROM transfer WHERE toAccount = ${accountId}`);
-
-            if (toAccountResults[0].count > 0) {
-                return { success: false, message: 'Cannot delete account record. It is being used in the transfer table.' };
-            }
-
-            const [deleteResults] = await db.execute(`DELETE FROM account_master WHERE account_id = ${accountId}`);
-
-            if (deleteResults.affectedRows > 0) {
-                return { success: true, message: 'account record deleted successfully.' };
-            } else {
-                return { success: false, message: 'Failed to delete account record.' };
-            }
-        } catch (error) {
-            throw error;
-        }
-    }
-
+    static delete(accountId) {
+        let sql = `DELETE FROM account_master WHERE account_id = ${accountId}`;
+        return db.execute(sql)
+    };
 
     async update(id) {
         let sql = `UPDATE account_master SET tenantId='${this.tenantId}',account_name='${this.account_name}',group_name_Id='${this.group_name_Id}',join_date='${this.join_date}',exit_date='${this.exit_date}',account_type_Id='${this.account_type_Id}',status='${this.status}',createdBy='${this.createdBy}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}' WHERE account_id = ${id}`;
         return db.execute(sql)
-
     };
 }
 

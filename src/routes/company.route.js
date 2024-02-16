@@ -16,6 +16,18 @@ router.get(
 );
 
 router.get(
+    "/active-company",
+    auth.verifyToken,
+    Companycontroller.ActiveCompany
+);
+
+router.get(
+    "/list-company",
+    auth.verifyToken,
+    Companycontroller.ListCompany
+);
+
+router.get(
     "/list-company/:id",
     auth.verifyToken,
     Companycontroller.getCompanyById

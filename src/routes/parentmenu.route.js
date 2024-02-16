@@ -16,6 +16,12 @@ router.get(
 );
 
 router.get(
+    "/active-parentmenu",
+    auth.verifyToken,
+    Parentmenucontroller.ActiveParentmenu
+);
+
+router.get(
     "/list-parentmenu/:id",
     auth.verifyToken,
     Parentmenucontroller.getParentmenuById

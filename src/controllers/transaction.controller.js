@@ -1,5 +1,5 @@
 const Transaction = require("../models/transaction");
-const { createTransactionSchema } = require('../validation/transaction.validation');
+const { createTransactionSchema, updateTransactionSchema } = require('../validation/transaction.validation');
 const { getDecodeToken } = require('../middlewares/decoded');
 
 const CreateTransaction = async (req, res) => {
@@ -55,9 +55,8 @@ const ListTransaction = async (req, res, next) => {
         }
 
         let transaction;
-
         if (startDate && endDate && type) {
-            transaction = await Transaction.findAll(tenantId, companyId, startDate, endDate, type, paymentTypeIds || null, clientTypeIds || null, accountTypeIds || null);
+            transaction = await Transaction.findAll(tenantId, companyId, startDate, endDate, type, paymentTypeIds, clientTypeIds, accountTypeIds);
         } else if (startDate && endDate && type && !paymentTypeIds && !clientTypeIds && !accountTypeIds) {
             transaction = await Transaction.findAll(tenantId, companyId, startDate, endDate, type, null, null, null);
         } else {
@@ -69,12 +68,13 @@ const ListTransaction = async (req, res, next) => {
             data: transaction[0]
         };
 
+        ;
         if (q) {
             const queryLowered = q.toLowerCase();
-            const filteredData = transactionResult[0].filter(transaction =>
+            const filteredData = transaction[0].filter(transaction =>
                 (transaction.transaction_type && transaction.transaction_type.toLowerCase().includes(queryLowered)) ||
-                (transaction.payment_type_Id && transaction.payment_type_Id.toLowerCase().includes(queryLowered)) ||
-                (transaction && transaction.toLowerCase().includes(queryLowered))
+                (typeof transaction.payment_type_Id === 'string' && transaction.payment_type_Id.toLowerCase().includes(queryLowered)) ||
+                (typeof transaction === 'string' && transaction.toLowerCase().includes(queryLowered))
             );
 
             if (filteredData.length > 0) {
@@ -91,7 +91,7 @@ const ListTransaction = async (req, res, next) => {
                     total: 0
                 };
             }
-        }
+        };
 
         res.status(200).json(responseData);
 
@@ -134,6 +134,11 @@ const deleteTransaction = async (req, res, next) => {
 const updateTransaction = async (req, res, next) => {
     const token = getDecodeToken(req);
     try {
+
+        const { error } = updateTransactionSchema.validate(req.body);
+        if (error) {
+            return res.status(400).json({ success: false, message: error.message });
+        };
 
         let { transaction_date, transaction_type, payment_type_Id, accountId, amount, description, createdBy, updatedBy, clientId } = req.body;
 

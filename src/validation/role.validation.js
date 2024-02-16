@@ -7,6 +7,14 @@ const createRoleSchema = Joi.object({
     updatedBy: Joi.number().integer().required()
 });
 
+const updateRoleSchema = Joi.object({
+    rolename: Joi.string().required(),
+    status: Joi.number().integer().required(),
+    createdBy: Joi.number().integer().required(),
+    updatedBy: Joi.number().integer().required()
+});
+
 module.exports = {
-    createRoleSchema
+    createRoleSchema,
+    updateRoleSchema
 };

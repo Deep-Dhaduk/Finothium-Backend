@@ -1,4 +1,4 @@
-const db = require('../db/dbconnection')
+const db = require('../db/dbconnection');
 
 class Parentmenu {
     constructor(tenantId, menu_name, display_rank, status, createdBy, updatedBy) {
@@ -62,30 +62,26 @@ class Parentmenu {
         return db.execute(sql)
     };
 
+    static findActiveAll(tenantId) {
+        let sql = "SELECT *, DATE_SUB(createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn, DATE_SUB(updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn FROM parentmenu_master";
+        if (tenantId) {
+            sql += ` WHERE tenantId = '${tenantId}'AND status = 1`;
+        } else {
+            sql += " WHERE status = 1";
+        }
+        sql += " ORDER BY menu_name, display_rank ASC";
+        return db.execute(sql)
+    };
+
     static findById(id) {
         let sql = `SELECT * FROM parentmenu_master WHERE id = ${id}`;
         return db.execute(sql)
     };
 
-    static async delete(parentId) {
-        try {
-            const [parentResults] = await db.execute(`SELECT COUNT(*) AS count FROM childmenu_master WHERE parent_id = ${parentId}`);
-
-            if (parentResults[0].count > 0) {
-                return { success: false, message: 'Cannot delete parent record. It is being used in the childmenu_master table.' };
-            }
-
-            const [deleteResults] = await db.execute(`DELETE FROM parentmenu_master WHERE id = ${parentId}`);
-
-            if (deleteResults.affectedRows > 0) {
-                return { success: true, message: 'Parent record deleted successfully.' };
-            } else {
-                return { success: false, message: 'Failed to delete parent record.' };
-            }
-        } catch (error) {
-            throw error;
-        }
-    }
+    static delete(parentId) {
+        let sql = `DELETE FROM parentmenu_master WHERE id = ${parentId}`;
+        return db.execute(sql)
+    };
 
     async update(id) {
         let sql = `UPDATE parentmenu_master SET tenantId='${this.tenantId}',menu_name='${this.menu_name}',display_rank='${this.display_rank}',status='${this.status}',createdBy='${this.createdBy}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}' WHERE id = ${id}`;

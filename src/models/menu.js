@@ -97,11 +97,21 @@ class Menu {
             FROM menu_master m
             LEFT JOIN childmenu_master c ON m.child_id = c.id
             LEFT JOIN parentmenu_master p ON c.parent_id = p.id
-            WHERE m.role_id = ?`;
-            if (tenantId) {
-                sql += ` WHERE m.tenantId = '${tenantId}'`;
-            };
-        return db.execute(sql, [roleId]);
+            WHERE 1=1`;
+
+        const params = [];
+
+        if (roleId) {
+            sql += ` AND m.role_id = ?`;
+            params.push(roleId);
+        }
+
+        if (tenantId) {
+            sql += ` AND m.tenantId = ?`;
+            params.push(tenantId);
+        }
+
+        return db.execute(sql, params);
     };
 
     static findById(id) {

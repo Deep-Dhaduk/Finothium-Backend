@@ -26,6 +26,12 @@ router.get(
 );
 
 router.get(
+    "/active-user",
+    auth.verifyToken,
+    UserController.Activeuser
+);
+
+router.get(
     "/list-user/:id",
     auth.verifyToken,
     UserController.getUserById

@@ -42,7 +42,7 @@ const ListTransfer = async (req, res, next) => {
         const { q = '', id } = req.query;
         const companyId = tokenInfo.decodedToken.company.companyId;
         const { tenantId } = tokenInfo.decodedToken;
-        const { startDate, endDate, paymentTypeIds, accountTypeIds } = req.body;
+        const { limit, startDate, endDate, paymentTypeIds, accountTypeIds } = req.body;
 
         if (id) {
             const transfer = await Transfer.findById(id);
@@ -56,11 +56,11 @@ const ListTransfer = async (req, res, next) => {
         let transferResult;
 
         if (startDate && endDate) {
-            transferResult = await Transfer.findAll(tenantId, companyId, startDate, endDate, paymentTypeIds, accountTypeIds);
+            transferResult = await Transfer.findAll(tenantId, companyId, startDate, endDate, paymentTypeIds, accountTypeIds, limit);
         } else if (startDate && endDate && !paymentTypeIds && !accountTypeIds) {
-            transferResult = await Transfer.findAll(tenantId, companyId, startDate, endDate, null, null);
+            transferResult = await Transfer.findAll(tenantId, companyId, startDate, endDate, null, null, limit);
         } else {
-            transferResult = await Transfer.findAll(tenantId, companyId, null, null, null, null);
+            transferResult = await Transfer.findAll(tenantId, companyId, null, null, null, null, limit);
         }
 
         let responseData = {
@@ -73,9 +73,9 @@ const ListTransfer = async (req, res, next) => {
             const queryLowered = q.toLowerCase();
             const filteredData = transferResult[0].filter(
                 transfer =>
-                    (transfer.paymentType_Id && typeof transfer.paymentType_Id === 'string' && transfer.paymentType_Id.toLowerCase().includes(queryLowered)) ||
-                    (transfer.fromAccount && typeof transfer.fromAccount === 'string' && transfer.fromAccount.toLowerCase().includes(queryLowered)) ||
-                    (transfer.toAccount && typeof transfer.toAccount === 'string' && transfer.toAccount.toLowerCase().includes(queryLowered))
+                    (transfer.payment_type_name && typeof transfer.payment_type_name === 'string' && transfer.payment_type_name.toLowerCase().includes(queryLowered)) ||
+                    (transfer.fromAccountName && typeof transfer.fromAccountName === 'string' && transfer.fromAccountName.toLowerCase().includes(queryLowered)) ||
+                    (transfer.toAccountName && typeof transfer.toAccountName === 'string' && transfer.toAccountName.toLowerCase().includes(queryLowered))
             );
 
             if (filteredData.length > 0) {

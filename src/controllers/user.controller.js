@@ -267,7 +267,7 @@ const ListUser = async (req, res, next) => {
         const existingTokenPayload = getDecodeToken(req)
         const companyId = existingTokenPayload.decodedToken.company.companyId;
 
-        const userResult = await User.findAll(token.tenantId);
+        const userResult = await User.findAll(token.decodedToken.tenantId);;
         let responseData = {
             success: true,
             message: 'User List Successfully!',
@@ -298,7 +298,7 @@ const ListUser = async (req, res, next) => {
                 };
             }
         }
-        const companyResult = await CompanyAccess.findAll(token.tenantId);
+        const companyResult = await CompanyAccess.findAll(token.decodedToken.tenantId);;
         let userResponse = responseData.data;
         let companyAccessResponse = companyResult[0];
 
@@ -360,7 +360,7 @@ const Activeuser = async (req, res, next) => {
         const existingTokenPayload = getDecodeToken(req)
         const companyId = existingTokenPayload.decodedToken.company.companyId;
 
-        const userResult = await User.findActiveAll(token.tenantId);
+        const userResult = await User.findActiveAll(token.decodedToken.tenantId);
         let responseData = {
             success: true,
             message: 'User List Successfully!',
@@ -391,7 +391,7 @@ const Activeuser = async (req, res, next) => {
                 };
             }
         }
-        const companyResult = await CompanyAccess.findAll(token.tenantId);
+        const companyResult = await CompanyAccess.findAll(token.decodedToken.tenantId);;
         let userResponse = responseData.data;
         let companyAccessResponse = companyResult[0];
 

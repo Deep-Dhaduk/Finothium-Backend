@@ -68,20 +68,20 @@ class Transaction {
         }
     }
 
-    static async findAll(tenantId, companyId, startDate = null, endDate = null, type = null, paymentTypeIds = null, clientTypeIds = null, accountTypeIds = null) {
+    static async findAll(tenantId, companyId, startDate = null, endDate = null, type = null, paymentTypeIds = null, clientTypeIds = null, accountTypeIds = null, limit = null) {
         try {
             let sql;
             let params;
 
-            if (startDate && endDate && type) {
-                sql = `CALL transaction(?, ?, ?, ?, ?, ?, ?, ?)`;
-                params = [tenantId, companyId, startDate, endDate, type, paymentTypeIds ? paymentTypeIds.join(',') : null, clientTypeIds ? clientTypeIds.join(',') : null, accountTypeIds ? accountTypeIds.join(',') : null];
-            } else if (startDate && endDate && type && !paymentTypeIds && !clientTypeIds && !accountTypeIds) {
-                sql = "CALL transaction(?, ?, ?, ?, ?, NULL, NULL, NULL)";
-                params = [tenantId, companyId, startDate, endDate, type];
+            if (startDate !== null && endDate !== null && type !== null) {
+                sql = `CALL transaction(?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+                params = [tenantId, companyId, startDate, endDate, type, paymentTypeIds ? paymentTypeIds.join(',') : null, clientTypeIds ? clientTypeIds.join(',') : null, accountTypeIds ? accountTypeIds.join(',') : null, limit || 95];
+            } else if (startDate !== null && endDate !== null && type !== null && paymentTypeIds === null && clientTypeIds === null && accountTypeIds === null) {
+                sql = "CALL transaction(?, ?, ?, ?, ?, NULL, NULL, NULL, ?)";
+                params = [tenantId, companyId, startDate, endDate, type, limit || 95];
             } else {
-                sql = "CALL transaction(?, ?, ?, ?, ?, ?, ?, ?)";
-                params = [tenantId, companyId, null, null, type, null, null, null];
+                sql = "CALL transaction(?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                params = [tenantId, companyId, null, null, type, null, null, null, limit || 95];
             }
 
             const [result, _] = await db.execute(sql, params, { nullUndefined: true });
@@ -91,6 +91,7 @@ class Transaction {
             throw error;
         }
     }
+
 
     static findById(id) {
         let sql = `SELECT * FROM transaction WHERE transactionId = ${id}`;

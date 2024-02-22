@@ -40,7 +40,7 @@ const ListCreateCompanyAccess = async (req, res, next) => {
             return res.status(200).json({ success: true, message: 'CompanyAccess found', data: menu[0][0] });
         }
 
-        const companyAccessResult = await CompanyAccess.findAll(token.tenantId);
+        const companyAccessResult = await CompanyAccess.findAll(token.decodedToken.tenantId);;
         let responseData = {
             success: true,
             message: 'CompanyAccsess List Successfully!',

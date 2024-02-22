@@ -90,8 +90,9 @@ class Client {
         if (tenantId) {
             whereClause += ` WHERE tenantId = '${tenantId}' AND status = 1`;
         } else {
-            whereClause += " WHERE status = 1";
+            whereClause += ` WHERE status = 1`;
         }
+
         if (type) {
             if (whereClause !== "") {
                 whereClause += ` AND type = '${type}'`;

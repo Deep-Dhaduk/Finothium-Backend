@@ -1,5 +1,5 @@
 const express = require('express')
-const Transactioncontroller = require('../controllers/transaction.controller');
+const TransactionController = require('../controllers/transaction.controller');
 const auth = require('../middlewares/auth');
 const router = express.Router();
 
@@ -7,30 +7,30 @@ const router = express.Router();
 router.post(
     "/create-transaction",
     auth.verifyToken,
-    Transactioncontroller.CreateTransaction
+    TransactionController.CreateTransaction
 );
 
 router.post(
     "/list-transaction",
     auth.verifyToken,
-    Transactioncontroller.ListTransaction
+    TransactionController.ListTransaction
 );
 
 router.get(
     "/list-transaction/:id",
     auth.verifyToken,
-    Transactioncontroller.getTransactionById
+    TransactionController.getTransactionById
 );
 
 router.delete(
     "/delete-transaction/:id",
     auth.verifyToken,
-    Transactioncontroller.deleteTransaction
+    TransactionController.deleteTransaction
 );
 
 router.put(
     "/update-transaction/:id",
     auth.verifyToken,
-    Transactioncontroller.updateTransaction
+    TransactionController.updateTransaction
 );
 module.exports = router;

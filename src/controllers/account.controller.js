@@ -2,6 +2,7 @@ const Account = require("../models/account");
 const { createAccountSchema, updateAccountSchema } = require('../validation/account.validation');
 const { getDecodeToken } = require('../middlewares/decoded');
 const db = require('../db/dbconnection');
+const message = ("This data is in used, you can't delete it.");
 
 const CreateAccount = async (req, res) => {
     const token = getDecodeToken(req);
@@ -53,7 +54,7 @@ const ListAccount = async (req, res, next) => {
             return res.status(200).json({ success: true, message: 'Account found', data: account[0][0] });
         }
 
-        const accountResult = await Account.findAll(token.tenantId, companyId);
+        const accountResult = await Account.findAll(token.decodedToken.tenantId, companyId);
 
         let responseData = {
             success: true,
@@ -113,7 +114,7 @@ const ActiveAccount = async (req, res, next) => {
             return res.status(200).json({ success: true, message: 'Account found', data: account[0][0] });
         }
 
-        const accountResult = await Account.findActiveAll(token.tenantId, companyId);
+        const accountResult = await Account.findActiveAll(token.decodedToken.tenantId, companyId);
 
         let responseData = {
             success: true,
@@ -180,19 +181,19 @@ const deleteAccount = async (req, res, next) => {
         const [accountResults] = await db.execute(`SELECT COUNT(*) AS count FROM transaction WHERE accountId = ${accountId}`);
 
         if (accountResults[0].count > 0) {
-            return res.status(200).json({ success: false, message: "Data already in use, cannot be modified." });
+            return res.status(200).json({ success: false, message : message });
         }
 
         const [fromAccountResults] = await db.execute(`SELECT COUNT(*) AS count FROM transfer WHERE fromAccount = ${accountId}`);
 
         if (fromAccountResults[0].count > 0) {
-            return res.status(200).json({ success: false, message: "Data already in use, cannot be modified." });
+            return res.status(200).json({ success: false, message: message });
         }
 
         const [toAccountResults] = await db.execute(`SELECT COUNT(*) AS count FROM transfer WHERE toAccount = ${accountId}`);
 
         if (toAccountResults[0].count > 0) {
-            return res.status(200).json({ success: false, message: "Data already in use, cannot be modified." });
+            return res.status(200).json({ success: false, message: message });
         }
         await Account.delete(accountId);
 

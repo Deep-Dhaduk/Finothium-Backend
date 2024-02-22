@@ -2,6 +2,7 @@ const Common = require("../models/common");
 const { createCommonSchema, updateCommonSchema } = require('../validation/common.validation');
 const { getDecodeToken } = require('../middlewares/decoded');
 const db = require('../db/dbconnection');
+const message = ("This data is in used, you can't delete it.");
 
 
 const CreateCommon = async (req, res) => {
@@ -52,7 +53,7 @@ const ListCommon = async (req, res, next) => {
             return res.status(200).json({ success: true, message: 'Common found', data: common[0][0] });
         }
 
-        const commonResult = await Common.findAll(token.tenantId, type);
+        const commonResult = await Common.findAll(token.decodedToken.tenantId, type);
         let responseData = {
             success: true,
             message: 'Common List Successfully!',
@@ -114,7 +115,7 @@ const Activecommon = async (req, res, next) => {
             return res.status(200).json({ success: true, message: 'Common found', data: common[0][0] });
         }
 
-        const commonResult = await Common.findActiveAll(token.tenantId, type);
+        const commonResult = await Common.findActiveAll(token.decodedToken.tenantId, type);
         let responseData = {
             success: true,
             message: 'Common List Successfully!',
@@ -183,13 +184,13 @@ const deleteCommon = async (req, res, next) => {
         const [accountResults] = await db.execute(`SELECT COUNT(*) AS count FROM account_master WHERE group_name_Id = ${commonId} OR account_type_Id = ${commonId}`);
 
         if (accountResults[0].count > 0) {
-            return res.status(200).json({ success: false, message: "Data already in use, cannot be modified." });
+            return res.status(200).json({ success: false, message: message });
         }
 
         const [transactionResults] = await db.execute(`SELECT COUNT(*) AS count FROM transaction WHERE payment_type_id = ${commonId}`);
 
         if (transactionResults[0].count > 0) {
-            return res.status(200).json({ success: false, message: "Data already in use, cannot be modified." });
+            return res.status(200).json({ success: false, message: message });
         }
 
         await Common.delete(commonId);

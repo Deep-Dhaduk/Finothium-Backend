@@ -60,11 +60,26 @@ class Tenant {
             '${this.dateandtime()}'
         )`;
             return db.execute(sql)
-
         } catch (error) {
             throw error;
         }
     }
+
+    // async save() {
+    //     try {
+
+    //         const sql = 'CALL create_new_tenant(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+    //         const values = [
+    //             this.tenantname, this.personname, this.address, this.contact,
+    //             this.email, this.startdate, this.enddate, this.status, this.createdBy, this.updatedBy
+    //         ];
+
+    //         return db.execute(sql, values)
+
+    //     } catch (error) {
+    //         throw error;
+    //     }
+    // }
 
     static findAll() {
         let sql = "SELECT *, DATE_SUB(createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn, DATE_SUB(updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn FROM tenant_master";

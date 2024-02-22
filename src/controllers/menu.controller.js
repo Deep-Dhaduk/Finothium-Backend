@@ -49,7 +49,7 @@ const ListMenu = async (req, res, next) => {
             return res.status(200).json({ success: true, message: 'Menu found', data: menu[0][0] });
         }
 
-        const menuResult = await Menu.findAll(token.tenantId, null);
+        const menuResult = await Menu.findAll(token.decodedToken.tenantId, null);
         let responseData = {
             success: true,
             message: 'Menu List Successfully!',

@@ -48,7 +48,7 @@ const ListChildmenu = async (req, res, next) => {
             return res.status(200).json({ success: true, message: 'Childmenu found', data: childmenu[0][0] });
         }
 
-        const childmenuResult = await Childmenu.findAll(token.tenantId);
+        const childmenuResult = await Childmenu.findAll(token.decodedToken.tenantId);;
         let responseData = {
             success: true,
             message: 'Childmenu List Successfully!',
@@ -107,7 +107,7 @@ const ActiveChildmenu = async (req, res, next) => {
             return res.status(200).json({ success: true, message: 'Childmenu found', data: childmenu[0][0] });
         }
 
-        const childmenuResult = await Childmenu.findActiveAll(token.tenantId);
+        const childmenuResult = await Childmenu.findActiveAll(token.decodedToken.tenantId);
         let responseData = {
             success: true,
             message: 'Childmenu List Successfully!',

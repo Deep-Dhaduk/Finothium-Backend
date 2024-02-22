@@ -67,20 +67,20 @@ class Transfer {
         }
     };
 
-    static async findAll(tenantId, companyId, startDate = null, endDate = null, paymentTypeIds = null, accountTypeIds = null) {
+    static async findAll(tenantId, companyId, startDate = null, endDate = null, paymentTypeIds = null, accountTypeIds = null, limit = null) {
         try {
             let sql;
             let params;
 
-            if (startDate && endDate) {
-                sql = `CALL transfer(?, ?, ?, ?, ?, ?)`;
-                params = [tenantId, companyId, startDate, endDate, paymentTypeIds ? paymentTypeIds.join(',') : null, accountTypeIds ? accountTypeIds.join(',') : null];
-            } else if (startDate && endDate && !paymentTypeIds && !accountTypeIds) {
-                sql = "CALL transfer(?, ?, ?, ?, NULL, NULL)";
-                params = [tenantId, companyId, startDate, endDate];
+            if (startDate !== null && endDate !== null) {
+                sql = `CALL transfer(?, ?, ?, ?, ?, ?, ?)`;
+                params = [tenantId, companyId, startDate, endDate, paymentTypeIds ? paymentTypeIds.join(',') : null, accountTypeIds ? accountTypeIds.join(',') : null, limit || 95];
+            } else if (startDate !== null && endDate !== null && paymentTypeIds === null && accountTypeIds === null) {
+                sql = "CALL transfer(?, ?, ?, ?, NULL, NULL, ?)";
+                params = [tenantId, companyId, startDate, endDate, limit || 95];
             } else {
-                sql = "CALL transfer(?, ?, ?, ?, ?, ?)";
-                params = [tenantId, companyId, null, null, null, null];
+                sql = "CALL transfer(?, ?, ?, ?, ?, ?, ?)";
+                params = [tenantId, companyId, null, null, null, null, , limit || 95];
             }
 
             const [result, _] = await db.execute(sql, params, { nullUndefined: true });

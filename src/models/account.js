@@ -75,12 +75,11 @@ class Account {
         LEFT JOIN common_master c ON a.group_name_Id = c.common_id
         LEFT JOIN common_master ct ON a.account_type_Id = ct.common_id
         `;
-        if (tenantId) {
-            sql += ` WHERE a.tenantId = '${tenantId}'`;
+        if (tenantId && companyId) {
+            sql += ` WHERE a.tenantId = '${tenantId}' AND companyId = '${companyId}'`;
         } else if (tenantId) {
             sql += ` WHERE a.tenantId = '${tenantId}'`;
-        }
-        if (companyId) {
+        } else if (companyId) {
             sql += ` WHERE companyId = '${companyId}'`;
         }
         sql += " ORDER BY group_name, a.account_name";
@@ -106,7 +105,6 @@ class Account {
         sql += " ORDER BY a.account_name";
         return db.execute(sql);
     };
-
 
     static findById(id) {
         let sql = `

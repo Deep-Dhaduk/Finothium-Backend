@@ -114,13 +114,13 @@ class reports {
 
             if (startDate && endDate && groupTypeIds && Array.isArray(groupTypeIds) && groupTypeIds.length > 0) {
                 const groupTypeIdsString = groupTypeIds.join(',');
-                sql = `CALL report_statement(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-                params = [tenantId, companyId, startDate, endDate, groupTypeIdsString, null, null, null, null];
+                sql = `CALL report_statement(?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+                params = [tenantId, companyId, startDate, endDate, null, null, null, null, groupTypeIdsString];
             } else if (startDate && endDate && !groupTypeIds) {
-                sql = "CALL report_statement(?, ?, ?, ?, NULL, ?, ?, ?, ?)";
+                sql = "CALL report_statement(?, ?, ?, ?, ?, ?, ?, ?, NULL)";
                 params = [tenantId, companyId, startDate, endDate, null, null, null, null];
             } else {
-                sql = "CALL report_statement(?, ?, ?, ?, NULL, ?, ?, ?, ?)";
+                sql = "CALL report_statement(?, ?, ?, ?, ?, ?, ?, ?, NULL)";
                 params = [tenantId, companyId, null, null, null, null, null, null];
             }
 

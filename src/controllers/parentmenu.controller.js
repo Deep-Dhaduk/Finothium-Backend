@@ -2,6 +2,7 @@ const Parentmenu = require("../models/parentmenu");
 const { createParentMenuSchema, updateParentMenuSchema } = require('../validation/parentmenu.validation');
 const { getDecodeToken } = require('../middlewares/decoded');
 const db = require('../db/dbconnection');
+const message = ("This data is in used, you can't delete it.");
 
 const CreateParentmenu = async (req, res) => {
 
@@ -49,7 +50,7 @@ const ListParentmenu = async (req, res, next) => {
             return res.status(200).json({ success: true, message: 'parentmenu found', data: parentmenu[0][0] });
         }
 
-        const parentmenuResult = await Parentmenu.findAll(token.tenantId);
+        const parentmenuResult = await Parentmenu.findAll(token.decodedToken.tenantId);;
         let responseData = {
             success: true,
             message: 'Parentmenu List Successfully!',
@@ -108,7 +109,7 @@ const ActiveParentmenu = async (req, res, next) => {
             return res.status(200).json({ success: true, message: 'parentmenu found', data: parentmenu[0][0] });
         }
 
-        const parentmenuResult = await Parentmenu.findActiveAll(token.tenantId);
+        const parentmenuResult = await Parentmenu.findActiveAll(token.decodedToken.tenantId);
         let responseData = {
             success: true,
             message: 'Parentmenu List Successfully!',
@@ -175,7 +176,7 @@ const deleteParentmenu = async (req, res, next) => {
         const [parentResults] = await db.execute(`SELECT COUNT(*) AS count FROM childmenu_master WHERE parent_id = ${parentId}`);
 
         if (parentResults[0].count > 0) {
-            return res.status(200).json({ success: false, message: "Data already in use, cannot be modified." });
+            return res.status(200).json({ success: false, message: message });
         }
 
         await Parentmenu.delete(parentId);

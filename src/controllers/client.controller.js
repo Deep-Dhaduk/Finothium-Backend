@@ -2,6 +2,7 @@ const Client = require("../models/client");
 const { createClientSchema, updateClientSchema } = require('../validation/client.validation');
 const { getDecodeToken } = require('../middlewares/decoded');
 const db = require('../db/dbconnection');
+const message = ("This data is in used, you can't delete it.");
 
 const CreateClient = async (req, res) => {
     const token = getDecodeToken(req)
@@ -52,7 +53,7 @@ const ListClient = async (req, res, next) => {
             }
         };
 
-        const clientResult = await Client.findAll(token.tenantId, type, companyId);
+        const clientResult = await Client.findAll(token.decodedToken.tenantId, type, companyId);
 
         let responseData = {
             success: true,
@@ -111,7 +112,7 @@ const ActiveClient = async (req, res, next) => {
             }
         };
 
-        const clientResult = await Client.findActiveAll(token.tenantId, type, companyId);
+        const clientResult = await Client.findActiveAll(token.decodedToken.tenantId, type, companyId);
 
         let responseData = {
             success: true,
@@ -179,7 +180,7 @@ const deleteClient = async (req, res, next) => {
         const [clientResults] = await db.execute(`SELECT COUNT(*) AS count FROM transaction WHERE clientId = ${clientId}`);
 
         if (clientResults[0].count > 0) {
-            return res.status(200).json({ success: false, message: "Data already in use, cannot be modified." });
+            return res.status(200).json({ success: false, message: message });
         };
 
         await Client.delete(clientId);

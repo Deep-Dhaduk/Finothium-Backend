@@ -75,18 +75,17 @@ class Childmenu {
 
     static findActiveAll(tenantId) {
         let sql = `
-            SELECT c.*,
-                   p.menu_name as parent_menu_name,
-                   p.display_rank as parent_display_rank,
-                   DATE_SUB(c.createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn,
-                   DATE_SUB(c.updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn
-            FROM childmenu_master c
-            LEFT JOIN parentmenu_master p ON c.parent_id = p.id
+        SELECT c.*,
+        p.menu_name as parent_menu_name,
+        p.display_rank as parent_display_rank,
+        DATE_SUB(c.createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn,
+        DATE_SUB(c.updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn
+        FROM childmenu_master c
+        LEFT JOIN parentmenu_master p ON c.parent_id = p.id
+        WHERE c.status = 1
         `;
         if (tenantId) {
-            sql += ` WHERE c.tenantId = '${tenantId}'AND status = 1`;
-        } else {
-            sql += " WHERE status = 1";
+            sql += ` AND c.tenantId = '${tenantId}'`;
         }
         sql += " ORDER BY parent_display_rank, display_rank ASC";
         return db.execute(sql);

@@ -106,11 +106,10 @@ class User {
             LEFT JOIN role_master r ON u.roleId = r.id
             LEFT JOIN company_access ca ON u.id = ca.user_id
             LEFT JOIN company_master c ON ca.company_id = c.id
+            WHERE u.status = 1
         `;
         if (tenantId) {
-            sql += ` WHERE u.tenantId = '${tenantId}'AND status = 1`;
-        } else {
-            sql += " WHERE status = 1";
+            sql += ` AND u.tenantId = '${tenantId}'`;
         }
         sql += 'GROUP BY u.id';
         sql += " ORDER BY fullname ASC";

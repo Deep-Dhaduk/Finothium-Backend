@@ -37,30 +37,20 @@ const CreateTransaction = async (req, res) => {
 };
 
 const ListTransaction = async (req, res, next) => {
-    const token = getDecodeToken(req)
+    const token = getDecodeToken(req);
     try {
-        const { q = '', id } = req.query;
+        const { q = '' } = req.query;
+        const { limit, startDate, endDate, type, paymentTypeIds, clientTypeIds, accountTypeIds } = req.body;
         const companyId = token.decodedToken.company.companyId;
         const { tenantId } = token.decodedToken;
-        const { startDate, endDate, type, paymentTypeIds, clientTypeIds, accountTypeIds } = req.body
-
-        if (id) {
-            const transaction = await Transaction.findById(id);
-
-            if (transaction[0].length === 0) {
-                return res.status(404).json({ success: false, message: 'Transaction not found' });
-            }
-
-            return res.status(200).json({ success: true, message: 'Transaction found', data: transaction[0][0] });
-        }
 
         let transaction;
         if (startDate && endDate && type) {
-            transaction = await Transaction.findAll(tenantId, companyId, startDate, endDate, type, paymentTypeIds, clientTypeIds, accountTypeIds);
+            transaction = await Transaction.findAll(tenantId, companyId, startDate, endDate, type, paymentTypeIds, clientTypeIds, accountTypeIds, limit);
         } else if (startDate && endDate && type && !paymentTypeIds && !clientTypeIds && !accountTypeIds) {
-            transaction = await Transaction.findAll(tenantId, companyId, startDate, endDate, type, null, null, null);
+            transaction = await Transaction.findAll(tenantId, companyId, startDate, endDate, type, null, null, null, limit);
         } else {
-            transaction = await Transaction.findAll(tenantId, companyId, null, null, type, null, null, null);
+            transaction = await Transaction.findAll(tenantId, companyId, null, null, type, null, null, null, limit);
         }
         let responseData = {
             success: true,
@@ -68,12 +58,10 @@ const ListTransaction = async (req, res, next) => {
             data: transaction[0]
         };
 
-        ;
         if (q) {
             const queryLowered = q.toLowerCase();
             const filteredData = transaction[0].filter(transaction =>
-                (transaction.transaction_type && transaction.transaction_type.toLowerCase().includes(queryLowered)) ||
-                (typeof transaction.payment_type_Id === 'string' && transaction.payment_type_Id.toLowerCase().includes(queryLowered)) ||
+                (typeof transaction.payment_type_name === 'string' && transaction.payment_type_name.toLowerCase().includes(queryLowered)) ||
                 (typeof transaction === 'string' && transaction.toLowerCase().includes(queryLowered))
             );
 
@@ -91,7 +79,7 @@ const ListTransaction = async (req, res, next) => {
                     total: 0
                 };
             }
-        };
+        }
 
         res.status(200).json(responseData);
 
@@ -131,7 +119,7 @@ const deleteTransaction = async (req, res, next) => {
     }
 };
 
-const updateTransaction = async (req, res, next) => {
+const updateTransaction = async (req, res, nexTt) => {
     const token = getDecodeToken(req);
     try {
 

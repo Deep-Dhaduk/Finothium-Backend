@@ -315,16 +315,15 @@ const ListGroupReport = async (req, res, next) => {
         if (startDate && endDate && groupTypeIds) {
             report = await Report.findAllGroup(tenantId, companyId, startDate, endDate, groupTypeIds, paymentTypeIds, clientTypeIds, categoryTypeIds, accountTypeIds);
         } else if (startDate && endDate) {
-            report = await Report.findAllGroup(tenantId, companyId, startDate, endDate, null, clientTypeIds, categoryTypeIds, accountTypeIds);
+            report = await Report.findAllGroup(tenantId, companyId, startDate, endDate, null, paymentTypeIds, clientTypeIds, categoryTypeIds, accountTypeIds);
         } else {
-            report = await Report.findAllGroup(tenantId, companyId, null, null, null, clientTypeIds, categoryTypeIds, accountTypeIds);
+            report = await Report.findAllGroup(tenantId, companyId, null, null, null, paymentTypeIds, clientTypeIds, categoryTypeIds, accountTypeIds);
         }
         let responseData = {
             success: true,
             message: 'Group Report List Successfully!',
             data: report[0]
         };
-
         if (q) {
             const queryLowered = q.toLowerCase();
             const filteredData = responseData.data.filter(group =>

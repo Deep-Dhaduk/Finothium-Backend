@@ -37,6 +37,7 @@ const ListCompany = async (req, res, next) => {
     const token = getDecodeToken(req)
     try {
         const { q = '', id } = req.query;
+        const userId = token.decodedToken.userId
 
         if (id) {
             const company = await Company.findById(id);
@@ -48,7 +49,7 @@ const ListCompany = async (req, res, next) => {
             return res.status(200).json({ success: true, message: 'Company found', data: company[0][0] });
         }
 
-        const companyResult = await Company.findAll(token.tenantId);
+        const companyResult = await Company.findAll(token.decodedToken.tenantId, userId);
         let responseData = {
             success: true,
             message: 'Company List Successfully!',
@@ -111,7 +112,7 @@ const ActiveCompany = async (req, res, next) => {
             return res.status(200).json({ success: true, message: 'Company found', data: company[0][0] });
         }
 
-        const companyResult = await Company.findActiveAll(token.tenantId);
+        const companyResult = await Company.findActiveAll(token.decodedToken.tenantId);
         let responseData = {
             success: true,
             message: 'Company List Successfully!',

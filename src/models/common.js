@@ -71,21 +71,15 @@ class Common {
     };
 
     static findActiveAll(tenantId, type) {
-        let sql = "SELECT *, DATE_SUB(createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn, DATE_SUB(updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn FROM common_master";
+        let sql = "SELECT *, DATE_SUB(createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn, DATE_SUB(updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn FROM common_master WHERE status = 1";
         if (tenantId) {
-            sql += ` WHERE tenantId = '${tenantId}'AND status = 1`;
-        } else {
-            sql += " WHERE status = 1";
+            sql += ` AND tenantId = '${tenantId}'`;
         }
         if (type) {
-            if (tenantId) {
-                sql += ` AND type = '${type}'`;
-            } else {
-                sql += ` WHERE type = '${type}'`;
-            }
+            sql += ` AND type = '${type}'`;
         }
         sql += " ORDER BY name";
-        return db.execute(sql)
+        return db.execute(sql);
     };
 
     static findById(id) {

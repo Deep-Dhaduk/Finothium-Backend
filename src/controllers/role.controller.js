@@ -1,7 +1,8 @@
 const Role = require("../models/role");
 const { createRoleSchema, updateRoleSchema } = require('../validation/role.validation');
 const { getDecodeToken } = require('../middlewares/decoded');
-const db = require('../db/dbconnection')
+const db = require('../db/dbconnection');
+const message = ("This data is in used, you can't delete it.");
 
 const CreateRole = async (req, res) => {
     const token = getDecodeToken(req);
@@ -55,7 +56,7 @@ const ListRole = async (req, res, next) => {
             return res.status(200).json({ success: true, message: 'Role found', data: role[0][0] });
         }
 
-        const roleResult = await Role.findAll(token.tenantId);
+        const roleResult = await Role.findAll(token.decodedToken.tenantId);;
         let responseData = {
             success: true,
             message: 'Role List Successfully!',
@@ -114,7 +115,7 @@ const ActiveRole = async (req, res, next) => {
             return res.status(200).json({ success: true, message: 'Role found', data: role[0][0] });
         }
 
-        const roleResult = await Role.findActiveAll(token.tenantId);
+        const roleResult = await Role.findActiveAll(token.decodedToken.tenantId);
         let responseData = {
             success: true,
             message: 'Role List Successfully!',
@@ -181,7 +182,7 @@ const deleteRole = async (req, res, next) => {
         const [roleResults] = await db.execute(`SELECT COUNT(*) AS count FROM user_master WHERE roleId = ${roleId}`);
 
         if (roleResults[0].count > 0) {
-            return res.status(200).json({ success: false, message: "Data already in use, cannot be modified." });
+            return res.status(200).json({ success: false, message: message });
         }
 
         await Role.delete(roleId);

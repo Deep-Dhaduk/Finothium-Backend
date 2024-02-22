@@ -63,11 +63,9 @@ class Parentmenu {
     };
 
     static findActiveAll(tenantId) {
-        let sql = "SELECT *, DATE_SUB(createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn, DATE_SUB(updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn FROM parentmenu_master";
+        let sql = "SELECT *, DATE_SUB(createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn, DATE_SUB(updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn FROM parentmenu_master WHERE status = 1";
         if (tenantId) {
-            sql += ` WHERE tenantId = '${tenantId}'AND status = 1`;
-        } else {
-            sql += " WHERE status = 1";
+            sql += ` AND tenantId = '${tenantId}'`;
         }
         sql += " ORDER BY menu_name, display_rank ASC";
         return db.execute(sql)

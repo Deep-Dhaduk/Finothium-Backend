@@ -72,23 +72,19 @@ class Transfer {
             let sql;
             let params;
 
-            if (startDate !== null && endDate !== null) {
-                sql = `CALL transfer(?, ?, ?, ?, ?, ?, ?)`;
-                params = [tenantId, companyId, startDate, endDate, paymentTypeIds ? paymentTypeIds.join(',') : null, accountTypeIds ? accountTypeIds.join(',') : null, limit || 95];
-            } else if (startDate !== null && endDate !== null && paymentTypeIds === null && accountTypeIds === null) {
-                sql = "CALL transfer(?, ?, ?, ?, NULL, NULL, ?)";
-                params = [tenantId, companyId, startDate, endDate, limit || 95];
-            } else {
-                sql = "CALL transfer(?, ?, ?, ?, ?, ?, ?)";
-                params = [tenantId, companyId, null, null, null, null, , limit || 95];
-            }
+            const paymentTypeIdsString = Array.isArray(paymentTypeIds) && paymentTypeIds.length > 0 ? paymentTypeIds.join(',') : null;
+            const accountTypeIdsString = Array.isArray(accountTypeIds) && accountTypeIds.length > 0 ? accountTypeIds.join(',') : null;
+            sql = `CALL transfer(?, ?, ?, ?, ?, ?, ?)`;
+            params = [tenantId, companyId, startDate, endDate, paymentTypeIdsString, accountTypeIdsString, limit || 95];
+
 
             const [result, _] = await db.execute(sql, params, { nullUndefined: true });
             return result;
         } catch (error) {
-            console.error('Error in findAllAccount:', error);
+            console.error('Error in findAll:', error);
             throw error;
-        };
+        }
+
     };
 
     static findById(id) {

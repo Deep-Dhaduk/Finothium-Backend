@@ -1,6 +1,8 @@
 const Company = require("../models/company");
 const { createCompanySchema, updateCompanySchema } = require('../validation/company.validation');
 const { getDecodeToken } = require('../middlewares/decoded');
+const db = require('../db/dbconnection');
+const message = ("This data is in used, you can't delete it.");
 
 const CreateCompany = async (req, res) => {
     try {
@@ -178,17 +180,26 @@ const getCompanyById = async (req, res, next) => {
 
 const deleteCompany = async (req, res, next) => {
     try {
-        let Id = req.params.id;
-        await Company.delete(Id)
+        let companyId = req.params.id;
+
+        const [accountResults] = await db.execute(`SELECT COUNT(*) AS count FROM company_access WHERE company_id = ${companyId}`);
+
+        if (accountResults[0].count > 0) {
+            return res.status(200).json({ success: false, message: message });
+        };
+
+        await Company.delete(companyId);
+
         res.status(200).json({
             success: true,
-            message: "Company Delete Successfully!"
+            message: "Common Delete Successfully!"
         });
     } catch (error) {
         console.log(error);
-        next(error)
+        next(error);
     }
 };
+
 
 const updateCompany = async (req, res, next) => {
     try {

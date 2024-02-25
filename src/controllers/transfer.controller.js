@@ -53,15 +53,8 @@ const ListTransfer = async (req, res, next) => {
             return res.status(200).json({ success: true, message: 'Transfer found', data: transfer[0] });
         }
 
-        let transferResult;
+        let transferResult = await Transfer.findAll(tenantId, companyId, startDate, endDate, paymentTypeIds, accountTypeIds, limit);
 
-        if (startDate && endDate) {
-            transferResult = await Transfer.findAll(tenantId, companyId, startDate, endDate, paymentTypeIds, accountTypeIds, limit);
-        } else if (startDate && endDate && !paymentTypeIds && !accountTypeIds) {
-            transferResult = await Transfer.findAll(tenantId, companyId, startDate, endDate, null, null, limit);
-        } else {
-            transferResult = await Transfer.findAll(tenantId, companyId, null, null, null, null, limit);
-        }
 
         let responseData = {
             success: true,

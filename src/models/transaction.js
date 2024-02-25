@@ -73,16 +73,12 @@ class Transaction {
             let sql;
             let params;
 
-            if (startDate !== null && endDate !== null && type !== null) {
-                sql = `CALL transaction(?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-                params = [tenantId, companyId, startDate, endDate, type, paymentTypeIds ? paymentTypeIds.join(',') : null, clientTypeIds ? clientTypeIds.join(',') : null, accountTypeIds ? accountTypeIds.join(',') : null, limit || 95];
-            } else if (startDate !== null && endDate !== null && type !== null && paymentTypeIds === null && clientTypeIds === null && accountTypeIds === null) {
-                sql = "CALL transaction(?, ?, ?, ?, ?, NULL, NULL, NULL, ?)";
-                params = [tenantId, companyId, startDate, endDate, type, limit || 95];
-            } else {
-                sql = "CALL transaction(?, ?, ?, ?, ?, ?, ?, ?, ?)";
-                params = [tenantId, companyId, null, null, type, null, null, null, limit || 95];
-            }
+            const paymentTypeIdsString = Array.isArray(paymentTypeIds) && paymentTypeIds.length > 0 ? paymentTypeIds.join(',') : null;
+            const clientTypeIdsString = Array.isArray(clientTypeIds) && clientTypeIds.length > 0 ? clientTypeIds.join(',') : null;
+            const accountTypeIdsString = Array.isArray(accountTypeIds) && accountTypeIds.length > 0 ? accountTypeIds.join(',') : null;
+            sql = `CALL transaction(?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+            params = [tenantId, companyId, startDate, endDate, type, paymentTypeIdsString, clientTypeIdsString, accountTypeIdsString, limit || 95];
+
 
             const [result, _] = await db.execute(sql, params, { nullUndefined: true });
             return result;

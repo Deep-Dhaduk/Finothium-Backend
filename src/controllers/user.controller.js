@@ -118,39 +118,24 @@ const loginUser = async (req, res) => {
             });
         }
 
-        const userId = user[0].id;
-        const companyResult = await CompanyAccess.findAll(user[0].tenantId);
+        const companyResult = await CompanyAccess.findAllByCompanyAccess(user[0].tenantId, user[0].id);
 
-        const userCompaniesMap = {};
-        await Promise.all(companyResult[0].map(async (access) => {
-            const accessUserId = access.user_id;
-            if (!userCompaniesMap[accessUserId]) {
-                userCompaniesMap[accessUserId] = [];
-            }
-            const companyName = await getCompanyName(access.company_id);
-            userCompaniesMap[accessUserId].push({ companyId: access.company_id, companyName });
-        }));
         const roleResult = await Role.findById(user[0].roleId);
 
         const userWithCompanies = {
             ...user[0],
-            companies: userCompaniesMap[userId] || [],
+            companies: companyResult[0].map(comp => ({ companyId: comp.company_id, companyName: comp.company_name })),
             roleName: roleResult[0][0].rolename
         };
 
         let selectedCompany = userWithCompanies.companies.length > 0 ? userWithCompanies.companies[0] : null;
-
-        if (selectedCompany) {
-            const { companyName, ...companyWithoutName } = selectedCompany;
-            selectedCompany = companyWithoutName;
-        }
 
         const tokenPayload = {
             userId: userWithCompanies.id,
             email: userWithCompanies.email,
             tenantId: userWithCompanies.tenantId,
             roleId: userWithCompanies.roleId,
-            company: selectedCompany
+            companyId: selectedCompany.companyId
         };
 
         const token = jwt.sign(
@@ -175,19 +160,13 @@ const loginUser = async (req, res) => {
     }
 };
 
-const getCompanyName = async (Cid) => {
-    const companyInfo = await Company.findById(Cid);
-    let companyName = companyInfo[0][0].company_name;
-    return companyName;
-};
-
 const changeCompany = async (req, res) => {
     try {
         const { companyId } = req.body;
 
         const existingTokenPayload = getDecodeToken(req).decodedToken;
 
-        existingTokenPayload.company.companyId = companyId;
+        existingTokenPayload.companyId = companyId;
 
         const newToken = jwt.sign(
             existingTokenPayload,
@@ -265,7 +244,7 @@ const ListUser = async (req, res, next) => {
         }
 
         const existingTokenPayload = getDecodeToken(req)
-        const companyId = existingTokenPayload.decodedToken.company.companyId;
+        const companyId = existingTokenPayload.decodedToken.companyId;
 
         const userResult = await User.findAll(token.decodedToken.tenantId);;
         let responseData = {
@@ -327,6 +306,7 @@ const ListUser = async (req, res, next) => {
                 if (user.profile_image_filename) {
                     user.profile_image_filename = `${baseURL}/Images/Profile_Images/${user.profile_image_filename}`;
                 }
+                user.companyNames = user.companyNames.split(',').join(', ');
             } else {
                 user.companies = [];
             }
@@ -358,7 +338,7 @@ const Activeuser = async (req, res, next) => {
         }
 
         const existingTokenPayload = getDecodeToken(req)
-        const companyId = existingTokenPayload.decodedToken.company.companyId;
+        const companyId = existingTokenPayload.decodedToken.companyId;
 
         const userResult = await User.findActiveAll(token.decodedToken.tenantId);
         let responseData = {

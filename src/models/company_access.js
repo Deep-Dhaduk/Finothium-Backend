@@ -85,11 +85,17 @@ class CompanyAccess {
         return db.execute(sql)
     }
 
-    static findAllByCompanyAccess(userId) {
-        let sql = "SELECT * FROM company_access";
-        if (userId) {
-            sql += ` WHERE user_id = '${userId}'`;
+    static findAllByCompanyAccess(tenantId, userId) {
+        let sql = "SELECT ca.*, cm.company_name FROM company_access ca "
+        sql += " LEFT JOIN company_master cm ON ca.tenantId = cm.tenantId AND ca.company_id = cm.id"
+        sql += " WHERE 1 = 1";
+        if (tenantId) {
+            sql += ` AND ca.tenantId = '${tenantId}'`;
         }
+        if (userId) {
+            sql += ` AND ca.user_id = '${userId}'`;
+        }
+        sql += ` ORDER BY cm.company_name`
         return db.execute(sql)
     }
 

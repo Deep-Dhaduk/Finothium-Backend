@@ -12,7 +12,11 @@ const CreateTransfer = async (req, res) => {
 
         let { transactionDate, paymentType_Id, fromAccount, toAccount, amount, description, createdBy, updatedBy } = req.body;
 
-        const companyId = token.decodedToken.company.companyId;
+        if (fromAccount === toAccount) {
+            return res.status(400).json({ success: false, message: "From and to accounts cannot be the same." });
+        }
+
+        const companyId = token.decodedToken.companyId;
         const tenantId = token.decodedToken.tenantId;
 
         let transfer = new Transfer(tenantId, transactionDate, paymentType_Id, fromAccount, toAccount, amount, description, createdBy, updatedBy);
@@ -40,7 +44,7 @@ const ListTransfer = async (req, res, next) => {
 
     try {
         const { q = '', id } = req.query;
-        const companyId = tokenInfo.decodedToken.company.companyId;
+        const companyId = tokenInfo.decodedToken.companyId;
         const { tenantId } = tokenInfo.decodedToken;
         const { limit, startDate, endDate, paymentTypeIds, accountTypeIds } = req.body;
 
@@ -136,7 +140,11 @@ const updateTransfer = async (req, res, next) => {
 
         let { transactionDate, paymentType_Id, fromAccount, toAccount, amount, description, createdBy, updatedBy } = req.body;
 
-        const companyId = token.decodedToken.company.companyId;
+        if (fromAccount === toAccount) {
+            return res.status(400).json({ success: false, message: "From and to accounts cannot be the same." });
+        }
+
+        const companyId = token.decodedToken.companyId;
         const tenantId = token.decodedToken.tenantId;
 
         let transfer = new Transfer(tenantId, transactionDate, paymentType_Id, fromAccount, toAccount, amount, description, createdBy, updatedBy, companyId)

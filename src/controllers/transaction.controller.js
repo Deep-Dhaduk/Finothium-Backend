@@ -13,7 +13,7 @@ const CreateTransaction = async (req, res) => {
 
         let { transaction_date, transaction_type, payment_type_Id, accountId, amount, description, createdBy, updatedBy, clientId } = req.body;
 
-        const companyId = token.decodedToken.company.companyId;
+        const companyId = token.decodedToken.companyId;
         const tenantId = token.decodedToken.tenantId;
 
         let transaction = new Transaction(tenantId, transaction_date, transaction_type, payment_type_Id, accountId, amount, description, createdBy, updatedBy, '', clientId);
@@ -40,11 +40,11 @@ const ListTransaction = async (req, res, next) => {
     const token = getDecodeToken(req);
     try {
         const { q = '' } = req.query;
-        const { limit, startDate, endDate, type, paymentTypeIds, clientTypeIds, accountTypeIds } = req.body;
-        const companyId = token.decodedToken.company.companyId;
+        const { limit, startDate, endDate, type, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds } = req.body;
+        const companyId = token.decodedToken.companyId;
         const { tenantId } = token.decodedToken;
 
-        let transaction = await Transaction.findAll(tenantId, companyId, startDate, endDate, type, paymentTypeIds, clientTypeIds, accountTypeIds, limit);
+        let transaction = await Transaction.findAll(tenantId, companyId, startDate, endDate, type, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds, limit);
 
         let responseData = {
             success: true,
@@ -124,7 +124,7 @@ const updateTransaction = async (req, res, nexTt) => {
 
         let { transaction_date, transaction_type, payment_type_Id, accountId, amount, description, createdBy, updatedBy, clientId } = req.body;
 
-        const companyId = token.decodedToken.company.companyId;
+        const companyId = token.decodedToken.companyId;
         const tenantId = token.decodedToken.tenantId;
 
         let transaction = new Transaction(tenantId, transaction_date, transaction_type, payment_type_Id, accountId, amount, description, createdBy, updatedBy, companyId, clientId);

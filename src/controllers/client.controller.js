@@ -15,7 +15,7 @@ const CreateClient = async (req, res) => {
 
         let { clientName, status, createdBy, updatedBy, type } = req.body;
 
-        const companyId = token.decodedToken.company.companyId;
+        const companyId = token.decodedToken.companyId;
         const tenantId = token.decodedToken.tenantId;
 
         let client = new Client(tenantId, clientName, status, createdBy, updatedBy, '', type);
@@ -40,8 +40,7 @@ const CreateClient = async (req, res) => {
 
 const ListClient = async (req, res, next) => {
     const token = getDecodeToken(req);
-    const companyId = token.decodedToken.company.companyId;
-
+    const companyId = token.decodedToken.companyId;
     try {
         const { q = '', id } = req.query;
         const { type } = req.body;
@@ -99,7 +98,7 @@ const ListClient = async (req, res, next) => {
 
 const ActiveClient = async (req, res, next) => {
     const token = getDecodeToken(req);
-    const companyId = token.decodedToken.company.companyId;
+    const companyId = token.decodedToken.companyId;
 
     try {
         const { q = '', id } = req.query;
@@ -207,7 +206,7 @@ const updateClient = async (req, res, next) => {
         let { clientName, status, createdBy, updatedBy, type } = req.body;
 
         const tenantId = token.decodedToken.tenantId;
-        const companyId = token.decodedToken.company.companyId;
+        const companyId = token.decodedToken.companyId;
 
         let client = new Client(tenantId, clientName, status, createdBy, updatedBy, companyId, type);
 

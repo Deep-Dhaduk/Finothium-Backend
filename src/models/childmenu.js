@@ -56,37 +56,27 @@ class Childmenu {
         }
     };
 
-    static findAll(tenantId) {
-        let sql = `
-            SELECT c.*,
-                   p.menu_name as parent_menu_name,
-                   p.display_rank as parent_display_rank,
-                   DATE_SUB(c.createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn,
-                   DATE_SUB(c.updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn
-            FROM childmenu_master c
-            LEFT JOIN parentmenu_master p ON c.parent_id = p.id
+    static findChildmenuQuery(tenantId) {
+        return `
+        SELECT c.*,
+               p.menu_name as parent_menu_name,
+               p.display_rank as parent_display_rank,
+               DATE_SUB(c.createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn,
+               DATE_SUB(c.updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn
+        FROM childmenu_master c
+        LEFT JOIN parentmenu_master p ON c.parent_id = p.id
+        WHERE c.tenantId = ${tenantId}
         `;
-        if (tenantId) {
-            sql += ` WHERE c.tenantId = '${tenantId}'`;
-        }
+    }
+
+    static findAll(tenantId) {
+        let sql = this.findChildmenuQuery(tenantId)
         sql += " ORDER BY parent_display_rank, display_rank ASC";
         return db.execute(sql);
     };
 
     static findActiveAll(tenantId) {
-        let sql = `
-        SELECT c.*,
-        p.menu_name as parent_menu_name,
-        p.display_rank as parent_display_rank,
-        DATE_SUB(c.createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn,
-        DATE_SUB(c.updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn
-        FROM childmenu_master c
-        LEFT JOIN parentmenu_master p ON c.parent_id = p.id
-        WHERE c.status = 1
-        `;
-        if (tenantId) {
-            sql += ` AND c.tenantId = '${tenantId}'`;
-        }
+        let sql = this.findChildmenuQuery(tenantId);
         sql += " ORDER BY parent_display_rank, display_rank ASC";
         return db.execute(sql);
     };

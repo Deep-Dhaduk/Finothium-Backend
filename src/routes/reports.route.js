@@ -33,4 +33,16 @@ router.post(
     Reportcontroller.ListGroupReport
 );
 
+router.post(
+    "/filter-companyReport",
+    auth.verifyToken,
+    Reportcontroller.ListCompanyReport
+);
+
+router.post(
+    "/filter-accountTypeReport",
+    auth.verifyToken,
+    Reportcontroller.ListAccountTypeReport
+);
+
 module.exports = router;

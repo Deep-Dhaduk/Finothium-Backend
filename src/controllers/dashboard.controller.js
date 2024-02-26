@@ -6,7 +6,7 @@ const ListDashboard = async (req, res, next) => {
     try {
         const tokenInfo = getDecodeToken(req);
         const { tenantId } = tokenInfo.decodedToken;
-        const companyId = tokenInfo.decodedToken.company.companyId;
+        const companyId = tokenInfo.decodedToken.companyId;
 
         const dashboardData = await Dashboard.calculateDashboardAmounts(tenantId, companyId);
 
@@ -27,7 +27,7 @@ const ListDashboardGroupData = async (req, res, next) => {
     try {
         const tokenInfo = getDecodeToken(req);
         const { tenantId } = tokenInfo.decodedToken;
-        const companyId = tokenInfo.decodedToken.company.companyId;
+        const companyId = tokenInfo.decodedToken.companyId;
 
         let dashboardAccountData;
         let dashboardGroupData;
@@ -45,13 +45,7 @@ const ListDashboardGroupData = async (req, res, next) => {
                 TotalPaidAmount: group.TotalPaidAmount,
                 TotalReceiveAmount: group.TotalReceiveAmount,
                 TotalBalance: group.TotalBalance,
-                accounts: accounts.map(account => ({
-                    id:account.id,
-                    PaidAmount: account.PaidAmount,
-                    ReceiveAmount: account.ReceiveAmount,
-                    TotalBalance: account.TotalBalance,
-                    account_name: account.account_name
-                }))
+                accounts: accounts
             };
         });
 

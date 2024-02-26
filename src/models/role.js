@@ -66,9 +66,9 @@ class Role {
         return db.execute(sql)
     }
 
-    static findById(id) {
+    static async findById(id) {
         let sql = `SELECT * FROM role_master WHERE id = ${id}`;
-        return db.execute(sql)
+        return await db.execute(sql)
     }
 
     static delete(roleId) {

@@ -15,7 +15,7 @@ const CreateAccount = async (req, res) => {
 
         const { account_name, group_name_Id, join_date, exit_date, account_type_Id, status, createdBy, updatedBy } = req.body;
 
-        const companyId = token.decodedToken.company.companyId;
+        const companyId = token.decodedToken.companyId;
         const tenantId = token.decodedToken.tenantId;
 
         let account = new Account(tenantId, account_name, group_name_Id, join_date, exit_date, account_type_Id, status, createdBy, updatedBy);
@@ -40,7 +40,8 @@ const CreateAccount = async (req, res) => {
 
 const ListAccount = async (req, res, next) => {
     const token = getDecodeToken(req);
-    const companyId = token.decodedToken.company.companyId
+    const companyId = token.decodedToken.companyId;
+    const tenantId = token.decodedToken.tenantId;
     try {
         const { q = '', id } = req.query;
 
@@ -54,7 +55,7 @@ const ListAccount = async (req, res, next) => {
             return res.status(200).json({ success: true, message: 'Account found', data: account[0][0] });
         }
 
-        const accountResult = await Account.findAll(token.decodedToken.tenantId, companyId);
+        const accountResult = await Account.findAll(tenantId, companyId);
 
         let responseData = {
             success: true,
@@ -100,7 +101,8 @@ const ListAccount = async (req, res, next) => {
 
 const ActiveAccount = async (req, res, next) => {
     const token = getDecodeToken(req);
-    const companyId = token.decodedToken.company.companyId
+    const companyId = token.decodedToken.companyId;
+    const tenantId = token.decodedToken.tenantId;
     try {
         const { q = '', id } = req.query;
 
@@ -114,7 +116,7 @@ const ActiveAccount = async (req, res, next) => {
             return res.status(200).json({ success: true, message: 'Account found', data: account[0][0] });
         }
 
-        const accountResult = await Account.findActiveAll(token.decodedToken.tenantId, companyId);
+        const accountResult = await Account.findActiveAll(tenantId, companyId);
 
         let responseData = {
             success: true,
@@ -161,7 +163,12 @@ const ActiveAccount = async (req, res, next) => {
 const getAccountById = async (req, res, next) => {
     try {
         let Id = req.params.id;
-        let [account, _] = await Account.findById(Id);
+        const token = getDecodeToken(req);
+        const tenantId = token.decodedToken.tenantId;
+        const companyId = token.decodedToken.companyId;
+
+        let [account, _] = await Account.findById(Id, tenantId, companyId);
+
 
         res.status(200).json({
             success: true,
@@ -176,12 +183,15 @@ const getAccountById = async (req, res, next) => {
 
 const deleteAccount = async (req, res, next) => {
     try {
+        const token = getDecodeToken(req);
+
         let accountId = req.params.id;
+        const tenantId = token.decodedToken.tenantId;
 
         const [accountResults] = await db.execute(`SELECT COUNT(*) AS count FROM transaction WHERE accountId = ${accountId}`);
 
         if (accountResults[0].count > 0) {
-            return res.status(200).json({ success: false, message : message });
+            return res.status(200).json({ success: false, message: message });
         }
 
         const [fromAccountResults] = await db.execute(`SELECT COUNT(*) AS count FROM transfer WHERE fromAccount = ${accountId}`);
@@ -195,7 +205,7 @@ const deleteAccount = async (req, res, next) => {
         if (toAccountResults[0].count > 0) {
             return res.status(200).json({ success: false, message: message });
         }
-        await Account.delete(accountId);
+        await Account.delete(accountId, tenantId);
 
         res.status(200).json({
             success: true,
@@ -219,17 +229,18 @@ const updateAccount = async (req, res, next) => {
         let { account_name, group_name_Id, join_date, exit_date, account_type_Id, status, createdBy, updatedBy } = req.body;
 
         const tenantId = token.decodedToken.tenantId;
+        const companyId = token.decodedToken.companyId;
 
         let account = new Account(tenantId, account_name, group_name_Id, join_date, exit_date, account_type_Id, status, createdBy, updatedBy);
 
         let Id = req.params.id;
 
-        let [findaccount, _] = await Account.findById(Id);
+        let [findaccount, _] = await Account.findById(Id, tenantId, companyId);
         if (!findaccount) {
             throw new Error("Account not found!")
         }
 
-        await account.update(Id)
+        await account.update(Id, tenantId)
 
         res.status(200).json({
             success: true,

@@ -1,6 +1,31 @@
 const Report = require("../models/reports");
 const { getDecodeToken } = require('../middlewares/decoded');
 
+const reportTransaction = (transaction) => {
+    const { id, transaction_date, transactionId, transaction_type, payment_type_Id, payment_type_name, clientId, clientName, type, accountId, account_name, group_name_Id, account_group_name, account_type_Id, account_type_name, description, PaidAmount, ReceiveAmount } = transaction;
+
+    return {
+        id,
+        transactionDate: transaction_date,
+        trasactionId: transactionId,
+        transactionType: transaction_type,
+        paymentTypeId: payment_type_Id,
+        paymentTypeName: payment_type_name,
+        clientId: clientId,
+        clientName: clientName,
+        type,
+        accountId: accountId,
+        accountName: account_name,
+        groupId: group_name_Id,
+        groupName: account_group_name,
+        accountTypeId: account_type_Id,
+        accountTypeName: account_type_name,
+        description,
+        paidAmount: +PaidAmount == 0 ? null : +PaidAmount,
+        receiveAmount: +ReceiveAmount == 0 ? null : +ReceiveAmount
+    };
+};
+
 const ListPaymentReport = async (req, res, next) => {
     const tokenInfo = getDecodeToken(req);
 
@@ -13,9 +38,9 @@ const ListPaymentReport = async (req, res, next) => {
 
     try {
         const { q = '' } = req.query;
-        const companyId = tokenInfo.decodedToken.company.companyId;
+        const companyId = tokenInfo.decodedToken.companyId;
         const { tenantId } = tokenInfo.decodedToken;
-        const { startDate, endDate, paymentTypeIds, clientTypeIds, categoryTypeIds, accountTypeIds, groupTypeIds } = req.body;
+        const { startDate, endDate, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds } = req.body;
 
         if (companyId && req.body.companyId && companyId !== req.body.companyId) {
             return res.status(403).json({
@@ -26,12 +51,50 @@ const ListPaymentReport = async (req, res, next) => {
 
         let reportType = null;
 
-        let report = await Report.findAllPayment(tenantId, companyId, startDate, endDate, paymentTypeIds, clientTypeIds, categoryTypeIds, accountTypeIds, groupTypeIds, reportType);
+        let report = await Report.findAllPayment(tenantId, companyId, startDate, endDate, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds, reportType);
+
+        const paymentMap = new Map();
+        report[0].forEach(transaction => {
+            const PaymentId = transaction.payment_type_Id;
+            const PaymentName = transaction.payment_type_name;
+            const PaidAmount = parseFloat(transaction.PaidAmount);
+            const ReceiveAmount = parseFloat(transaction.ReceiveAmount);
+
+            if (paymentMap.has(PaymentId)) {
+                const existingData = paymentMap.get(PaymentId);
+                existingData.PaidAmount += PaidAmount;
+                existingData.ReceiveAmount += ReceiveAmount;
+                existingData.BalanceAmount = existingData.ReceiveAmount - existingData.PaidAmount;
+                existingData.paymentDetails.push(reportTransaction(transaction));
+            } else {
+                paymentMap.set(PaymentId, {
+                    PaymentId,
+                    PaymentName,
+                    PaidAmount,
+                    ReceiveAmount,
+                    BalanceAmount: ReceiveAmount - PaidAmount,
+                    paymentDetails: [reportTransaction(transaction)]
+                });
+            }
+        });
 
         let responseData = {
             success: true,
             message: 'Payment Report List Successfully!',
-            data: report[0]
+            data: Array.from(paymentMap.values()).sort((a, b) => {
+                const nameA = a.PaymentName.toUpperCase();
+                const nameB = b.PaymentName.toUpperCase();
+
+                if (nameA < nameB) {
+                    return -1;
+                }
+                if (nameA > nameB) {
+                    return 1;
+                }
+
+                return 0;
+            })
+
         };
         if (q) {
             const queryLowered = q.toLowerCase();
@@ -79,9 +142,9 @@ const ListClientReport = async (req, res, next) => {
 
     try {
         const { q = '' } = req.query;
-        const companyId = tokenInfo.decodedToken.company.companyId;
+        const companyId = tokenInfo.decodedToken.companyId;
         const { tenantId } = tokenInfo.decodedToken;
-        const { startDate, endDate, clientTypeIds, paymentTypeIds, categoryTypeIds, accountTypeIds, groupTypeIds } = req.body;
+        const { startDate, endDate, clientTypeIds, paymentTypeIds, categoryTypeIds, accountIds, groupTypeIds } = req.body;
         if (companyId && req.body.companyId && companyId !== req.body.companyId) {
             return res.status(403).json({
                 success: false,
@@ -91,12 +154,49 @@ const ListClientReport = async (req, res, next) => {
 
         let reportType = "Client";
 
-        let report = await Report.findAllClient(tenantId, companyId, startDate, endDate, clientTypeIds, paymentTypeIds, categoryTypeIds, accountTypeIds, groupTypeIds, reportType);
+        let report = await Report.findAllClient(tenantId, companyId, startDate, endDate, clientTypeIds, paymentTypeIds, categoryTypeIds, accountIds, groupTypeIds, reportType);
+
+        const clientMap = new Map();
+        report[0].forEach(transaction => {
+            const clientId = transaction.clientId;
+            const clientName = transaction.clientName;
+            const PaidAmount = parseFloat(transaction.PaidAmount);
+            const ReceiveAmount = parseFloat(transaction.ReceiveAmount);
+
+            if (clientMap.has(clientId)) {
+                const existingData = clientMap.get(clientId);
+                existingData.PaidAmount += PaidAmount;
+                existingData.ReceiveAmount += ReceiveAmount;
+                existingData.BalanceAmount = existingData.ReceiveAmount - existingData.PaidAmount;
+                existingData.paymentDetails.push(reportTransaction(transaction));
+            } else {
+                clientMap.set(clientId, {
+                    clientId,
+                    clientName,
+                    PaidAmount,
+                    ReceiveAmount,
+                    BalanceAmount: ReceiveAmount - PaidAmount,
+                    paymentDetails: [reportTransaction(transaction)]
+                });
+            }
+        });
 
         let responseData = {
             success: true,
             message: 'Client Report List Successfully!',
-            data: report[0]
+            data: Array.from(clientMap.values()).sort((a, b) => {
+                const nameA = a.clientName.toUpperCase();
+                const nameB = b.clientName.toUpperCase();
+
+                if (nameA < nameB) {
+                    return -1;
+                }
+                if (nameA > nameB) {
+                    return 1;
+                }
+
+                return 0;
+            })
         };
 
         if (q) {
@@ -145,9 +245,9 @@ const ListCategoryReport = async (req, res, next) => {
 
     try {
         const { q = '' } = req.query;
-        const companyId = tokenInfo.decodedToken.company.companyId;
+        const companyId = tokenInfo.decodedToken.companyId;
         const { tenantId } = tokenInfo.decodedToken;
-        const { startDate, endDate, categoryTypeIds, paymentTypeIds, clientTypeIds, accountTypeIds, groupTypeIds } = req.body;
+        const { startDate, endDate, categoryTypeIds, paymentTypeIds, clientTypeIds, accountIds, groupTypeIds } = req.body;
         if (companyId && req.body.companyId && companyId !== req.body.companyId) {
             return res.status(403).json({
                 success: false,
@@ -157,12 +257,49 @@ const ListCategoryReport = async (req, res, next) => {
 
         let reportType = "Category";
 
-        let report = await Report.findAllCategory(tenantId, companyId, startDate, endDate, categoryTypeIds, paymentTypeIds, clientTypeIds, accountTypeIds, groupTypeIds, reportType);
+        let report = await Report.findAllCategory(tenantId, companyId, startDate, endDate, categoryTypeIds, paymentTypeIds, clientTypeIds, accountIds, groupTypeIds, reportType);
+
+        const clientMap = new Map();
+        report[0].forEach(transaction => {
+            const clientId = transaction.clientId;
+            const clientName = transaction.clientName;
+            const PaidAmount = parseFloat(transaction.PaidAmount);
+            const ReceiveAmount = parseFloat(transaction.ReceiveAmount);
+
+            if (clientMap.has(clientId)) {
+                const existingData = clientMap.get(clientId);
+                existingData.PaidAmount += PaidAmount;
+                existingData.ReceiveAmount += ReceiveAmount;
+                existingData.BalanceAmount = existingData.ReceiveAmount - existingData.PaidAmount;
+                existingData.paymentDetails.push(reportTransaction(transaction));
+            } else {
+                clientMap.set(clientId, {
+                    clientId,
+                    clientName,
+                    PaidAmount,
+                    ReceiveAmount,
+                    BalanceAmount: ReceiveAmount - PaidAmount,
+                    paymentDetails: [reportTransaction(transaction)]
+                });
+            }
+        });
 
         let responseData = {
             success: true,
             message: 'Category Report List Successfully!',
-            data: report[0]
+            data: Array.from(clientMap.values()).sort((a, b) => {
+                const nameA = a.clientName.toUpperCase();
+                const nameB = b.clientName.toUpperCase();
+
+                if (nameA < nameB) {
+                    return -1;
+                }
+                if (nameA > nameB) {
+                    return 1;
+                }
+
+                return 0;
+            })
         };
 
         if (q) {
@@ -211,9 +348,9 @@ const ListAccountReport = async (req, res, next) => {
 
     try {
         const { q = '' } = req.query;
-        const companyId = tokenInfo.decodedToken.company.companyId;
+        const companyId = tokenInfo.decodedToken.companyId;
         const { tenantId } = tokenInfo.decodedToken;
-        const { startDate, endDate, accountTypeIds, paymentTypeIds, clientTypeIds, categoryTypeIds, groupTypeIds } = req.body;
+        const { startDate, endDate, accountIds, paymentTypeIds, clientTypeIds, categoryTypeIds, groupTypeIds, accountTypeIds } = req.body;
 
         if (companyId && req.body.companyId && companyId !== req.body.companyId) {
             return res.status(403).json({
@@ -224,12 +361,49 @@ const ListAccountReport = async (req, res, next) => {
 
         let reportType = null;
 
-        let report = await Report.findAllAccount(tenantId, companyId, startDate, endDate, paymentTypeIds, clientTypeIds, categoryTypeIds, accountTypeIds, groupTypeIds, reportType);
+        let report = await Report.findAllAccount(tenantId, companyId, startDate, endDate, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds, reportType);
 
-        let responseData = {
+        const accountMap = new Map();
+        report[0].forEach(transaction => {
+            const accountId = transaction.accountId;
+            const accountName = transaction.account_name;
+            const PaidAmount = parseFloat(transaction.PaidAmount);
+            const ReceiveAmount = parseFloat(transaction.ReceiveAmount);
+
+            if (accountMap.has(accountId)) {
+                const existingData = accountMap.get(accountId);
+                existingData.PaidAmount += PaidAmount;
+                existingData.ReceiveAmount += ReceiveAmount;
+                existingData.BalanceAmount = existingData.ReceiveAmount - existingData.PaidAmount;
+                existingData.accounts.push(reportTransaction(transaction));
+            } else {
+                accountMap.set(accountId, {
+                    accountId,
+                    accountName,
+                    PaidAmount,
+                    ReceiveAmount,
+                    BalanceAmount: ReceiveAmount - PaidAmount,
+                    accounts: [reportTransaction(transaction)]
+                });
+            }
+        });
+
+        const responseData = {
             success: true,
             message: 'Account Report List Successfully!',
-            data: report[0]
+            data: Array.from(accountMap.values()).sort((a, b) => {
+                const nameA = a.accountName.toUpperCase();
+                const nameB = b.accountName.toUpperCase();
+
+                if (nameA < nameB) {
+                    return -1;
+                }
+                if (nameA > nameB) {
+                    return 1;
+                }
+
+                return 0;
+            })
         };
         if (q) {
             const queryLowered = q.toLowerCase();
@@ -268,18 +442,12 @@ const ListAccountReport = async (req, res, next) => {
 const ListGroupReport = async (req, res, next) => {
     const tokenInfo = getDecodeToken(req);
 
-    if (!tokenInfo.success) {
-        return res.status(401).json({
-            success: false,
-            message: tokenInfo.message,
-        });
-    }
-
     try {
         const { q = '' } = req.query;
-        const companyId = tokenInfo.decodedToken.company.companyId;
+        const companyId = tokenInfo.decodedToken.companyId;
+
         const { tenantId } = tokenInfo.decodedToken;
-        const { startDate, endDate, groupTypeIds, paymentTypeIds, clientTypeIds, categoryTypeIds, accountTypeIds } = req.body;
+        const { startDate, endDate, groupTypeIds, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, accountTypeIds } = req.body;
         console.log(req.body);
 
         if (companyId && req.body.companyId && companyId !== req.body.companyId) {
@@ -291,12 +459,49 @@ const ListGroupReport = async (req, res, next) => {
 
         let reportType = null;
 
-        let report = await Report.findAllGroup(tenantId, companyId, startDate, endDate, paymentTypeIds, clientTypeIds, categoryTypeIds, accountTypeIds, groupTypeIds, reportType);
+        let report = await Report.findAllGroup(tenantId, companyId, startDate, endDate, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds, reportType);
+
+        const groupMap = new Map();
+        report[0].forEach(transaction => {
+            const GroupId = transaction.group_name_Id;
+            const GroupName = transaction.account_group_name;
+            const PaidAmount = parseFloat(transaction.PaidAmount);
+            const ReceiveAmount = parseFloat(transaction.ReceiveAmount);
+
+            if (groupMap.has(GroupId)) {
+                const existingData = groupMap.get(GroupId);
+                existingData.PaidAmount += PaidAmount;
+                existingData.ReceiveAmount += ReceiveAmount;
+                existingData.BalanceAmount = existingData.ReceiveAmount - existingData.PaidAmount;
+                existingData.groupDetails.push(reportTransaction(transaction));
+            } else {
+                groupMap.set(GroupId, {
+                    GroupId,
+                    GroupName,
+                    PaidAmount,
+                    ReceiveAmount,
+                    BalanceAmount: ReceiveAmount - PaidAmount,
+                    groupDetails: [reportTransaction(transaction)]
+                });
+            }
+        });
 
         let responseData = {
             success: true,
             message: 'Group Report List Successfully!',
-            data: report[0]
+            data: Array.from(groupMap.values()).sort((a, b) => {
+                const nameA = a.GroupName.toUpperCase();
+                const nameB = b.GroupName.toUpperCase();
+
+                if (nameA < nameB) {
+                    return -1;
+                }
+                if (nameA > nameB) {
+                    return 1;
+                }
+
+                return 0;
+            })
         };
         if (q) {
             const queryLowered = q.toLowerCase();
@@ -332,10 +537,182 @@ const ListGroupReport = async (req, res, next) => {
     }
 };
 
+const ListCompanyReport = async (req, res, next) => {
+    const tokenInfo = getDecodeToken(req);
+
+    if (!tokenInfo.success) {
+        return res.status(401).json({
+            success: false,
+            message: tokenInfo.message,
+        });
+    }
+
+    try {
+        const { q = '' } = req.query;
+        const companyId = tokenInfo.decodedToken.companyId;
+        const { tenantId } = tokenInfo.decodedToken;
+        const { startDate, endDate, clientTypeIds, paymentTypeIds, categoryTypeIds, accountIds, groupTypeIds } = req.body;
+        if (companyId && req.body.companyId && companyId !== req.body.companyId) {
+            return res.status(403).json({
+                success: false,
+                message: 'Unauthorized: CompanyId in token does not match the requested companyId',
+            });
+        }
+
+        let reportType = null;
+
+        let report = await Report.findAllCompany(tenantId, companyId, startDate, endDate, clientTypeIds, paymentTypeIds, categoryTypeIds, accountIds, groupTypeIds, reportType);
+
+        let responseData = {
+            success: true,
+            message: 'Company Report List Successfully!',
+            data: report[0]
+        };
+
+        if (q) {
+            const queryLowered = q.toLowerCase();
+            const filteredData = responseData.data.filter(category =>
+                (category.payment_type_name && category.payment_type_name.toLowerCase().includes(queryLowered)) ||
+                (category.account_name && category.account_name.toLowerCase().includes(queryLowered)) ||
+                (category.PaidAmount && category.PaidAmount.toString().toLowerCase().includes(queryLowered)) ||
+                (category.ReceiveAmount && category.ReceiveAmount.toString().toLowerCase().includes(queryLowered)) ||
+                (category.description && category.description.toLowerCase().includes(queryLowered)) ||
+                (category.clientName && category.clientName.toLowerCase().includes(queryLowered))
+            );
+
+            if (filteredData.length > 0) {
+                responseData = {
+                    ...responseData,
+                    data: filteredData,
+                    total: filteredData.length,
+                };
+            } else {
+                responseData = {
+                    ...responseData,
+                    message: 'No matching Category Report found',
+                    data: [],
+                    total: 0,
+                };
+            }
+        }
+
+        res.status(200).json(responseData);
+    } catch (error) {
+        console.log(error);
+        next(error);
+    }
+};
+
+const ListAccountTypeReport = async (req, res, next) => {
+    const tokenInfo = getDecodeToken(req);
+
+    if (!tokenInfo.success) {
+        return res.status(401).json({
+            success: false,
+            message: tokenInfo.message,
+        });
+    }
+
+    try {
+        const { q = '' } = req.query;
+        const companyId = tokenInfo.decodedToken.companyId;
+        const { tenantId } = tokenInfo.decodedToken;
+        const { startDate, endDate, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds } = req.body;
+
+        if (companyId && req.body.companyId && companyId !== req.body.companyId) {
+            return res.status(403).json({
+                success: false,
+                message: 'Unauthorized: CompanyId in token does not match the requested companyId',
+            });
+        }
+
+        let reportType = null;
+
+        let report = await Report.findAllAccountType(tenantId, companyId, startDate, endDate, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds, reportType);
+
+        const accountTypeMap = new Map();
+        report[0].forEach(transaction => {
+            const accountTypeId = transaction.account_type_Id;
+            const accountTypeName = transaction.account_type_name;
+            const PaidAmount = parseFloat(transaction.PaidAmount);
+            const ReceiveAmount = parseFloat(transaction.ReceiveAmount);
+
+            if (accountTypeMap.has(accountTypeId)) {
+                const existingData = accountTypeMap.get(accountTypeId);
+                existingData.PaidAmount += PaidAmount;
+                existingData.ReceiveAmount += ReceiveAmount;
+                existingData.BalanceAmount = existingData.ReceiveAmount - existingData.PaidAmount;
+                existingData.paymentDetails.push(reportTransaction(transaction));
+            } else {
+                accountTypeMap.set(accountTypeId, {
+                    accountTypeId,
+                    accountTypeName,
+                    PaidAmount,
+                    ReceiveAmount,
+                    BalanceAmount: ReceiveAmount - PaidAmount,
+                    paymentDetails: [reportTransaction(transaction)]
+                });
+            }
+        });
+
+        let responseData = {
+            success: true,
+            message: 'Account Type Report List Successfully!',
+            data: Array.from(accountTypeMap.values()).sort((a, b) => {
+                const nameA = a.accountTypeName.toUpperCase();
+                const nameB = b.accountTypeName.toUpperCase();
+
+                if (nameA < nameB) {
+                    return -1;
+                }
+                if (nameA > nameB) {
+                    return 1;
+                }
+
+                return 0;
+            })
+
+        };
+        if (q) {
+            const queryLowered = q.toLowerCase();
+            const filteredData = responseData.data.filter(accountType =>
+                (accountType.payment_type_name && accountType.payment_type_name.toLowerCase().includes(queryLowered)) ||
+                (accountType.account_name && accountType.account_name.toLowerCase().includes(queryLowered)) ||
+                (accountType.PaidAmount && accountType.PaidAmount.toString().toLowerCase().includes(queryLowered)) ||
+                (accountType.ReceiveAmount && accountType.ReceiveAmount.toString().toLowerCase().includes(queryLowered)) ||
+                (accountType.description && accountType.description.toLowerCase().includes(queryLowered)) ||
+                (accountType.clientName && accountType.clientName.toLowerCase().includes(queryLowered))
+            );
+
+            if (filteredData.length > 0) {
+                responseData = {
+                    ...responseData,
+                    data: filteredData,
+                    total: filteredData.length,
+                };
+            } else {
+                responseData = {
+                    ...responseData,
+                    message: 'No matching Account Type Report found',
+                    data: [],
+                    total: 0,
+                };
+            }
+        }
+
+        res.status(200).json(responseData);
+    } catch (error) {
+        console.log(error);
+        next(error);
+    }
+};
+
 module.exports = {
     ListPaymentReport,
     ListClientReport,
     ListCategoryReport,
     ListAccountReport,
-    ListGroupReport
+    ListGroupReport,
+    ListCompanyReport,
+    ListAccountTypeReport
 }

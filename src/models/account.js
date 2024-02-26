@@ -66,71 +66,43 @@ class Account {
         }
     }
 
-    static findAll(tenantId, companyId) {
-        let sql = `
-        SELECT a.*, c.name AS group_name, ct.name AS account_type_name,
+    static findAccountQuery(tenantId, companyId) {
+        return `SELECT a.*, c.name AS group_name, ct.name AS account_type_name,
         DATE_SUB(a.createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn,
         DATE_SUB(a.updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn
         FROM account_master a
-        LEFT JOIN common_master c ON a.group_name_Id = c.common_id
-        LEFT JOIN common_master ct ON a.account_type_Id = ct.common_id
+        LEFT JOIN common_master c ON a.tenantId = c.tenantId AND a.group_name_Id = c.common_id
+        LEFT JOIN common_master ct ON a.tenantId = c.tenantId AND a.account_type_Id = ct.common_id
+        WHERE a.tenantId = ${tenantId}
+            AND a.companyId = ${companyId}
         `;
-        if (tenantId && companyId) {
-            sql += ` WHERE a.tenantId = '${tenantId}' AND companyId = '${companyId}'`;
-        } else if (tenantId) {
-            sql += ` WHERE a.tenantId = '${tenantId}'`;
-        } else if (companyId) {
-            sql += ` WHERE companyId = '${companyId}'`;
-        }
+    }
+    static findAll(tenantId, companyId) {
+        let sql = this.findAccountQuery(tenantId, companyId);
         sql += " ORDER BY group_name, a.account_name";
         return db.execute(sql);
     };
 
     static findActiveAll(tenantId, companyId) {
-        let sql = `
-        SELECT a.*, c.name AS group_name, ct.name AS account_type_name,
-        DATE_SUB(a.createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn,
-        DATE_SUB(a.updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn
-        FROM account_master a
-        LEFT JOIN common_master c ON a.group_name_Id = c.common_id
-        LEFT JOIN common_master ct ON a.account_type_Id = ct.common_id
-        WHERE a.status = 1
-        `;
-        if (tenantId) {
-            sql += ` AND a.tenantId = '${tenantId}'`;
-        }
-        if (companyId) {
-            sql += ` AND a.companyId = '${companyId}'`;
-        }
+        let sql = this.findAccountQuery(tenantId, companyId);
+        sql += ` AND a.status = 1`;
         sql += " ORDER BY a.account_name";
         return db.execute(sql);
     };
 
-    static findById(id) {
-        let sql = `
-            SELECT *
-            FROM account_master
-            WHERE account_id = ${id}
-        `;
-        return db.execute(sql);
-    }
-
-    static findByAccountId(id) {
-        let sql = `
-            SELECT *
-            FROM account_master
-            WHERE account_id = ${id.accountId}
-        `;
+    static findById(id, tenantId, companyId) {
+        let sql = this.findAccountQuery(tenantId, companyId);
+        sql += `AND a.account_id= ${id}`;
         return db.execute(sql);
     };
 
-    static delete(accountId) {
-        let sql = `DELETE FROM account_master WHERE account_id = ${accountId}`;
+    static delete(accountId, tenantId) {
+        let sql = `DELETE FROM account_master WHERE tenantId = ${tenantId} AND account_id = ${accountId}`;
         return db.execute(sql)
     };
 
-    async update(id) {
-        let sql = `UPDATE account_master SET tenantId='${this.tenantId}',account_name='${this.account_name}',group_name_Id='${this.group_name_Id}',join_date='${this.join_date}',exit_date='${this.exit_date}',account_type_Id='${this.account_type_Id}',status='${this.status}',createdBy='${this.createdBy}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}' WHERE account_id = ${id}`;
+    async update(id, tenantId) {
+        let sql = `UPDATE account_master SET tenantId='${this.tenantId}',account_name='${this.account_name}',group_name_Id='${this.group_name_Id}',join_date='${this.join_date}',exit_date='${this.exit_date}',account_type_Id='${this.account_type_Id}',status='${this.status}',createdBy='${this.createdBy}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}' WHERE tenantId = ${tenantId} AND account_id = ${id}`;
         return db.execute(sql)
     };
 }

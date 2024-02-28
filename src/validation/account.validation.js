@@ -6,9 +6,7 @@ const createAccountSchema = Joi.object({
     join_date: Joi.string().required(),
     exit_date: Joi.allow(null).optional(),
     account_type_Id: Joi.number().integer().required(),
-    status: Joi.number().integer().required(),
-    createdBy: Joi.number().integer().required(),
-    updatedBy: Joi.number().integer().required()
+    status: Joi.number().integer().required()
 });
 
 const updateAccountSchema = Joi.object({
@@ -17,9 +15,7 @@ const updateAccountSchema = Joi.object({
     join_date: Joi.string().required(),
     exit_date: Joi.allow(null).required(),
     account_type_Id: Joi.number().integer().required(),
-    status: Joi.number().integer().required(),
-    createdBy: Joi.number().integer().required(),
-    updatedBy: Joi.number().integer().required()
+    status: Joi.number().integer().required()
 });
 module.exports = {
     createAccountSchema,

@@ -55,6 +55,7 @@ class Role {
         if (tenantId) {
             sql += ` WHERE tenantId = '${tenantId}'`;
         }
+        sql += `  ORDER BY rolename ASC;`;
         return db.execute(sql)
     }
 
@@ -66,18 +67,18 @@ class Role {
         return db.execute(sql)
     }
 
-    static async findById(id) {
-        let sql = `SELECT * FROM role_master WHERE id = ${id}`;
+    static async findById(tenantId, id) {
+        let sql = `SELECT *, DATE_SUB(createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn, DATE_SUB(updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn FROM role_master WHERE tenantId = ${tenantId} AND id = ${id}`;
         return await db.execute(sql)
     }
 
-    static delete(roleId) {
-        let sql = `DELETE FROM role_master WHERE id = ${roleId}`;
+    static delete(tenantId, roleId) {
+        let sql = `DELETE FROM role_master WHERE tenantId = ${tenantId} AND id = ${roleId}`;
         return db.execute(sql)
     };
 
-    async update(id) {
-        let sql = `UPDATE role_master SET tenantId='${this.tenantId}',rolename='${this.rolename}',status='${this.status}',createdBy='${this.createdBy}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}' WHERE id = ${id}`;
+    async update(tenantId, id) {
+        let sql = `UPDATE role_master SET rolename='${this.rolename}',status='${this.status}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}' WHERE tenantId = ${tenantId} AND id = ${id}`;
         return db.execute(sql)
 
     };

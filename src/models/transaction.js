@@ -88,21 +88,20 @@ class Transaction {
             console.error('Error in findAll:', error);
             throw error;
         }
-    }
+    };
 
-
-    static findById(id) {
-        let sql = `SELECT * FROM transaction WHERE transactionId = ${id}`;
+    static findById(tenantId, id) {
+        let sql = `SELECT * FROM transaction WHERE tenantId = ${tenantId} AND transactionId = ${id}`;
         return db.execute(sql)
     };
 
-    static delete(id) {
-        let sql = `DELETE FROM transaction WHERE transactionId = ${id}`;
+    static delete(tenantId, id) {
+        let sql = `DELETE FROM transaction WHERE tenantId = ${tenantId} AND transactionId = ${id}`;
         return db.execute(sql)
     }
 
-    async update(id) {
-        let sql = `UPDATE transaction SET tenantId='${this.tenantId}', transaction_date='${this.transaction_date}', transaction_type='${this.transaction_type}', payment_type_Id='${this.payment_type_Id}',accountId='${this.accountId}', amount='${this.amount}', description='${this.description}', createdBy='${this.createdBy}',updatedBy='${this.updatedBy}', updatedOn='${this.dateandtime()}', clientId='${this.clientId}' WHERE transactionId = ${id}`;
+    async update(tenantId, id) {
+        let sql = `UPDATE transaction SET transaction_date='${this.transaction_date}', transaction_type='${this.transaction_type}', payment_type_Id='${this.payment_type_Id}',accountId='${this.accountId}', amount='${this.amount}', description='${this.description}',updatedBy='${this.updatedBy}', updatedOn='${this.dateandtime()}', clientId='${this.clientId}' WHERE tenantId= ${tenantId} AND transactionId = ${id}`;
         return db.execute(sql);
     }
 }

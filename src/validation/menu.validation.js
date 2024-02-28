@@ -10,8 +10,6 @@ const menuItemSchema = Joi.object({
 
 const createMenuSchema = Joi.object({
     role_id: Joi.number().integer().required(),
-    createdBy: Joi.number().integer().required(),
-    updatedBy: Joi.number().integer().required(),
     menuItems: Joi.array().items(menuItemSchema).min(1)
 });
 

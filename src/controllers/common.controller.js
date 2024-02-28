@@ -7,6 +7,8 @@ const message = ("This data is in used, you can't delete it.");
 
 const CreateCommon = async (req, res) => {
     const token = getDecodeToken(req)
+    const tenantId = token.decodedToken.tenantId;
+    const userId = token.decodedToken.userId;
 
     try {
         const { error } = createCommonSchema.validate(req.body);
@@ -14,11 +16,12 @@ const CreateCommon = async (req, res) => {
             return res.status(400).json({ success: false, message: error.message });
         }
 
-        let { name, type, status, createdBy, updatedBy } = req.body;
+        let { name, type, status } = req.body;
 
-        const tenantId = token.decodedToken.tenantId;
+        let common = new Common(tenantId, name, type, status);
 
-        let common = new Common(tenantId, name, type, status, createdBy, updatedBy);
+        common.createdBy = userId;
+        common.updatedBy = userId;
 
         common = await common.save()
 
@@ -37,13 +40,14 @@ const CreateCommon = async (req, res) => {
 };
 
 const ListCommon = async (req, res, next) => {
-    const token = getDecodeToken(req)
+    const token = getDecodeToken(req);
+    const tenantId = token.decodedToken.tenantId;
     try {
         const { q = '', id } = req.query;
         const { type } = req.body;
 
         if (id) {
-            const common = await Common.findById(id)
+            const common = await Common.findById(tenantId, id)
                 ;
 
             if (common[0].length === 0) {
@@ -53,7 +57,7 @@ const ListCommon = async (req, res, next) => {
             return res.status(200).json({ success: true, message: 'Common found', data: common[0][0] });
         }
 
-        const commonResult = await Common.findAll(token.decodedToken.tenantId, type);
+        const commonResult = await Common.findAll(tenantId, type);
         let responseData = {
             success: true,
             message: 'Common List Successfully!',
@@ -99,13 +103,14 @@ const ListCommon = async (req, res, next) => {
 };
 
 const Activecommon = async (req, res, next) => {
-    const token = getDecodeToken(req)
+    const token = getDecodeToken(req);
+    const tenantId = token.decodedToken.tenantId;
     try {
         const { q = '', id } = req.query;
         const { type } = req.body;
 
         if (id) {
-            const common = await Common.findById(id)
+            const common = await Common.findById(tenantId, id)
                 ;
 
             if (common[0].length === 0) {
@@ -115,7 +120,7 @@ const Activecommon = async (req, res, next) => {
             return res.status(200).json({ success: true, message: 'Common found', data: common[0][0] });
         }
 
-        const commonResult = await Common.findActiveAll(token.decodedToken.tenantId, type);
+        const commonResult = await Common.findActiveAll(tenantId, type);
         let responseData = {
             success: true,
             message: 'Common List Successfully!',
@@ -161,9 +166,11 @@ const Activecommon = async (req, res, next) => {
 };
 
 const getCommonById = async (req, res, next) => {
+    const token = getDecodeToken(req)
+    const tenantId = token.decodedToken.tenantId;
     try {
         let Id = req.params.id;
-        let [common, _] = await Common.findById(Id)
+        let [common, _] = await Common.findById(tenantId, Id)
             ;
 
         res.status(200).json({
@@ -178,6 +185,8 @@ const getCommonById = async (req, res, next) => {
 };
 
 const deleteCommon = async (req, res, next) => {
+    const token = getDecodeToken(req)
+    const tenantId = token.decodedToken.tenantId;
     try {
         let commonId = req.params.id;
 
@@ -193,7 +202,7 @@ const deleteCommon = async (req, res, next) => {
             return res.status(200).json({ success: false, message: message });
         }
 
-        await Common.delete(commonId);
+        await Common.delete(tenantId, commonId);
 
         res.status(200).json({
             success: true,
@@ -215,18 +224,22 @@ const updateCommon = async (req, res, next) => {
             return res.status(400).json({ success: false, message: error.message });
         };
 
-        let { name, type, status, createdBy, updatedBy } = req.body;
+        let { name, type, status } = req.body;
 
         const tenantId = token.decodedToken.tenantId;
+        const userId = token.decodedToken.userId;
 
-        let common = new Common(tenantId, name, type, status, createdBy, updatedBy)
+        let common = new Common(tenantId, name, type, status)
+
+        common.updatedBy = userId;
+
         let Id = req.params.id;
-        let [findcommon, _] = await Common.findById(Id)
+        let [findcommon, _] = await Common.findById(tenantId, Id)
             ;
         if (!findcommon) {
             throw new Error("Common not found!")
         }
-        await common.update(Id)
+        await common.update(tenantId, Id)
 
         res.status(200).json({
             success: true,

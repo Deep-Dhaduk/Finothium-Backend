@@ -2,16 +2,12 @@ const Joi = require('joi');
 
 const createRoleSchema = Joi.object({
     rolename: Joi.string().required(),
-    status: Joi.number().integer().required(),
-    createdBy: Joi.number().integer().required(),
-    updatedBy: Joi.number().integer().required()
+    status: Joi.number().integer().required()
 });
 
 const updateRoleSchema = Joi.object({
     rolename: Joi.string().required(),
     status: Joi.number().integer().required(),
-    createdBy: Joi.number().integer().required(),
-    updatedBy: Joi.number().integer().required()
 });
 
 module.exports = {

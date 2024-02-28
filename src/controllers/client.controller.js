@@ -13,14 +13,17 @@ const CreateClient = async (req, res) => {
             return res.status(400).json({ success: false, message: error.message });
         }
 
-        let { clientName, status, createdBy, updatedBy, type } = req.body;
+        let { clientName, status, type } = req.body;
 
         const companyId = token.decodedToken.companyId;
         const tenantId = token.decodedToken.tenantId;
+        const userId = token.decodedToken.userId;
 
-        let client = new Client(tenantId, clientName, status, createdBy, updatedBy, '', type);
+        let client = new Client(tenantId, clientName, status, '', '', '', type);
 
         client.companyId = companyId;
+        client.createdBy = userId;
+        client.updatedBy = userId;
 
         client = await client.save()
 
@@ -41,6 +44,7 @@ const CreateClient = async (req, res) => {
 const ListClient = async (req, res, next) => {
     const token = getDecodeToken(req);
     const companyId = token.decodedToken.companyId;
+    const tenantId = token.decodedToken.tenantId;
     try {
         const { q = '', id } = req.query;
         const { type } = req.body;
@@ -52,7 +56,7 @@ const ListClient = async (req, res, next) => {
             }
         };
 
-        const clientResult = await Client.findAll(token.decodedToken.tenantId, type, companyId);
+        const clientResult = await Client.findAll(tenantId, companyId, type);
 
         let responseData = {
             success: true,
@@ -99,19 +103,20 @@ const ListClient = async (req, res, next) => {
 const ActiveClient = async (req, res, next) => {
     const token = getDecodeToken(req);
     const companyId = token.decodedToken.companyId;
+    const tenantId = token.decodedToken.tenantId;
 
     try {
         const { q = '', id } = req.query;
         const { type } = req.body;
 
         if (id) {
-            const client = await Client.findById(id);
+            const client = await Client.findById(tenantId, type, id);
             if (client[0].length === 0) {
                 return res.status(404).json({ success: false, message: 'Client not found' });
             }
         };
 
-        const clientResult = await Client.findActiveAll(token.decodedToken.tenantId, type, companyId);
+        const clientResult = await Client.findActiveAll(tenantId, companyId, type);
 
         let responseData = {
             success: true,
@@ -156,15 +161,19 @@ const ActiveClient = async (req, res, next) => {
 };
 
 const getClientById = async (req, res, next) => {
+    const token = getDecodeToken(req);
+    const companyId = token.decodedToken.companyId;
+    const tenantId = token.decodedToken.tenantId;
     try {
         let Id = req.params.id;
-        let [client, _] = await Client.findById(Id)
-            ;
+        console.log(Id);
+        let [client, _] = await Client.findById(tenantId, companyId, Id)
+        console.log(client);
 
         res.status(200).json({
             success: true,
             message: "Client Record Successfully!",
-            data: client[0]
+            data: client
         });
     } catch (error) {
         console.log(error);
@@ -173,6 +182,9 @@ const getClientById = async (req, res, next) => {
 };
 
 const deleteClient = async (req, res, next) => {
+    const token = getDecodeToken(req);
+    const companyId = token.decodedToken.companyId;
+    const tenantId = token.decodedToken.tenantId;
     try {
         let clientId = req.params.id;
 
@@ -182,7 +194,7 @@ const deleteClient = async (req, res, next) => {
             return res.status(200).json({ success: false, message: message });
         };
 
-        await Client.delete(clientId);
+        await Client.delete(tenantId, companyId, clientId);
 
         res.status(200).json({
             success: true,
@@ -195,27 +207,29 @@ const deleteClient = async (req, res, next) => {
 };
 
 const updateClient = async (req, res, next) => {
+    const token = getDecodeToken(req);
+    const tenantId = token.decodedToken.tenantId;
+    const companyId = token.decodedToken.companyId;
+    const userId = token.decodedToken.userId;
     try {
-        const token = getDecodeToken(req)
 
         const { error } = updateClientSchema.validate(req.body);
         if (error) {
             return res.status(400).json({ success: false, message: error.message });
         };
 
-        let { clientName, status, createdBy, updatedBy, type } = req.body;
+        let { clientName, status, type } = req.body;
 
-        const tenantId = token.decodedToken.tenantId;
-        const companyId = token.decodedToken.companyId;
-
-        let client = new Client(tenantId, clientName, status, createdBy, updatedBy, companyId, type);
+        let client = new Client(tenantId, clientName, status, '', '', '', type);
+        client.companyId = companyId;
+        client.updatedBy = userId;
 
         let Id = req.params.id;
-        let [findclient, _] = await Client.findById(Id);
+        let [findclient, _] = await Client.findById(tenantId, companyId, Id);
         if (!findclient) {
             throw new Error("Client not found!")
         }
-        await client.update(Id)
+        await client.update(tenantId, companyId, Id)
 
         res.status(200).json({
             success: true,

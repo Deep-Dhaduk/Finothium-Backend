@@ -11,14 +11,17 @@ const CreateTransaction = async (req, res) => {
             return res.status(400).json({ success: false, message: error.message });
         };
 
-        let { transaction_date, transaction_type, payment_type_Id, accountId, amount, description, createdBy, updatedBy, clientId } = req.body;
+        let { transaction_date, transaction_type, payment_type_Id, accountId, amount, description, clientId } = req.body;
 
         const companyId = token.decodedToken.companyId;
         const tenantId = token.decodedToken.tenantId;
+        const userId = token.decodedToken.userId;
 
-        let transaction = new Transaction(tenantId, transaction_date, transaction_type, payment_type_Id, accountId, amount, description, createdBy, updatedBy, '', clientId);
+        let transaction = new Transaction(tenantId, transaction_date, transaction_type, payment_type_Id, accountId, amount, description, '', '', '', clientId);
 
         transaction.companyId = companyId;
+        transaction.createdBy = userId;
+        transaction.updatedBy = userId;
 
         transaction = await transaction.save()
 
@@ -84,9 +87,11 @@ const ListTransaction = async (req, res, next) => {
 };
 
 const getTransactionById = async (req, res, next) => {
+    const token = getDecodeToken(req);
+    const tenantId = token.decodedToken.tenantId;
     try {
         let Id = req.params.id;
-        let [transaction, _] = await Transaction.findById(Id);
+        let [transaction, _] = await Transaction.findById(tenantId, Id);
 
         res.status(200).json({
             success: true,
@@ -100,9 +105,11 @@ const getTransactionById = async (req, res, next) => {
 };
 
 const deleteTransaction = async (req, res, next) => {
+    const token = getDecodeToken(req);
+    const tenantId = token.decodedToken.tenantId;
     try {
         let Id = req.params.id;
-        await Transaction.delete(Id)
+        await Transaction.delete(tenantId, Id)
         res.status(200).json({
             success: true,
             message: "Transaction Delete Successfully!"
@@ -113,8 +120,11 @@ const deleteTransaction = async (req, res, next) => {
     }
 };
 
-const updateTransaction = async (req, res, nexTt) => {
+const updateTransaction = async (req, res, next) => {
     const token = getDecodeToken(req);
+    const companyId = token.decodedToken.companyId;
+    const tenantId = token.decodedToken.tenantId;
+    const userId = token.decodedToken.userId;
     try {
 
         const { error } = updateTransactionSchema.validate(req.body);
@@ -122,18 +132,19 @@ const updateTransaction = async (req, res, nexTt) => {
             return res.status(400).json({ success: false, message: error.message });
         };
 
-        let { transaction_date, transaction_type, payment_type_Id, accountId, amount, description, createdBy, updatedBy, clientId } = req.body;
+        let { transaction_date, transaction_type, payment_type_Id, accountId, amount, description, clientId } = req.body;
 
-        const companyId = token.decodedToken.companyId;
-        const tenantId = token.decodedToken.tenantId;
+        let transaction = new Transaction(tenantId, transaction_date, transaction_type, payment_type_Id, accountId, amount, description, '', '', companyId, clientId);
 
-        let transaction = new Transaction(tenantId, transaction_date, transaction_type, payment_type_Id, accountId, amount, description, createdBy, updatedBy, companyId, clientId);
+        transaction.createdBy = userId;
+        transaction.updatedBy = userId;
+
         let Id = req.params.id;
-        let [findtransaction, _] = await Transaction.findById(Id);
+        let [findtransaction, _] = await Transaction.findById(tenantId, Id);
         if (!findtransaction) {
             throw new Error("Transaction not found!")
         }
-        await transaction.update(Id)
+        await transaction.update(tenantId, Id)
         res.status(200).json({
             success: true,
             message: "Transaction Successfully Updated",

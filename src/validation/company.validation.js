@@ -10,9 +10,7 @@ const createCompanySchema = Joi.object({
     website: Joi.string().allow(""),
     pan: Joi.string().allow(""),
     gstin: Joi.string().allow(""),
-    status: Joi.number().integer().required(),
-    createdBy: Joi.number().integer().required(),
-    updatedBy: Joi.number().integer().required()
+    status: Joi.number().integer().required()
 });
 
 const updateCompanySchema = Joi.object({
@@ -25,9 +23,7 @@ const updateCompanySchema = Joi.object({
     website: Joi.string().allow(""),
     pan: Joi.string().allow(""),
     gstin: Joi.string().allow(""),
-    status: Joi.number().integer().required(),
-    createdBy: Joi.number().integer().required(),
-    updatedBy: Joi.number().integer().required()
+    status: Joi.number().integer().required()
 });
 
 module.exports = {

@@ -11,11 +11,15 @@ const CreateChildmenu = async (req, res) => {
             return res.status(400).json({ success: false, message: error.message });
         }
 
-        let { menu_name, parent_id, display_rank, status, createdBy, updatedBy } = req.body;
+        let { menu_name, parent_id, display_rank, status } = req.body;
 
         const tenantId = token.decodedToken.tenantId;
+        const userId = token.decodedToken.userId;
 
-        let childmenu = new Childmenu(tenantId, menu_name, parent_id, display_rank, status, createdBy, updatedBy);
+        let childmenu = new Childmenu(tenantId, menu_name, parent_id, display_rank, status);
+
+        childmenu.createdBy = userId;
+        childmenu.updatedBy = userId;
 
         childmenu = await childmenu.save()
 
@@ -35,6 +39,7 @@ const CreateChildmenu = async (req, res) => {
 
 const ListChildmenu = async (req, res, next) => {
     const token = getDecodeToken(req)
+    const tenantId = token.decodedToken.tenantId;
     try {
         const { q = '', id } = req.query;
 
@@ -48,7 +53,7 @@ const ListChildmenu = async (req, res, next) => {
             return res.status(200).json({ success: true, message: 'Childmenu found', data: childmenu[0][0] });
         }
 
-        const childmenuResult = await Childmenu.findAll(token.decodedToken.tenantId);;
+        const childmenuResult = await Childmenu.findAll(tenantId);;
         let responseData = {
             success: true,
             message: 'Childmenu List Successfully!',
@@ -65,6 +70,7 @@ const ListChildmenu = async (req, res, next) => {
             const filteredData = childmenuResult[0].filter(
                 childmenu =>
                     childmenu.menu_name.toLowerCase().includes(queryLowered) ||
+                    (childmenu.parent_id && childmenu.parent_id.toString().includes(queryLowered)) ||
                     (typeof childmenu.status === 'string' && childmenu.status.toLowerCase() === "active" && "active".includes(queryLowered)) ||
                     (childmenu.display_rank && childmenu.display_rank.toString().includes(queryLowered))
             );
@@ -94,6 +100,7 @@ const ListChildmenu = async (req, res, next) => {
 
 const ActiveChildmenu = async (req, res, next) => {
     const token = getDecodeToken(req)
+    const tenantId = token.decodedToken.tenantId;
     try {
         const { q = '', id } = req.query;
 
@@ -107,7 +114,7 @@ const ActiveChildmenu = async (req, res, next) => {
             return res.status(200).json({ success: true, message: 'Childmenu found', data: childmenu[0][0] });
         }
 
-        const childmenuResult = await Childmenu.findActiveAll(token.decodedToken.tenantId);
+        const childmenuResult = await Childmenu.findActiveAll(tenantId);
         let responseData = {
             success: true,
             message: 'Childmenu List Successfully!',
@@ -152,9 +159,11 @@ const ActiveChildmenu = async (req, res, next) => {
 };
 
 const getChildmenuById = async (req, res, next) => {
+    const token = getDecodeToken(req)
+    const tenantId = token.decodedToken.tenantId;
     try {
         let Id = req.params.id;
-        let [childmenu, _] = await Childmenu.findById(Id);
+        let [childmenu, _] = await Childmenu.findById(tenantId, Id);
 
         res.status(200).json({
             success: true,
@@ -168,9 +177,11 @@ const getChildmenuById = async (req, res, next) => {
 };
 
 const deleteChildmenu = async (req, res, next) => {
+    const token = getDecodeToken(req)
+    const tenantId = token.decodedToken.tenantId;
     try {
         let Id = req.params.id;
-        await Childmenu.delete(Id)
+        await Childmenu.delete(tenantId, Id)
         res.status(200).json({
             success: true,
             message: "Childmenu Delete Successfully!"
@@ -183,6 +194,8 @@ const deleteChildmenu = async (req, res, next) => {
 
 const updateChildmenu = async (req, res, next) => {
     const token = getDecodeToken(req);
+    const tenantId = token.decodedToken.tenantId;
+    const userId = token.decodedToken.userId;
     try {
 
         const { error } = updateChildmenuSchema.validate(req.body);
@@ -190,22 +203,31 @@ const updateChildmenu = async (req, res, next) => {
             return res.status(400).json({ success: false, message: error.message });
         };
 
-        let { menu_name, parent_id, display_rank, status, createdBy, updatedBy } = req.body;
+        let { menu_name, parent_id, display_rank, status } = req.body;
 
-        const tenantId = token.decodedToken.tenantId;
+        let childmenu = new Childmenu(tenantId, menu_name, parent_id, display_rank, status)
 
-        let childmenu = new Childmenu(tenantId, menu_name, parent_id, display_rank, status, createdBy, updatedBy)
+        childmenu.updatedBy = userId;
+
         let Id = req.params.id;
-        let [findchildmenu, _] = await Childmenu.findById(Id);
-        if (!findchildmenu) {
-            throw new Error("childmenu not found!")
+        if (!Id) {
+            return res.status(400).json({ success: false, message: "ID parameter is missing or invalid" });
         }
-        await childmenu.update(Id)
+
+        let [findchildmenu, _] = await Childmenu.findById(tenantId, Id);
+        if (!findchildmenu) {
+            return res.status(404).json({ success: false, message: "Childmenu not found" });
+        }
+
+        await childmenu.update(tenantId, Id);
         res.status(200).json({
             success: true,
             message: "Childmenu Successfully Updated",
-            record: { childmenu }, returnOriginal: false, runValidators: true
+            record: { childmenu },
+            returnOriginal: false,
+            runValidators: true
         });
+
     } catch (error) {
         console.log(error);
         next(error)

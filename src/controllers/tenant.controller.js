@@ -1,16 +1,22 @@
 const Tenant = require("../models/tenant");
+const { use } = require("../routes/company.route");
 const { createTenantSchema, updateTenantSchema } = require('../validation/tenant.validation');
 
 const CreateTenant = async (req, res) => {
-    try {
+    const token = getDecodeToken(req);
+    const userId = token.decodedToken.userId;
 
+    try {
         const { error } = createTenantSchema.validate(req.body);
         if (error) {
             return res.status(400).json({ success: false, message: error.message });
         };
 
-        let { tenantname, personname, address, contact, email, startdate, enddate, status, createdBy, updatedBy } = req.body;
-        let tenant = new Tenant(tenantname, personname, address, contact, email, startdate, enddate, status, createdBy, updatedBy);
+        let { tenantname, personname, address, contact, email, startdate, enddate, status } = req.body;
+        let tenant = new Tenant(tenantname, personname, address, contact, email, startdate, enddate, status);
+
+        tenant.createdBy = userId;
+        tenant.updatedBy = userId
 
         tenant = await tenant.save()
 
@@ -175,6 +181,8 @@ const deleteTenant = async (req, res, next) => {
 };
 
 const updateTenant = async (req, res, next) => {
+    const token = getDecodeToken(req);
+    const userId = token.decodedToken.userId;
     try {
 
         const { error } = updateTenantSchema.validate(req.body);
@@ -182,8 +190,11 @@ const updateTenant = async (req, res, next) => {
             return res.status(400).json({ success: false, message: error.message });
         };
 
-        let { tenantname, personname, address, contact, email, startdate, enddate, status, createdBy, updatedBy } = req.body;
-        let tenant = new Tenant(tenantname, personname, address, contact, email, startdate, enddate, status, createdBy, updatedBy)
+        let { tenantname, personname, address, contact, email, startdate, enddate, status } = req.body;
+        let tenant = new Tenant(tenantname, personname, address, contact, email, startdate, enddate, status);
+
+        tenant.updatedBy = userId
+
         let Id = req.params.id;
         let [findtenant, _] = await Tenant.findById(Id);
         if (!findtenant) {

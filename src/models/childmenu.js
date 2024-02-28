@@ -64,7 +64,7 @@ class Childmenu {
                DATE_SUB(c.createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn,
                DATE_SUB(c.updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn
         FROM childmenu_master c
-        LEFT JOIN parentmenu_master p ON c.parent_id = p.id
+        LEFT JOIN parentmenu_master p ON c.tenantId = p.tenantId AND c.parent_id = p.id
         WHERE c.tenantId = ${tenantId}
         `;
     }
@@ -81,18 +81,19 @@ class Childmenu {
         return db.execute(sql);
     };
 
-    static findById(id) {
-        let sql = `SELECT * FROM childmenu_master WHERE id = ${id}`;
+    static findById(tenantId, id) {
+        let sql = this.findChildmenuQuery(tenantId)
+        sql += `AND c.id = ${id}`;
         return db.execute(sql)
     };
 
-    static delete(id) {
-        let sql = `DELETE FROM childmenu_master WHERE id = ${id}`;
+    static delete(tenantId, id) {
+        let sql = `DELETE FROM childmenu_master WHERE id = ${id} AND tenantId = ${tenantId}`;
         return db.execute(sql)
     };
 
-    async update(id) {
-        let sql = `UPDATE childmenu_master SET tenantId='${this.tenantId}',menu_name='${this.menu_name}',parent_id='${this.parent_id}',display_rank='${this.display_rank}',status='${this.status}', createdBy='${this.createdBy}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}' WHERE id = ${id}`;
+    async update(tenantId, id) {
+        let sql = `UPDATE childmenu_master SET menu_name='${this.menu_name}',parent_id='${this.parent_id}',display_rank='${this.display_rank}',status='${this.status}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}' WHERE tenantId = ${tenantId} AND id = ${id} `;
         return db.execute(sql)
 
     };

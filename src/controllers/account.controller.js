@@ -13,14 +13,17 @@ const CreateAccount = async (req, res) => {
             return res.status(400).json({ success: false, message: error.message });
         }
 
-        const { account_name, group_name_Id, join_date, exit_date, account_type_Id, status, createdBy, updatedBy } = req.body;
+        const { account_name, group_name_Id, join_date, exit_date, account_type_Id, status } = req.body;
 
         const companyId = token.decodedToken.companyId;
         const tenantId = token.decodedToken.tenantId;
+        const userId = token.decodedToken.userId;
 
-        let account = new Account(tenantId, account_name, group_name_Id, join_date, exit_date, account_type_Id, status, createdBy, updatedBy);
+        let account = new Account(tenantId, account_name, group_name_Id, join_date, exit_date, account_type_Id, status);
 
         account.companyId = companyId;
+        account.createdBy = userId;
+        account.updatedBy = userId;
 
         account = await account.save();
 
@@ -226,12 +229,15 @@ const updateAccount = async (req, res, next) => {
             return res.status(400).json({ success: false, message: error.message });
         };
 
-        let { account_name, group_name_Id, join_date, exit_date, account_type_Id, status, createdBy, updatedBy } = req.body;
+        let { account_name, group_name_Id, join_date, exit_date, account_type_Id, status, createdBy } = req.body;
 
         const tenantId = token.decodedToken.tenantId;
         const companyId = token.decodedToken.companyId;
+        const userId = token.decodedToken.userId;
 
-        let account = new Account(tenantId, account_name, group_name_Id, join_date, exit_date, account_type_Id, status, createdBy, updatedBy);
+        let account = new Account(tenantId, account_name, group_name_Id, join_date, exit_date, account_type_Id, status);
+
+        account.updatedBy = userId;
 
         let Id = req.params.id;
 

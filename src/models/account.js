@@ -102,7 +102,7 @@ class Account {
     };
 
     async update(id, tenantId) {
-        let sql = `UPDATE account_master SET tenantId='${this.tenantId}',account_name='${this.account_name}',group_name_Id='${this.group_name_Id}',join_date='${this.join_date}',exit_date='${this.exit_date}',account_type_Id='${this.account_type_Id}',status='${this.status}',createdBy='${this.createdBy}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}' WHERE tenantId = ${tenantId} AND account_id = ${id}`;
+        let sql = `UPDATE account_master SET account_name='${this.account_name}',group_name_Id='${this.group_name_Id}',join_date='${this.join_date}',exit_date='${this.exit_date}',account_type_Id='${this.account_type_Id}',status='${this.status}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}' WHERE tenantId = ${tenantId} AND account_id = ${id}`;
         return db.execute(sql)
     };
 }

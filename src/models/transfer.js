@@ -87,17 +87,17 @@ class Transfer {
 
     };
 
-    static findById(id) {
-        let sql = `SELECT * FROM transfer WHERE transfer_id = ${id}`;
+    static findById(tenantId, id) {
+        let sql = `SELECT * FROM transfer WHERE tenantId = ${tenantId} AND transfer_id = ${id}`;
         return db.execute(sql)
     }
-    static delete(id) {
-        let sql = `DELETE FROM transfer WHERE transfer_id = ${id}`;
+    static delete(tenantId, id) {
+        let sql = `DELETE FROM transfer WHERE tenantId = ${tenantId} AND transfer_id = ${id}`;
         return db.execute(sql)
     }
 
-    async update(id) {
-        let sql = `UPDATE transfer SET tenantId='${this.tenantId}',transactionDate='${this.transactionDate}',paymentType_Id='${this.paymentType_Id}',fromAccount='${this.fromAccount}',toAccount='${this.toAccount}',amount='${this.amount}',description='${this.description}',createdBy='${this.createdBy}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}' WHERE transfer_id = ${id}`;
+    async update(tenantId, id) {
+        let sql = `UPDATE transfer SET transactionDate='${this.transactionDate}',paymentType_Id='${this.paymentType_Id}',fromAccount='${this.fromAccount}',toAccount='${this.toAccount}',amount='${this.amount}',description='${this.description}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}' WHERE tenantId = ${tenantId} AND transfer_id = ${id}`;
         return db.execute(sql)
     };
 }

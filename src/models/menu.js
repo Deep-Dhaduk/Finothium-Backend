@@ -80,65 +80,80 @@ class Menu {
         }
     }
 
-    async findByChildId(childId) {
-        let sql = `SELECT * FROM menu_master WHERE child_id = '${childId}'`;
+    async findByChildId(tenantId, childId) {
+        let sql = `SELECT * FROM menu_master WHERE tenantId = ${tenantId} AND child_id = '${childId}'`;
         const result = await db.execute(sql);
         return result[0][0];
     }
 
     static findAll(tenantId, roleId) {
-        let sql = `
-            SELECT m.*,
-                   c.menu_name AS child_menu_name,
-                   c.parent_id,
-                   p.menu_name AS parent_menu_name,
-                   DATE_SUB(c.createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn,
-                   DATE_SUB(c.updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn
-            FROM menu_master m
-            LEFT JOIN childmenu_master c ON m.child_id = c.id
-            LEFT JOIN parentmenu_master p ON c.parent_id = p.id
-            WHERE 1=1`;
-
+        let sql = `SELECT m.*,
+        c.menu_name AS child_menu_name,
+        c.parent_id,
+        p.menu_name AS parent_menu_name,
+        DATE_SUB(c.createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn,
+        DATE_SUB(c.updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn
+        FROM menu_master m
+        LEFT JOIN childmenu_master c ON m.tenantId = c.tenantId AND m.child_id = c.id
+        LEFT JOIN parentmenu_master p ON m.tenantId = p.tenantId ANd c.parent_id = p.id
+        WHERE m.tenantId = ${tenantId}`;
         const params = [];
-
         if (roleId) {
             sql += ` AND m.role_id = ?`;
             params.push(roleId);
         }
 
-        if (tenantId) {
-            sql += ` AND m.tenantId = ?`;
-            params.push(tenantId);
-        }
-
         return db.execute(sql, params);
     };
 
-    static findById(id) {
-        let sql = `SELECT * FROM menu_master WHERE id = ${id}`;
+    static async findById(tenantId, roleId, id) {
+        try {
+            let sql = `SELECT m.*, c.menu_name AS child_menu_name,
+                c.parent_id, p.menu_name AS parent_menu_name,
+                DATE_SUB(c.createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn,
+                DATE_SUB(c.updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn
+                FROM menu_master m
+                LEFT JOIN childmenu_master c ON m.tenantId = c.tenantId AND m.child_id = c.id
+                LEFT JOIN parentmenu_master p ON m.tenantId = p.tenantId AND c.parent_id = p.id
+                WHERE m.tenantId = ?`;
+
+            const params = [tenantId];
+
+            if (roleId) {
+                sql += ` AND m.role_id = ?`;
+                params.push(roleId);
+            }
+
+            sql += ` AND m.id = ?`;
+
+            params.push(id);
+
+            const [rows, fields] = await db.execute(sql, params);
+
+            return rows;
+        } catch (error) {
+            throw error;
+        }
+    };
+
+    static delete(tenantId, id) {
+        let sql = `DELETE FROM menu_master WHERE tenantId = ${tenantId} AND id = ${id}`;
         return db.execute(sql)
     };
 
-    static delete(id) {
-        let sql = `DELETE FROM menu_master WHERE id = ${id}`;
-        return db.execute(sql)
-    };
-
-    async update(id) {
+    async update(tenantId, id) {
         try {
             let sql = `
                 UPDATE menu_master SET
-                tenantId=?,
                 role_id=?,
                 child_id=?,
                 allow_access=?,
                 allow_add=?,
                 allow_edit=?,
                 allow_delete=?,
-                createdBy=?,
                 updatedBy=?,
                 updatedOn=?
-                WHERE id = ?`
+                WHERE tenantId = ? AND id = ?`
 
             let values = [
                 this.tenantId,
@@ -148,9 +163,9 @@ class Menu {
                 this.allow_add,
                 this.allow_edit,
                 this.allow_delete,
-                this.createdBy,
                 this.updatedBy,
                 this.dateandtime(),
+                tenantId,
                 id
             ];
 

@@ -57,84 +57,57 @@ class Client {
         }
     };
 
-    static findAll(tenantId, type, id) {
-        let sql = "SELECT *, DATE_SUB(createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn, DATE_SUB(updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn FROM client_master";
+    static getAllClientDetails(tenantId, companyId, type) {
         let whereClause = "";
 
         if (tenantId) {
             whereClause += ` WHERE tenantId = '${tenantId}'`;
         }
-        if (type) {
+        if (companyId) {
+            if (whereClause !== "") {
+                whereClause += ` AND companyId = '${companyId}'`;
+            } else {
+                whereClause += ` WHERE companyId = '${companyId}'`;
+            }
+        } if (type) {
             if (whereClause !== "") {
                 whereClause += ` AND type = '${type}'`;
             } else {
                 whereClause += ` WHERE type = '${type}'`;
             }
         }
-        if (id) {
-            if (whereClause !== "") {
-                whereClause += ` AND companyId = '${id}'`;
-            } else {
-                whereClause += ` WHERE companyId = '${id}'`;
-            }
-        }
 
-        sql += whereClause + " ORDER BY clientName ASC";
+        const sql = `SELECT *, DATE_SUB(createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn, DATE_SUB(updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn FROM client_master${whereClause}`;
+
+        return sql;
+    };
+
+    static findAll(tenantId, companyId, type) {
+        let sql = this.getAllClientDetails(tenantId, companyId, type)
+        sql += " ORDER BY clientName ASC";
         return db.execute(sql);
     };
 
-    static findActiveAll(tenantId, type, id) {
-        let sql = "SELECT *, DATE_SUB(createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn, DATE_SUB(updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn FROM client_master";
-        let whereClause = "";
-
-        if (tenantId) {
-            whereClause += ` WHERE tenantId = '${tenantId}' AND status = 1`;
-        } else {
-            whereClause += ` WHERE status = 1`;
-        }
-
-        if (type) {
-            if (whereClause !== "") {
-                whereClause += ` AND type = '${type}'`;
-            } else {
-                whereClause += ` WHERE type = '${type}'`;
-            }
-        }
-        if (id) {
-            if (whereClause !== "") {
-                whereClause += ` AND companyId = '${id}'`;
-            } else {
-                whereClause += ` WHERE companyId = '${id}'`;
-            }
-        }
-
-        sql += whereClause + " ORDER BY clientName ASC";
+    static findActiveAll(tenantId, companyId, type) {
+        let sql = this.getAllClientDetails(tenantId, companyId, type)
+        sql += " AND status = 1"
+        sql += " ORDER BY clientName ASC";
         return db.execute(sql);
     };
 
-    static findBycompanyId(id) {
-        let sql = `
-        SELECT * FROM client_master
-            WHERE companyId = ${id}
-        `;;
-        return db.execute(sql);
-    };
-
-    static findById(id, type) {
-        let sql = `SELECT * FROM client_master WHERE clientId = ${id}`;
-        if (type) {
-            sql += ` AND type = '${type}'`;
-        }
+    static findById(tenantId, companyId, id) {
+        let sql = this.getAllClientDetails(tenantId, companyId)
+        sql += `AND clientId= ${id}`;
         return db.execute(sql)
     };
 
-    static delete(id) {
-        let sql = `DELETE FROM client_master WHERE clientId = ${id}`;
+    static delete(tenantId, companyId, id) {
+        let sql = `DELETE FROM client_master WHERE tenantId = ${tenantId} AND companyId = ${companyId} AND clientId = ${id}`;
         return db.execute(sql)
     };
 
-    async update(id) {
-        let sql = `UPDATE client_master SET tenantId='${this.tenantId}',clientName='${this.clientName}',status='${this.status}',createdBy='${this.createdBy}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}',companyId='${this.companyId}',type='${this.type}' WHERE clientId = ${id}`;
+    async update(tenantId, companyId, id) {
+        let sql = `UPDATE client_master SET clientName='${this.clientName}',status='${this.status}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}',companyId='${this.companyId}',type='${this.type}' WHERE tenantId = ${tenantId} AND companyId = ${companyId} AND clientId = ${id}`;
         return db.execute(sql)
 
     };

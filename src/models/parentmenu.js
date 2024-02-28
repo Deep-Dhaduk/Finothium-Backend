@@ -53,36 +53,35 @@ class Parentmenu {
         }
     };
 
+    static findAllParentMenu(tenantId) {
+        return `SELECT *, DATE_SUB(createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn, DATE_SUB(updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn FROM parentmenu_master WHERE tenantId = ${tenantId}`
+    }
+
     static findAll(tenantId) {
-        let sql = "SELECT *, DATE_SUB(createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn, DATE_SUB(updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn FROM parentmenu_master";
-        if (tenantId) {
-            sql += ` WHERE tenantId = '${tenantId}'`;
-        }
+        let sql = this.findAllParentMenu(tenantId);
         sql += " ORDER BY display_rank ASC";
         return db.execute(sql)
     };
 
     static findActiveAll(tenantId) {
-        let sql = "SELECT *, DATE_SUB(createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn, DATE_SUB(updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn FROM parentmenu_master WHERE status = 1";
-        if (tenantId) {
-            sql += ` AND tenantId = '${tenantId}'`;
-        }
+        let sql = this.findAllParentMenu(tenantId);
         sql += " ORDER BY menu_name, display_rank ASC";
         return db.execute(sql)
     };
 
-    static findById(id) {
-        let sql = `SELECT * FROM parentmenu_master WHERE id = ${id}`;
+    static findById(tenantId, id) {
+        let sql = this.findAllParentMenu(tenantId);
+        sql += ` AND id = ${id}`;
         return db.execute(sql)
     };
 
-    static delete(parentId) {
-        let sql = `DELETE FROM parentmenu_master WHERE id = ${parentId}`;
+    static delete(tenantId, parentId) {
+        let sql = `DELETE FROM parentmenu_master WHERE tenantId = ${tenantId} AND id = ${parentId}`;
         return db.execute(sql)
     };
 
-    async update(id) {
-        let sql = `UPDATE parentmenu_master SET tenantId='${this.tenantId}',menu_name='${this.menu_name}',display_rank='${this.display_rank}',status='${this.status}',createdBy='${this.createdBy}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}' WHERE id = ${id}`;
+    async update(tenantId, id) {
+        let sql = `UPDATE parentmenu_master SET menu_name='${this.menu_name}',display_rank='${this.display_rank}',status='${this.status}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}' WHERE tenantId = ${tenantId} AND id = ${id}`;
         return db.execute(sql)
 
     };

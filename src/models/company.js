@@ -68,55 +68,93 @@ class Company {
                 '${this.dateandtime()}'
             )`;
             return db.execute(sql)
-
         } catch (error) {
             throw error;
         }
     };
 
-    static findAll(tenantId, userId = null) {
+    static findAllByUserId(tenantId, userId) {
         let sql = `
             SELECT c.*
             FROM company_master c
             INNER JOIN company_access ca ON c.id = ca.company_id
-            WHERE 1 = 1
+            WHERE c.tenantId = ${tenantId}
         `;
-
-        if (tenantId) {
-            sql += ` AND c.tenantId = '${tenantId}'`;
-        }
 
         if (userId) {
             sql += ` AND ca.user_id = ${userId}`;
-        }
-
+        };
         sql += " ORDER BY c.company_name";
+        return db.execute(sql);
+    };
 
+    static findAll(tenantId) {
+        let sql = `
+            SELECT c.*
+            FROM company_master c
+            WHERE c.tenantId = ${tenantId}
+        `;
+        sql += " ORDER BY c.company_name";
+        return db.execute(sql);
+    };
+
+    static findActiveAllByUserId(tenantId, userId) {
+        let sql = `
+            SELECT c.*
+            FROM company_master c
+            INNER JOIN company_access ca ON c.id = ca.company_id
+            WHERE status =1 AND c.tenantId = ${tenantId}
+        `;
+
+        if (userId) {
+            sql += ` AND ca.user_id = ${userId}`;
+        };
+        sql += " ORDER BY c.company_name";
         return db.execute(sql);
     };
 
     static findActiveAll(tenantId) {
-        let sql = "SELECT *, DATE_SUB(createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn, DATE_SUB(updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn FROM company_master WHERE status = 1";
-        if (tenantId) {
-            sql += ` AND tenantId = '${tenantId}'`;
-        }
-        sql += " ORDER BY company_name";
+        let sql = `
+            SELECT c.*
+            FROM company_master c
+            WHERE status =1 AND c.tenantId = ${tenantId}
+            ORDER BY c.company_name
+        `;
+        return db.execute(sql);
+    };
+
+    static findByIdWithUserId(tenantId, id, userId) {
+        let sql = `
+            SELECT c.*
+            FROM company_master c
+            INNER JOIN company_access ca ON c.id = ca.company_id
+            WHERE c.tenantId = ${tenantId}
+        `;
+        if (userId) {
+            sql += ` AND ca.user_id = ${userId}`;
+        };
+        sql += `AND c.id=${id}`;
         return db.execute(sql)
     };
 
-    static findById(id) {
-        let sql = `SELECT * FROM company_master WHERE id = ${id}`;
+    static findById(tenantId, id) {
+        let sql = `
+            SELECT c.*
+            FROM company_master c
+            INNER JOIN company_access ca ON c.id = ca.company_id
+            WHERE c.tenantId = ${tenantId}
+            AND c.id=${id}
+        `;
         return db.execute(sql)
     };
 
-    static delete(id) {
-        let sql = `DELETE FROM company_master WHERE id = ${id}`;
+    static delete(tenantId, id) {
+        let sql = `DELETE FROM company_master WHERE tenantId = ${tenantId} AND id = ${id}`;
         return db.execute(sql)
     };
 
-    async update(id) {
+    async update(tenantId, id) {
         let sql = `UPDATE company_master SET
-                tenantId='${this.tenantId}',
                 company_name='${this.company_name}',
                 legal_name='${this.legal_name}',
                 authorize_person_name='${this.authorize_person_name}',
@@ -127,10 +165,9 @@ class Company {
                 pan='${this.pan}',
                 gstin='${this.gstin}',
                 status='${this.status}',
-                updatedBy='${this.createdBy}',
                 updatedBy='${this.updatedBy}',
                 updatedOn='${this.dateandtime()}'
-                WHERE id = ${id}`;
+                WHERE tenantId = ${tenantId} AND id = ${id}`;
         return db.execute(sql);
     };
 

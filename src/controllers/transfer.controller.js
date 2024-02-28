@@ -10,7 +10,7 @@ const CreateTransfer = async (req, res) => {
             return res.status(400).json({ success: false, message: error.message });
         };
 
-        let { transactionDate, paymentType_Id, fromAccount, toAccount, amount, description, createdBy, updatedBy } = req.body;
+        let { transactionDate, paymentType_Id, fromAccount, toAccount, amount, description } = req.body;
 
         if (fromAccount === toAccount) {
             return res.status(400).json({ success: false, message: "From and to accounts cannot be the same." });
@@ -18,8 +18,12 @@ const CreateTransfer = async (req, res) => {
 
         const companyId = token.decodedToken.companyId;
         const tenantId = token.decodedToken.tenantId;
+        const userId = token.decodedToken.userId;
 
-        let transfer = new Transfer(tenantId, transactionDate, paymentType_Id, fromAccount, toAccount, amount, description, createdBy, updatedBy);
+        let transfer = new Transfer(tenantId, transactionDate, paymentType_Id, fromAccount, toAccount, amount, description);
+
+        transfer.createdBy = userId;
+        transfer.updatedBy = userId;
 
         transfer.companyId = companyId;
 
@@ -49,7 +53,7 @@ const ListTransfer = async (req, res, next) => {
         const { limit, startDate, endDate, paymentTypeIds, accountTypeIds } = req.body;
 
         if (id) {
-            const transfer = await Transfer.findById(id);
+            const transfer = await Transfer.findById(tenantId, id);
 
             if (transfer.length === 0) {
                 return res.status(404).json({ success: false, message: 'Transfer not found' });
@@ -100,9 +104,11 @@ const ListTransfer = async (req, res, next) => {
 };
 
 const getTransferById = async (req, res, next) => {
+    const token = getDecodeToken(req);
+    const tenantId = token.decodedToken.tenantId;
     try {
         let Id = req.params.id;
-        let [transfer, _] = await Transfer.findById(Id);
+        let [transfer, _] = await Transfer.findById(tenantId, Id);
 
         res.status(200).json({
             success: true,
@@ -116,9 +122,11 @@ const getTransferById = async (req, res, next) => {
 };
 
 const deleteTransfer = async (req, res, next) => {
+    const token = getDecodeToken(req);
+    const tenantId = token.decodedToken.tenantId;
     try {
         let Id = req.params.id;
-        await Transfer.delete(Id)
+        await Transfer.delete(tenantId, Id)
         res.status(200).json({
             success: true,
             message: "Transfer Delete Successfully!"
@@ -130,7 +138,10 @@ const deleteTransfer = async (req, res, next) => {
 };
 
 const updateTransfer = async (req, res, next) => {
-    const token = getDecodeToken(req)
+    const token = getDecodeToken(req);
+    const tenantId = token.decodedToken.tenantId;
+    const companyId = token.decodedToken.companyId;
+    const userId = token.decodedToken.userId;
     try {
 
         const { error } = updateTransferSchema.validate(req.body);
@@ -138,22 +149,22 @@ const updateTransfer = async (req, res, next) => {
             return res.status(400).json({ success: false, message: error.message });
         };
 
-        let { transactionDate, paymentType_Id, fromAccount, toAccount, amount, description, createdBy, updatedBy } = req.body;
+        let { transactionDate, paymentType_Id, fromAccount, toAccount, amount, description} = req.body;
 
         if (fromAccount === toAccount) {
             return res.status(400).json({ success: false, message: "From and to accounts cannot be the same." });
-        }
+        };
 
-        const companyId = token.decodedToken.companyId;
-        const tenantId = token.decodedToken.tenantId;
+        let transfer = new Transfer(tenantId, transactionDate, paymentType_Id, fromAccount, toAccount, amount, description, companyId)
 
-        let transfer = new Transfer(tenantId, transactionDate, paymentType_Id, fromAccount, toAccount, amount, description, createdBy, updatedBy, companyId)
+        transfer.updatedBy = userId
+
         let Id = req.params.id;
-        let [findtransfer, _] = await Transfer.findById(Id);
+        let [findtransfer, _] = await Transfer.findById(tenantId, Id);
         if (!findtransfer) {
             throw new Error("Transfer not found!")
         }
-        await transfer.update(Id)
+        await transfer.update(tenantId, Id)
         res.status(200).json({
             success: true,
             message: "Transfer Successfully Updated",

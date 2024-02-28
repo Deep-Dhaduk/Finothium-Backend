@@ -11,38 +11,43 @@ const CreateCompany = async (req, res) => {
         const { error } = createCompanySchema.validate(req.body);
         if (error) {
             return res.status(400).json({ success: false, message: error.message });
-        };
+        }
 
-        let { company_name, legal_name, authorize_person_name, address, contact_no, email, website, pan, gstin, status, createdBy, updatedBy } = req.body;
+        let { company_name, legal_name, authorize_person_name, address, contact_no, email, website, pan, gstin, status } = req.body;
 
         const tenantId = token.decodedToken.tenantId;
+        const userId = token.decodedToken.userId;
 
-        let company = new Company(tenantId, company_name, legal_name, authorize_person_name, address, contact_no, email, website, pan, gstin, status, createdBy, updatedBy);
+        let company = new Company(tenantId, company_name, legal_name, authorize_person_name, address, contact_no, email, website, pan, gstin, status);
+
+        company.createdBy = userId;
+        company.updatedBy = userId;
 
         company = await company.save();
 
         res.status(200).json({
             success: true,
-            message: "Company create successfully!",
+            message: "Company created successfully!",
             record: { company }
         });
     } catch (error) {
-        res.status(400).json({
+        console.error(error);
+        res.status(500).json({
             success: false,
-            message: error.message,
+            message: "Internal Server Error",
         });
-        console.log(error);
     }
 };
 
 const ListCompany = async (req, res, next) => {
     const token = getDecodeToken(req)
+    const tenantId = token.decodedToken.tenantId;
+    const userId = token.decodedToken.userId;
     try {
         const { q = '', id } = req.query;
-        const userId = token.decodedToken.userId
 
         if (id) {
-            const company = await Company.findById(id);
+            const company = await Company.findById(tenantId, id);
 
             if (company[0].length === 0) {
                 return res.status(404).json({ success: false, message: 'Company not found' });
@@ -51,7 +56,7 @@ const ListCompany = async (req, res, next) => {
             return res.status(200).json({ success: true, message: 'Company found', data: company[0][0] });
         }
 
-        const companyResult = await Company.findAll(token.decodedToken.tenantId, userId);
+        const companyResult = await Company.findAllByUserId(tenantId,userId);
         let responseData = {
             success: true,
             message: 'Company List Successfully!',
@@ -101,11 +106,14 @@ const ListCompany = async (req, res, next) => {
 
 const ActiveCompany = async (req, res, next) => {
     const token = getDecodeToken(req)
+    const tenantId = token.decodedToken.tenantId;
+    const userId = token.decodedToken.userId
+
     try {
         const { q = '', id } = req.query;
 
         if (id) {
-            const company = await Company.findById(id);
+            const company = await Company.findById(tenantId, id);
 
             if (company[0].length === 0) {
                 return res.status(404).json({ success: false, message: 'Company not found' });
@@ -114,7 +122,7 @@ const ActiveCompany = async (req, res, next) => {
             return res.status(200).json({ success: true, message: 'Company found', data: company[0][0] });
         }
 
-        const companyResult = await Company.findActiveAll(token.decodedToken.tenantId);
+        const companyResult = await Company.findActiveAll(tenantId);
         let responseData = {
             success: true,
             message: 'Company List Successfully!',
@@ -163,9 +171,12 @@ const ActiveCompany = async (req, res, next) => {
 };
 
 const getCompanyById = async (req, res, next) => {
+    const token = getDecodeToken(req)
+    const tenantId = token.decodedToken.tenantId;
+    const userId = token.decodedToken.userId
     try {
         let Id = req.params.id;
-        let [company, _] = await Company.findById(Id);
+        let [company, _] = await Company.findById(tenantId, Id);
 
         res.status(200).json({
             success: true,
@@ -179,6 +190,8 @@ const getCompanyById = async (req, res, next) => {
 };
 
 const deleteCompany = async (req, res, next) => {
+    const token = getDecodeToken(req)
+    const tenantId = token.decodedToken.tenantId;
     try {
         let companyId = req.params.id;
 
@@ -188,7 +201,7 @@ const deleteCompany = async (req, res, next) => {
             return res.status(200).json({ success: false, message: message });
         };
 
-        await Company.delete(companyId);
+        await Company.delete(tenantId, companyId);
 
         res.status(200).json({
             success: true,
@@ -200,27 +213,29 @@ const deleteCompany = async (req, res, next) => {
     }
 };
 
-
 const updateCompany = async (req, res, next) => {
     try {
-        const token = getDecodeToken(req);
+        const token = getDecodeToken(req)
+        const tenantId = token.decodedToken.tenantId;
+        const userId = token.decodedToken.userId
 
         const { error } = updateCompanySchema.validate(req.body);
         if (error) {
             return res.status(400).json({ success: false, message: error.message });
         };
 
-        let { company_name, legal_name, authorize_person_name, address, contact_no, email, website, pan, gstin, status, createdBy, updatedBy } = req.body;
+        let { company_name, legal_name, authorize_person_name, address, contact_no, email, website, pan, gstin, status } = req.body;
 
-        const tenantId = token.decodedToken.tenantId;
+        let company = new Company(tenantId, company_name, legal_name, authorize_person_name, address, contact_no, email, website, pan, gstin, status)
 
-        let company = new Company(tenantId, company_name, legal_name, authorize_person_name, address, contact_no, email, website, pan, gstin, status, createdBy, updatedBy)
+        company.updatedBy = userId;
+
         let Id = req.params.id;
-        let [findcompany, _] = await Company.findById(Id);
+        let [findcompany, _] = await Company.findById(tenantId, Id);
         if (!findcompany) {
             throw new Error("Company not found!")
         }
-        await company.update(Id)
+        await company.update(tenantId, Id)
         res.status(200).json({
             success: true,
             message: "Company Successfully Updated",

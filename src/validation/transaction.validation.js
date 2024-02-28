@@ -7,8 +7,6 @@ const createTransactionSchema = Joi.object({
     accountId: Joi.number().integer().required(),
     amount: Joi.number().required(),
     description: Joi.string().allow(""),
-    createdBy: Joi.number().integer().required(),
-    updatedBy: Joi.number().integer().required(),
     clientId: Joi.number().integer().required()
 });
 
@@ -19,8 +17,6 @@ const updateTransactionSchema = Joi.object({
     accountId: Joi.number().integer().required(),
     amount: Joi.number().required(),
     description: Joi.string().allow(""),
-    createdBy: Joi.number().integer().required(),
-    updatedBy: Joi.number().integer().required(),
     clientId: Joi.number().integer().required()
 });
 

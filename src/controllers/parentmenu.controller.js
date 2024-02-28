@@ -13,11 +13,15 @@ const CreateParentmenu = async (req, res) => {
             return res.status(400).json({ success: false, message: error.message });
         };
 
-        let { menu_name, display_rank, status, createdBy, updatedBy } = req.body;
+        let { menu_name, display_rank, status } = req.body;
 
         const tenantId = token.decodedToken.tenantId;
+        const userId = token.decodedToken.userId;
 
-        let parentmenu = new Parentmenu(tenantId, menu_name, display_rank, status, createdBy, updatedBy);
+        let parentmenu = new Parentmenu(tenantId, menu_name, display_rank, status);
+
+        parentmenu.createdBy = userId;
+        parentmenu.updatedBy = userId;
 
         parentmenu = await parentmenu.save()
 
@@ -36,12 +40,13 @@ const CreateParentmenu = async (req, res) => {
 };
 
 const ListParentmenu = async (req, res, next) => {
-    const token = getDecodeToken(req)
+    const token = getDecodeToken(req);
+    const tenantId = token.decodedToken.tenantId;
     try {
         const { q = '', id } = req.query;
 
         if (id) {
-            const parentmenu = await Parentmenu.findById(id);
+            const parentmenu = await Parentmenu.findById(tenantId, id);
 
             if (parentmenu[0].length === 0) {
                 return res.status(404).json({ success: false, message: 'Parentmenu not found' });
@@ -50,7 +55,7 @@ const ListParentmenu = async (req, res, next) => {
             return res.status(200).json({ success: true, message: 'parentmenu found', data: parentmenu[0][0] });
         }
 
-        const parentmenuResult = await Parentmenu.findAll(token.decodedToken.tenantId);;
+        const parentmenuResult = await Parentmenu.findAll(tenantId);;
         let responseData = {
             success: true,
             message: 'Parentmenu List Successfully!',
@@ -95,12 +100,13 @@ const ListParentmenu = async (req, res, next) => {
 };
 
 const ActiveParentmenu = async (req, res, next) => {
-    const token = getDecodeToken(req)
+    const token = getDecodeToken(req);
+    const tenantId = token.decodedToken.tenantId;
     try {
         const { q = '', id } = req.query;
 
         if (id) {
-            const parentmenu = await Parentmenu.findById(id);
+            const parentmenu = await Parentmenu.findById(tenantId, id);
 
             if (parentmenu[0].length === 0) {
                 return res.status(404).json({ success: false, message: 'Parentmenu not found' });
@@ -109,7 +115,7 @@ const ActiveParentmenu = async (req, res, next) => {
             return res.status(200).json({ success: true, message: 'parentmenu found', data: parentmenu[0][0] });
         }
 
-        const parentmenuResult = await Parentmenu.findActiveAll(token.decodedToken.tenantId);
+        const parentmenuResult = await Parentmenu.findActiveAll(tenantId);
         let responseData = {
             success: true,
             message: 'Parentmenu List Successfully!',
@@ -154,9 +160,11 @@ const ActiveParentmenu = async (req, res, next) => {
 };
 
 const getParentmenuById = async (req, res, next) => {
+    const token = getDecodeToken(req);
+    const tenantId = token.decodedToken.tenantId;
     try {
         let Id = req.params.id;
-        let [parentmenu, _] = await Parentmenu.findById(Id);
+        let [parentmenu, _] = await Parentmenu.findById(tenantId, Id);
 
         res.status(200).json({
             success: true,
@@ -170,6 +178,8 @@ const getParentmenuById = async (req, res, next) => {
 };
 
 const deleteParentmenu = async (req, res, next) => {
+    const token = getDecodeToken(req);
+    const tenantId = token.decodedToken.tenantId;
     try {
         let parentId = req.params.id;
 
@@ -179,7 +189,7 @@ const deleteParentmenu = async (req, res, next) => {
             return res.status(200).json({ success: false, message: message });
         }
 
-        await Parentmenu.delete(parentId);
+        await Parentmenu.delete(tenantId, parentId);
 
         res.status(200).json({
             success: true,
@@ -192,25 +202,28 @@ const deleteParentmenu = async (req, res, next) => {
 };
 
 const updateParentmenu = async (req, res, next) => {
+    const token = getDecodeToken(req);
+    const tenantId = token.decodedToken.tenantId;
+    const userId = token.decodedToken.userId;
     try {
-        const token = getDecodeToken(req);
 
         const { error } = updateParentMenuSchema.validate(req.body);
         if (error) {
             return res.status(400).json({ success: false, message: error.message });
         };
 
-        let { menu_name, display_rank, status, createdBy, updatedBy } = req.body;
+        let { menu_name, display_rank, status } = req.body;
 
-        const tenantId = token.decodedToken.tenantId;
+        let parentmenu = new Parentmenu(tenantId, menu_name, display_rank, status)
 
-        let parentmenu = new Parentmenu(tenantId, menu_name, display_rank, status, createdBy, updatedBy)
+        parentmenu.updatedBy = userId
+
         let Id = req.params.id;
-        let [findparentmenu, _] = await Parentmenu.findById(Id);
+        let [findparentmenu, _] = await Parentmenu.findById(tenantId, Id);
         if (!findparentmenu) {
             throw new Error("ParentMenu not found!")
         }
-        await parentmenu.update(Id)
+        await parentmenu.update(tenantId, Id)
         res.status(200).json({
             success: true,
             message: "ParentMenu Successfully Updated",

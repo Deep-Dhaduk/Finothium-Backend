@@ -8,9 +8,7 @@ const createTenantSchema = Joi.object({
     email: Joi.string().required(),
     startdate: Joi.string().required(),
     enddate: Joi.allow(null).optional(),
-    status:Joi.number().integer().required(),
-    createdBy: Joi.number().integer().required(),
-    updatedBy: Joi.number().integer().required(),
+    status:Joi.number().integer().required()
 });
 
 const updateTenantSchema = Joi.object({
@@ -21,9 +19,7 @@ const updateTenantSchema = Joi.object({
     email: Joi.string().required(),
     startdate: Joi.string().required(),
     enddate: Joi.allow(null).optional(),
-    status:Joi.number().integer().required(),
-    createdBy: Joi.number().integer().required(),
-    updatedBy: Joi.number().integer().required(),
+    status:Joi.number().integer().required()
 });
 
 module.exports = {

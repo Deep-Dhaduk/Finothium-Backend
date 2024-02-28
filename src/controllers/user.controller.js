@@ -120,7 +120,7 @@ const loginUser = async (req, res) => {
 
         const companyResult = await CompanyAccess.findAllByCompanyAccess(user[0].tenantId, user[0].id);
 
-        const roleResult = await Role.findById(user[0].roleId);
+        const roleResult = await Role.findById(user[0].tenantId, user[0].roleId);
 
         const userWithCompanies = {
             ...user[0],
@@ -306,7 +306,7 @@ const ListUser = async (req, res, next) => {
                 if (user.profile_image_filename) {
                     user.profile_image_filename = `${baseURL}/Images/Profile_Images/${user.profile_image_filename}`;
                 }
-                user.companyNames = user.companyNames.split(',').join(', ');
+                user.companyNames = user.companyNames.replaceAll(',', ', ');
             } else {
                 user.companies = [];
             }
@@ -425,11 +425,9 @@ const getUserById = async (req, res, next) => {
             return res.status(404).json({ success: false, message: 'User not found' });
         }
 
-        // Convert the companyNames and companyIds strings to arrays
         user[0].companyNames = user[0].companyNames ? user[0].companyNames.split(',') : [];
         user[0].companyIds = user[0].companyIds ? user[0].companyIds.split(',').map(Number) : [];
 
-        // Prepend baseURL to profile_image_filename
         if (user[0].profile_image_filename) {
             user[0].profile_image_filename = `${baseURL}/Images/Profile_Images/${user[0].profile_image_filename}`;
         }

@@ -79,19 +79,19 @@ class User {
         let sql = `
             SELECT u.*,
                    r.roleName,
-                   GROUP_CONCAT(c.company_name) AS companyNames,
+                   GROUP_CONCAT(c.company_name ORDER BY c.company_name ASC) AS companyNames,
                    DATE_SUB(u.createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn,
                    DATE_SUB(u.updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn
             FROM user_master u
-            LEFT JOIN role_master r ON u.roleId = r.id
-            LEFT JOIN company_access ca ON u.id = ca.user_id
-            LEFT JOIN company_master c ON ca.company_id = c.id
+            LEFT JOIN role_master r ON u.tenantId = r.tenantId AND u.roleId = r.id
+            LEFT JOIN company_access ca ON u.tenantId = ca.tenantId AND u.id = ca.user_id
+            LEFT JOIN company_master c ON u.tenantId = c.tenantId AND ca.company_id = c.id
         `;
         if (tenantId) {
             sql += ` WHERE u.tenantId = '${tenantId}'`;
         }
         sql += 'GROUP BY u.id';
-        sql += " ORDER BY fullname ASC";
+        sql += " ORDER BY fullname ASC, u.id";
         return db.execute(sql);
     }
 
@@ -103,9 +103,9 @@ class User {
                    DATE_SUB(u.createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn,
                    DATE_SUB(u.updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn
             FROM user_master u
-            LEFT JOIN role_master r ON u.roleId = r.id
-            LEFT JOIN company_access ca ON u.id = ca.user_id
-            LEFT JOIN company_master c ON ca.company_id = c.id
+            LEFT JOIN role_master r ON u.tenantId = r.tenantId AND u.roleId = r.id
+            LEFT JOIN company_access ca ON u.tenantId = ca.tenantId AND u.id = ca.user_id
+            LEFT JOIN company_master c ON u.tenantId = c.tenantId AND ca.company_id = c.id
             WHERE u.status = 1
         `;
         if (tenantId) {
@@ -117,7 +117,21 @@ class User {
     }
 
     static findById(id) {
-        let sql = `SELECT * FROM user_master WHERE id = ${id}`;
+        let sql = ` SELECT u.*,
+        r.roleName,
+        GROUP_CONCAT(c.company_name) AS companyNames,
+        DATE_SUB(u.createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn,
+        DATE_SUB(u.updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn
+        FROM user_master u
+        LEFT JOIN role_master r ON u.tenantId = r.tenantId AND u.roleId = r.id
+        LEFT JOIN company_access ca ON u.tenantId = ca.tenantId AND u.id = ca.user_id
+        LEFT JOIN company_master c ON u.tenantId = c.tenantId AND ca.company_id = c.id
+    `;
+        if (tenantId) {
+            sql += ` WHERE u.tenantId = '${tenantId}'`;
+        }
+        sql += ` AND u.id = ${id}`
+        sql += 'GROUP BY u.id';
         return db.execute(sql)
     }
 
@@ -128,9 +142,9 @@ class User {
                    GROUP_CONCAT(c.id) AS companyIds,
                    GROUP_CONCAT(c.company_name) AS companyNames
             FROM user_master u
-            LEFT JOIN role_master r ON u.roleId = r.id
-            LEFT JOIN company_access ca ON u.id = ca.user_id
-            LEFT JOIN company_master c ON ca.company_id = c.id
+            LEFT JOIN role_master r ON u.tenantId = r.tenantId AND u.roleId = r.id
+            LEFT JOIN company_access ca ON u.tenantId = ca.tenantId AND u.id = ca.user_id
+            LEFT JOIN company_master c ON u.tenantId = c.tenantId AND ca.company_id = c.id
             WHERE u.id = ${userId}
             GROUP BY u.id
         `;

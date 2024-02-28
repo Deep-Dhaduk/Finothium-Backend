@@ -57,14 +57,14 @@ const ListPaymentReport = async (req, res, next) => {
         report[0].forEach(transaction => {
             const PaymentId = transaction.payment_type_Id;
             const PaymentName = transaction.payment_type_name;
-            const PaidAmount = parseFloat(transaction.PaidAmount);
-            const ReceiveAmount = parseFloat(transaction.ReceiveAmount);
+            const PaidAmount = +(parseFloat(transaction.PaidAmount)).toFixed(2);
+            const ReceiveAmount = +(parseFloat(transaction.ReceiveAmount)).toFixed(2);
 
             if (paymentMap.has(PaymentId)) {
                 const existingData = paymentMap.get(PaymentId);
-                existingData.PaidAmount += PaidAmount;
-                existingData.ReceiveAmount += ReceiveAmount;
-                existingData.BalanceAmount = existingData.ReceiveAmount - existingData.PaidAmount;
+                existingData.PaidAmount = +(existingData.PaidAmount + PaidAmount).toFixed(2);
+                existingData.ReceiveAmount = +(existingData.ReceiveAmount + ReceiveAmount).toFixed(2);
+                existingData.BalanceAmount = +(existingData.ReceiveAmount - existingData.PaidAmount).toFixed(2);
                 existingData.paymentDetails.push(reportTransaction(transaction));
             } else {
                 paymentMap.set(PaymentId, {
@@ -72,7 +72,7 @@ const ListPaymentReport = async (req, res, next) => {
                     PaymentName,
                     PaidAmount,
                     ReceiveAmount,
-                    BalanceAmount: ReceiveAmount - PaidAmount,
+                    BalanceAmount: +(ReceiveAmount - PaidAmount).toFixed(2),
                     paymentDetails: [reportTransaction(transaction)]
                 });
             }
@@ -160,14 +160,14 @@ const ListClientReport = async (req, res, next) => {
         report[0].forEach(transaction => {
             const clientId = transaction.clientId;
             const clientName = transaction.clientName;
-            const PaidAmount = parseFloat(transaction.PaidAmount);
-            const ReceiveAmount = parseFloat(transaction.ReceiveAmount);
+            const PaidAmount = +(parseFloat(transaction.PaidAmount)).toFixed(2);
+            const ReceiveAmount = +(parseFloat(transaction.ReceiveAmount)).toFixed(2);
 
             if (clientMap.has(clientId)) {
                 const existingData = clientMap.get(clientId);
-                existingData.PaidAmount += PaidAmount;
-                existingData.ReceiveAmount += ReceiveAmount;
-                existingData.BalanceAmount = existingData.ReceiveAmount - existingData.PaidAmount;
+                existingData.PaidAmount = +(existingData.PaidAmount + PaidAmount).toFixed(2);
+                existingData.ReceiveAmount = +(existingData.ReceiveAmount + ReceiveAmount).toFixed(2);
+                existingData.BalanceAmount = +(existingData.ReceiveAmount - existingData.PaidAmount).toFixed(2);
                 existingData.paymentDetails.push(reportTransaction(transaction));
             } else {
                 clientMap.set(clientId, {
@@ -175,7 +175,7 @@ const ListClientReport = async (req, res, next) => {
                     clientName,
                     PaidAmount,
                     ReceiveAmount,
-                    BalanceAmount: ReceiveAmount - PaidAmount,
+                    BalanceAmount: +(ReceiveAmount - PaidAmount).toFixed(2),
                     paymentDetails: [reportTransaction(transaction)]
                 });
             }
@@ -263,14 +263,14 @@ const ListCategoryReport = async (req, res, next) => {
         report[0].forEach(transaction => {
             const clientId = transaction.clientId;
             const clientName = transaction.clientName;
-            const PaidAmount = parseFloat(transaction.PaidAmount);
-            const ReceiveAmount = parseFloat(transaction.ReceiveAmount);
+            const PaidAmount = +(parseFloat(transaction.PaidAmount)).toFixed(2);
+            const ReceiveAmount = +(parseFloat(transaction.ReceiveAmount)).toFixed(2);
 
             if (clientMap.has(clientId)) {
                 const existingData = clientMap.get(clientId);
-                existingData.PaidAmount += PaidAmount;
-                existingData.ReceiveAmount += ReceiveAmount;
-                existingData.BalanceAmount = existingData.ReceiveAmount - existingData.PaidAmount;
+                existingData.PaidAmount = +(existingData.PaidAmount + PaidAmount).toFixed(2);
+                existingData.ReceiveAmount = +(existingData.ReceiveAmount + ReceiveAmount).toFixed(2);
+                existingData.BalanceAmount = +(existingData.ReceiveAmount - existingData.PaidAmount).toFixed(2);
                 existingData.paymentDetails.push(reportTransaction(transaction));
             } else {
                 clientMap.set(clientId, {
@@ -278,7 +278,7 @@ const ListCategoryReport = async (req, res, next) => {
                     clientName,
                     PaidAmount,
                     ReceiveAmount,
-                    BalanceAmount: ReceiveAmount - PaidAmount,
+                    BalanceAmount: +(ReceiveAmount - PaidAmount).toFixed(2),
                     paymentDetails: [reportTransaction(transaction)]
                 });
             }
@@ -367,14 +367,14 @@ const ListAccountReport = async (req, res, next) => {
         report[0].forEach(transaction => {
             const accountId = transaction.accountId;
             const accountName = transaction.account_name;
-            const PaidAmount = parseFloat(transaction.PaidAmount);
-            const ReceiveAmount = parseFloat(transaction.ReceiveAmount);
+            const PaidAmount = +(parseFloat(transaction.PaidAmount)).toFixed(2);
+            const ReceiveAmount = +(parseFloat(transaction.ReceiveAmount)).toFixed(2);
 
             if (accountMap.has(accountId)) {
                 const existingData = accountMap.get(accountId);
-                existingData.PaidAmount += PaidAmount;
-                existingData.ReceiveAmount += ReceiveAmount;
-                existingData.BalanceAmount = existingData.ReceiveAmount - existingData.PaidAmount;
+                existingData.PaidAmount = +(existingData.PaidAmount + PaidAmount).toFixed(2);
+                existingData.ReceiveAmount = +(existingData.ReceiveAmount + ReceiveAmount).toFixed(2);
+                existingData.BalanceAmount = +(existingData.ReceiveAmount - existingData.PaidAmount).toFixed(2);
                 existingData.accounts.push(reportTransaction(transaction));
             } else {
                 accountMap.set(accountId, {
@@ -382,7 +382,7 @@ const ListAccountReport = async (req, res, next) => {
                     accountName,
                     PaidAmount,
                     ReceiveAmount,
-                    BalanceAmount: ReceiveAmount - PaidAmount,
+                    BalanceAmount: +(ReceiveAmount - PaidAmount).toFixed(2),
                     accounts: [reportTransaction(transaction)]
                 });
             }
@@ -448,7 +448,6 @@ const ListGroupReport = async (req, res, next) => {
 
         const { tenantId } = tokenInfo.decodedToken;
         const { startDate, endDate, groupTypeIds, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, accountTypeIds } = req.body;
-        console.log(req.body);
 
         if (companyId && req.body.companyId && companyId !== req.body.companyId) {
             return res.status(403).json({
@@ -465,14 +464,14 @@ const ListGroupReport = async (req, res, next) => {
         report[0].forEach(transaction => {
             const GroupId = transaction.group_name_Id;
             const GroupName = transaction.account_group_name;
-            const PaidAmount = parseFloat(transaction.PaidAmount);
-            const ReceiveAmount = parseFloat(transaction.ReceiveAmount);
+            const PaidAmount = +(parseFloat(transaction.PaidAmount)).toFixed(2);
+            const ReceiveAmount = +(parseFloat(transaction.ReceiveAmount)).toFixed(2);
 
             if (groupMap.has(GroupId)) {
                 const existingData = groupMap.get(GroupId);
-                existingData.PaidAmount += PaidAmount;
-                existingData.ReceiveAmount += ReceiveAmount;
-                existingData.BalanceAmount = existingData.ReceiveAmount - existingData.PaidAmount;
+                existingData.PaidAmount = +(existingData.PaidAmount + PaidAmount).toFixed(2);
+                existingData.ReceiveAmount = +(existingData.ReceiveAmount + ReceiveAmount).toFixed(2);
+                existingData.BalanceAmount = +(existingData.ReceiveAmount - existingData.PaidAmount).toFixed(2);
                 existingData.groupDetails.push(reportTransaction(transaction));
             } else {
                 groupMap.set(GroupId, {
@@ -480,7 +479,7 @@ const ListGroupReport = async (req, res, next) => {
                     GroupName,
                     PaidAmount,
                     ReceiveAmount,
-                    BalanceAmount: ReceiveAmount - PaidAmount,
+                    BalanceAmount: +(ReceiveAmount - PaidAmount).toFixed(2),
                     groupDetails: [reportTransaction(transaction)]
                 });
             }
@@ -634,14 +633,14 @@ const ListAccountTypeReport = async (req, res, next) => {
         report[0].forEach(transaction => {
             const accountTypeId = transaction.account_type_Id;
             const accountTypeName = transaction.account_type_name;
-            const PaidAmount = parseFloat(transaction.PaidAmount);
-            const ReceiveAmount = parseFloat(transaction.ReceiveAmount);
+            const PaidAmount = +(parseFloat(transaction.PaidAmount)).toFixed(2);
+            const ReceiveAmount = +(parseFloat(transaction.ReceiveAmount)).toFixed(2);
 
             if (accountTypeMap.has(accountTypeId)) {
                 const existingData = accountTypeMap.get(accountTypeId);
-                existingData.PaidAmount += PaidAmount;
-                existingData.ReceiveAmount += ReceiveAmount;
-                existingData.BalanceAmount = existingData.ReceiveAmount - existingData.PaidAmount;
+                existingData.PaidAmount = +(existingData.PaidAmount + PaidAmount).toFixed(2);
+                existingData.ReceiveAmount = +(existingData.ReceiveAmount + ReceiveAmount).toFixed(2);
+                existingData.BalanceAmount = +(existingData.ReceiveAmount - existingData.PaidAmount).toFixed(2);
                 existingData.paymentDetails.push(reportTransaction(transaction));
             } else {
                 accountTypeMap.set(accountTypeId, {
@@ -649,7 +648,7 @@ const ListAccountTypeReport = async (req, res, next) => {
                     accountTypeName,
                     PaidAmount,
                     ReceiveAmount,
-                    BalanceAmount: ReceiveAmount - PaidAmount,
+                    BalanceAmount: +(ReceiveAmount - PaidAmount).toFixed(2),
                     paymentDetails: [reportTransaction(transaction)]
                 });
             }

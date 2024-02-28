@@ -1,10 +1,12 @@
 const db = require('../db/dbconnection');
 
 class Dashboard {
-    static async calculateDashboardAmounts(tenantId, companyId) {
+    static async calculateDashboardAmounts(tenantId, companyId, startDate = null, endDate = null) {
         try {
-            let sql = "CALL calculate_dashboard_amounts(?, ?)";
-            const [result, _] = await db.execute(sql, [tenantId, companyId]);
+            let sql = "CALL dashboard_amounts(?, ?, ?, ?)";
+            let params = [tenantId, companyId, startDate, endDate];
+
+            const [result, _] = await db.execute(sql, params);
             return result;
         } catch (error) {
             console.error('Error in calculateDashboardAmounts:', error);
@@ -12,10 +14,11 @@ class Dashboard {
         };
     };
 
-    static async getDashboardAccountData(tenantId, companyId) {
+    static async getDashboardAccountData(tenantId, companyId, startDate = null, endDate = null) {
         try {
-            let sql = "CALL dashboard_account(?, ?)";
-            const [result, _] = await db.execute(sql, [tenantId, companyId]);
+            let sql = "CALL dashboard_account(?, ?, ?, ?)";
+            let params = [tenantId, companyId, startDate, endDate];
+            const [result, _] = await db.execute(sql, params);
             return result;
         } catch (error) {
             console.error('Error in getDashboardAccountData:', error);
@@ -23,10 +26,11 @@ class Dashboard {
         };
     };
 
-    static async getDashboardGroupData(tenantId, companyId) {
+    static async getDashboardGroupData(tenantId, companyId, startDate = null, endDate = null) {
         try {
-            let sql = "CALL dashboard_group(?, ?)";
-            const [result, _] = await db.execute(sql, [tenantId, companyId]);
+            let sql = "CALL dashboard_group(?, ?, ?, ?)";
+            let params = [tenantId, companyId, startDate, endDate];
+            const [result, _] = await db.execute(sql, params);
             return result;
         } catch (error) {
             console.error('Error in getDashboardGroupData:', error);

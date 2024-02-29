@@ -45,7 +45,7 @@ const ListMenu = async (req, res, next) => {
         const { q = '', id } = req.query;
 
         if (id) {
-            const menu = await Menu.findById(tenantId, roleId, id);
+            const menu = await Menu.findById(tenantId, id);
 
             if (menu[0].length === 0) {
                 return res.status(404).json({ success: false, message: 'Menu not found' });
@@ -54,7 +54,7 @@ const ListMenu = async (req, res, next) => {
             return res.status(200).json({ success: true, message: 'Menu found', data: menu[0][0] });
         }
 
-        const menuResult = await Menu.findAll(tenantId, roleId);
+        const menuResult = await Menu.findAll(tenantId);
         let responseData = {
             success: true,
             message: 'Menu List Successfully!',

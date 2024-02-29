@@ -127,11 +127,8 @@ class User {
         LEFT JOIN company_access ca ON u.tenantId = ca.tenantId AND u.id = ca.user_id
         LEFT JOIN company_master c ON u.tenantId = c.tenantId AND ca.company_id = c.id
     `;
-        if (tenantId) {
-            sql += ` WHERE u.tenantId = '${tenantId}'`;
-        }
         sql += ` AND u.id = ${id}`
-        sql += 'GROUP BY u.id';
+        sql += ' GROUP BY u.id';
         return db.execute(sql)
     }
 

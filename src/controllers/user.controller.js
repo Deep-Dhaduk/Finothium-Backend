@@ -11,6 +11,71 @@ const { createUserSchema, updateUserSchema } = require('../validation/user.valid
 const { getDecodeToken } = require('../middlewares/decoded');
 const baseURL = process.env.API_BASE_URL;
 
+const loginUser = async (req, res) => {
+    try {
+        const { email, password } = req.body;
+
+        const [user, _] = await User.findByEmail(email);
+
+        if (!user[0]) {
+            return res.status(401).json({
+                message: 'Invalid email or password'
+            });
+        }
+        if (user[0].profile_image_filename) {
+            user[0].profile_image_filename = `${baseURL}/Images/Profile_Images/${user[0].profile_image_filename}`;
+        }
+
+        const isValidPassword = await User.comparePassword(password, user[0].password);
+
+        if (!isValidPassword) {
+            return res.status(401).json({
+                message: 'Invalid email or password'
+            });
+        }
+
+        const companyResult = await CompanyAccess.findAllByCompanyAccess(user[0].tenantId, user[0].id);
+
+        const roleResult = await Role.findById(user[0].tenantId, user[0].roleId);
+
+        const userWithCompanies = {
+            ...user[0],
+            companies: companyResult[0].map(comp => ({ companyId: comp.company_id, companyName: comp.company_name })),
+            roleName: roleResult[0][0].rolename
+        };
+
+        let selectedCompany = userWithCompanies.companies.length > 0 ? userWithCompanies.companies[0] : null;
+
+        const tokenPayload = {
+            userId: userWithCompanies.id,
+            email: userWithCompanies.email,
+            tenantId: userWithCompanies.tenantId,
+            roleId: userWithCompanies.roleId,
+            companyId: selectedCompany.companyId
+        };
+
+        const token = jwt.sign(
+            tokenPayload,
+            process.env.JWT_SECRET,
+            { expiresIn: process.env.JWT_EXPIRES_IN }
+        );
+
+
+        return res.status(200).json({
+            success: true,
+            message: 'Login successful',
+            userData: { ...userWithCompanies },
+            token: token
+        });
+
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            message: 'Internal server error'
+        });
+    }
+};
+
 const CreateUser = async (req, res) => {
     const token = getDecodeToken(req)
     try {
@@ -95,70 +160,6 @@ const CreateUser = async (req, res) => {
     }
 };
 
-const loginUser = async (req, res) => {
-    try {
-        const { email, password } = req.body;
-
-        const [user, _] = await User.findByEmail(email);
-
-        if (!user[0]) {
-            return res.status(401).json({
-                message: 'Invalid email or password'
-            });
-        }
-        if (user[0].profile_image_filename) {
-            user[0].profile_image_filename = `${baseURL}/Images/Profile_Images/${user[0].profile_image_filename}`;
-        }
-
-        const isValidPassword = await User.comparePassword(password, user[0].password);
-
-        if (!isValidPassword) {
-            return res.status(401).json({
-                message: 'Invalid email or password'
-            });
-        }
-
-        const companyResult = await CompanyAccess.findAllByCompanyAccess(user[0].tenantId, user[0].id);
-
-        const roleResult = await Role.findById(user[0].tenantId, user[0].roleId);
-
-        const userWithCompanies = {
-            ...user[0],
-            companies: companyResult[0].map(comp => ({ companyId: comp.company_id, companyName: comp.company_name })),
-            roleName: roleResult[0][0].rolename
-        };
-
-        let selectedCompany = userWithCompanies.companies.length > 0 ? userWithCompanies.companies[0] : null;
-
-        const tokenPayload = {
-            userId: userWithCompanies.id,
-            email: userWithCompanies.email,
-            tenantId: userWithCompanies.tenantId,
-            roleId: userWithCompanies.roleId,
-            companyId: selectedCompany.companyId
-        };
-
-        const token = jwt.sign(
-            tokenPayload,
-            process.env.JWT_SECRET,
-            { expiresIn: process.env.JWT_EXPIRES_IN }
-        );
-
-
-        return res.status(200).json({
-            success: true,
-            message: 'Login successful',
-            userData: { ...userWithCompanies },
-            token: token
-        });
-
-    } catch (error) {
-        console.log(error);
-        return res.status(500).json({
-            message: 'Internal server error'
-        });
-    }
-};
 
 const changeCompany = async (req, res) => {
     try {
@@ -230,6 +231,7 @@ const findOneRec = async (req, res) => {
 
 const ListUser = async (req, res, next) => {
     const token = getDecodeToken(req);
+    const tenantId = token.decodedToken.tenantId
     try {
         const { q = '', id } = req.query;
 
@@ -324,6 +326,7 @@ const ListUser = async (req, res, next) => {
 
 const Activeuser = async (req, res, next) => {
     const token = getDecodeToken(req);
+    const tenantId = token.decodedToken.tenantId
     try {
         const { q = '', id } = req.query;
 
@@ -585,6 +588,8 @@ const verifyOTPAndUpdatePassword = async (req, res) => {
 };
 
 const changePassword = async (req, res) => {
+    const token = getDecodeToken(req)
+    const tenantId = token.decodedToken.tenantId;
     try {
         const { oldPassword, newPassword, confirmPassword } = req.body;
 
@@ -630,6 +635,7 @@ const changePassword = async (req, res) => {
 };
 
 const resetPassword = async (req, res) => {
+    const token = getDecodeToken(req)
     try {
         const { newPassword, confirmPassword } = req.body;
 

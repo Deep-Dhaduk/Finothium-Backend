@@ -58,23 +58,12 @@ class Client {
     };
 
     static getAllClientDetails(tenantId, companyId, type) {
-        let whereClause = "";
-
-        if (tenantId) {
-            whereClause += ` WHERE tenantId = '${tenantId}'`;
-        }
+        let whereClause = ` WHERE tenantId = '${tenantId}'`;
         if (companyId) {
-            if (whereClause !== "") {
-                whereClause += ` AND companyId = '${companyId}'`;
-            } else {
-                whereClause += ` WHERE companyId = '${companyId}'`;
-            }
-        } if (type) {
-            if (whereClause !== "") {
-                whereClause += ` AND type = '${type}'`;
-            } else {
-                whereClause += ` WHERE type = '${type}'`;
-            }
+            whereClause += ` AND companyId = '${companyId}'`;
+        }
+        if (type) {
+            whereClause += ` AND (type = 'Both' OR type = '${type}')`;
         }
 
         const sql = `SELECT *, DATE_SUB(createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn, DATE_SUB(updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn FROM client_master${whereClause}`;

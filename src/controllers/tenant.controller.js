@@ -1,5 +1,6 @@
 const Tenant = require("../models/tenant");
 const { use } = require("../routes/company.route");
+const { getDecodeToken } = require('../middlewares/decoded');
 const { createTenantSchema, updateTenantSchema } = require('../validation/tenant.validation');
 
 const CreateTenant = async (req, res) => {

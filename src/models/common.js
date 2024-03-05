@@ -10,20 +10,6 @@ class Common {
         this.updatedBy = updatedBy;
     }
 
-    dateandtime = () => {
-
-        let d = new Date();
-        let yyyy = d.getFullYear();
-        let mm = d.getMonth() + 1;
-        let dd = d.getDate();
-        let hours = d.getUTCHours();
-        let minutes = d.getUTCMinutes();
-        let seconds = d.getUTCSeconds();
-
-        return `${yyyy}-${mm}-${dd}` + " " + `${hours}:${minutes}:${seconds}`;
-    }
-
-
     async save() {
         try {
             let sql = `
@@ -43,9 +29,9 @@ class Common {
                 '${this.type}',
                 '${this.status}',
                 '${this.createdBy}',
-                '${this.dateandtime()}',
+                UTC_TIMESTAMP(),
                 '${this.updatedBy}',
-                '${this.dateandtime()}'
+                UTC_TIMESTAMP()
             )`;
             return db.execute(sql)
 
@@ -55,15 +41,20 @@ class Common {
     };
 
     static getAllMasters(tenantId, type) {
-        let sql = "SELECT *, DATE_SUB(createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn, DATE_SUB(updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn FROM common_master";
-        if (tenantId) {
-            sql += ` WHERE tenantId = '${tenantId}'`;
-        }
+        let sql = `SELECT common_id,
+                          name,
+                          type,
+                          status,
+                          createdBy,
+                          get_datetime_in_server_datetime(createdOn) AS createdOn,
+                          updatedBy,
+                          get_datetime_in_server_datetime(updatedOn) AS updatedOn
+         FROM common_master
+         WHERE tenantId = ${tenantId}
+         `
         if (type) {
             if (tenantId) {
                 sql += ` AND type = '${type}'`;
-            } else {
-                sql += ` WHERE type = '${type}'`;
             }
         }
         return sql
@@ -93,7 +84,7 @@ class Common {
     };
 
     async update(tenantId, id) {
-        let sql = `UPDATE common_master SET name='${this.name}',type='${this.type}',status='${this.status}', updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}' WHERE tenantId = ${tenantId} AND common_id = ${id}`;
+        let sql = `UPDATE common_master SET name='${this.name}',type='${this.type}',status='${this.status}', updatedBy='${this.updatedBy}',updatedOn=UTC_TIMESTAMP() WHERE tenantId = ${tenantId} AND common_id = ${id}`;
         return db.execute(sql)
 
     };

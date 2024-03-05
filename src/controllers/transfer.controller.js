@@ -2,6 +2,20 @@ const Transfer = require("../models/transfer");
 const { createTransferSchema, updateTransferSchema } = require('../validation/transfer.validation');
 const { getDecodeToken } = require('../middlewares/decoded');
 
+let transferResultSearch = (q, transferResult) => {
+    if (q) {
+        const queryLowered = q.toLowerCase();
+        return transferResult.filter(transfer =>
+            (transfer.payment_type_name && typeof transfer.payment_type_name === 'string' && transfer.payment_type_name.toLowerCase().includes(queryLowered)) ||
+            (transfer.fromAccountName && typeof transfer.fromAccountName === 'string' && transfer.fromAccountName.toLowerCase().includes(queryLowered)) ||
+            (transfer.toAccountName && typeof transfer.toAccountName === 'string' && transfer.toAccountName.toLowerCase().includes(queryLowered))
+        );
+    }
+    else {
+        return transferResult
+    }
+};
+
 const CreateTransfer = async (req, res) => {
     const token = getDecodeToken(req)
     try {
@@ -63,6 +77,7 @@ const ListTransfer = async (req, res, next) => {
 
         let transferResult = await Transfer.findAll(tenantId, companyId, startDate, endDate, paymentTypeIds, accountTypeIds, limit);
 
+        transferResult[0] = transferResultSearch(q, transferResult[0]);
 
         let responseData = {
             success: true,
@@ -149,7 +164,7 @@ const updateTransfer = async (req, res, next) => {
             return res.status(400).json({ success: false, message: error.message });
         };
 
-        let { transactionDate, paymentType_Id, fromAccount, toAccount, amount, description} = req.body;
+        let { transactionDate, paymentType_Id, fromAccount, toAccount, amount, description } = req.body;
 
         if (fromAccount === toAccount) {
             return res.status(400).json({ success: false, message: "From and to accounts cannot be the same." });

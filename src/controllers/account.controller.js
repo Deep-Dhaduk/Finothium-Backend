@@ -4,6 +4,23 @@ const { getDecodeToken } = require('../middlewares/decoded');
 const db = require('../db/dbconnection');
 const message = ("This data is in used, you can't delete it.");
 
+let accountResultSearch = (q, accountResult) => {
+    if (q) {
+        const queryLowered = q.toLowerCase();
+        return accountResult.filter(account =>
+            (account.account_name && account.account_name.toLowerCase().includes(queryLowered)) ||
+            (account.group_name && account.group_name.toLowerCase().includes(queryLowered)) ||
+            (account.join_date && account.join_date.toLowerCase().includes(queryLowered)) ||
+            (account.exit_date && account.exit_date.toLowerCase().includes(queryLowered)) ||
+            (account.account_type_name && account.account_type_name.toLowerCase().includes(queryLowered)) ||
+            (typeof account.status === 'string' && account.status.toLowerCase() === "active" && "active".includes(queryLowered))
+        );
+    }
+    else {
+        return accountResult
+    }
+};
+
 const CreateAccount = async (req, res) => {
     const token = getDecodeToken(req);
 
@@ -60,41 +77,14 @@ const ListAccount = async (req, res, next) => {
 
         const accountResult = await Account.findAll(tenantId, companyId);
 
+        accountResult[0] = accountResultSearch(q, accountResult[0]);
+
         let responseData = {
             success: true,
             message: 'Account List Successfully!',
             data: accountResult[0]
         };
 
-        responseData.data = responseData.data.map(account => {
-            const { tenantId, ...rest } = account;
-            return rest;
-        })
-
-        if (q) {
-            const queryLowered = q.toLowerCase();
-            const filteredData = accountResult[0].filter(account =>
-                (account.account_name && account.account_name.toLowerCase().includes(queryLowered)) ||
-                (account.group_name && account.group_name.toLowerCase().includes(queryLowered)) ||
-                (account.account_type_name && account.account_type_name.toLowerCase().includes(queryLowered)) ||
-                (typeof account.status === 'string' && account.status.toLowerCase() === "active" && "active".includes(queryLowered))
-            );
-
-            if (filteredData.length > 0) {
-                responseData = {
-                    ...responseData,
-                    data: filteredData,
-                    total: filteredData.length
-                };
-            } else {
-                responseData = {
-                    ...responseData,
-                    message: 'No matching menu found',
-                    data: [],
-                    total: 0
-                };
-            }
-        }
         res.status(200).json(responseData);
     } catch (error) {
         console.log(error);
@@ -121,41 +111,14 @@ const ActiveAccount = async (req, res, next) => {
 
         const accountResult = await Account.findActiveAll(tenantId, companyId);
 
+        accountResult[0] = accountResultSearch(q, accountResult[0]);
+
         let responseData = {
             success: true,
             message: 'Account List Successfully!',
             data: accountResult[0]
         };
 
-        responseData.data = responseData.data.map(account => {
-            const { tenantId, ...rest } = account;
-            return rest;
-        })
-
-        if (q) {
-            const queryLowered = q.toLowerCase();
-            const filteredData = accountResult[0].filter(account =>
-                (account.account_name && account.account_name.toLowerCase().includes(queryLowered)) ||
-                (account.group_name && account.group_name.toLowerCase().includes(queryLowered)) ||
-                (account.account_type_name && account.account_type_name.toLowerCase().includes(queryLowered)) ||
-                (typeof account.status === 'string' && account.status.toLowerCase() === "active" && "active".includes(queryLowered))
-            );
-
-            if (filteredData.length > 0) {
-                responseData = {
-                    ...responseData,
-                    data: filteredData,
-                    total: filteredData.length
-                };
-            } else {
-                responseData = {
-                    ...responseData,
-                    message: 'No matching menu found',
-                    data: [],
-                    total: 0
-                };
-            }
-        }
         res.status(200).json(responseData);
     } catch (error) {
         console.log(error);

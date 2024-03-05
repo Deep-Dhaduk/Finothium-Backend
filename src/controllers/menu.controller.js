@@ -2,6 +2,18 @@ const Menu = require("../models/menu");
 const { createMenuSchema } = require('../validation/menu.validation');
 const { getDecodeToken } = require('../middlewares/decoded');
 
+let menuResultSearch = (q, menuResult) => {
+    if (q) {
+        const queryLowered = q.toLowerCase();
+        return menuResult.filter(menu =>
+            (typeof menu.status === 'string' && menu.status.toLowerCase() === "active" && menu.name.includes(queryLowered))`${menu.name} ${menu.description}`
+        );
+    }
+    else {
+        return menuResult
+    }
+};
+
 const CreateMenu = async (req, res) => {
     try {
         const token = getDecodeToken(req);
@@ -55,6 +67,9 @@ const ListMenu = async (req, res, next) => {
         }
 
         const menuResult = await Menu.findAll(tenantId);
+
+        menuResult[0] = menuResultSearch(q, menuResult[0]);
+
         let responseData = {
             success: true,
             message: 'Menu List Successfully!',
@@ -65,28 +80,6 @@ const ListMenu = async (req, res, next) => {
             const { id, tenantId, ...rest } = menu;
             return rest;
         })
-
-        if (q) {
-            const queryLowered = q.toLowerCase();
-            const filteredData = menuResult[0].filter(menu =>
-                (typeof menu.status === 'string' && menu.status.toLowerCase() === "active" && menu.name.includes(queryLowered))`${menu.name} ${menu.description}`
-            );
-
-            if (filteredData.length > 0) {
-                responseData = {
-                    ...responseData,
-                    data: filteredData,
-                    total: filteredData.length
-                };
-            } else {
-                responseData = {
-                    ...responseData,
-                    message: 'No matching menu found',
-                    data: [],
-                    total: 0
-                };
-            }
-        }
 
         res.status(200).json(responseData);
     } catch (error) {

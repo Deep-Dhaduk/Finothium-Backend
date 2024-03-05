@@ -15,20 +15,7 @@ class Company {
         this.status = status;
         this.createdBy = createdBy;
         this.updatedBy = updatedBy;
-    }
-
-    dateandtime = () => {
-
-        let d = new Date();
-        let yyyy = d.getFullYear();
-        let mm = d.getMonth() + 1;
-        let dd = d.getDate();
-        let hours = d.getUTCHours();
-        let minutes = d.getUTCMinutes();
-        let seconds = d.getUTCSeconds();
-
-        return `${yyyy}-${mm}-${dd}` + " " + `${hours}:${minutes}:${seconds}`;
-    }
+    };
 
     async save() {
         try {
@@ -63,19 +50,69 @@ class Company {
                 '${this.gstin} ',
                 '${this.status}',
                 '${this.createdBy}',
-                '${this.dateandtime()}',
+                UTC_TIMESTAMP(),
                 '${this.updatedBy}',
-                '${this.dateandtime()}'
+                UTC_TIMESTAMP()
             )`;
-            return db.execute(sql)
+            const result = await db.execute(sql);
+
+            const InsertId = `SELECT LAST_INSERT_ID() as companyId`;
+            const [rows] = await db.execute(InsertId);
+            const companyId = rows[0].companyId;
+
+            const insertCompanySetting = `
+            INSERT INTO company_setting (tenantId, companyId, fiscal_start_month, default_date_option, createdBy,createdOn, updatedBy, updatedOn)
+            VALUES ('${this.tenantId}', '${companyId}', 4, 1, '${this.createdBy}', UTC_TIMESTAMP(), '${this.updatedBy}', UTC_TIMESTAMP())`;
+            await db.execute(insertCompanySetting);
+
+            return result;
+
         } catch (error) {
             throw error;
         }
     };
 
+    static AllCompany(tenantId) {
+        return `  SELECT
+        c.id,
+        c.company_name,
+        c.legal_name,
+        c.authorize_person_name,
+        c.address,
+        c.contact_no,
+        c.email,
+        c.website,
+        c.pan,
+        c.gstin,
+        c.status,
+        c.createdBy,
+        get_datetime_in_server_datetime(c.createdOn) AS createdOn,
+        c.updatedBy,
+        get_datetime_in_server_datetime(c.updatedOn) AS updatedOn
+    FROM
+        company_master c
+    WHERE
+        c.tenantId = ${tenantId}
+      `;
+    }
+
     static findAllByUserId(tenantId, userId) {
         let sql = `
-            SELECT c.*
+            SELECT  c.id,
+            c.company_name,
+            c.legal_name,
+            c.authorize_person_name,
+            c.address,
+            c.contact_no,
+            c.email,
+            c.website,
+            c.pan,
+            c.gstin,
+            c.status,
+            c.createdBy,
+            get_datetime_in_server_datetime(c.createdOn) AS createdOn,
+            c.updatedBy,
+            get_datetime_in_server_datetime(c.updatedOn) AS updatedOn
             FROM company_master c
             INNER JOIN company_access ca ON c.id = ca.company_id
             WHERE c.tenantId = ${tenantId}
@@ -89,18 +126,28 @@ class Company {
     };
 
     static findAll(tenantId) {
-        let sql = `
-            SELECT c.*
-            FROM company_master c
-            WHERE c.tenantId = ${tenantId}
-        `;
+        let sql = this.AllCompany(tenantId)
         sql += " ORDER BY c.company_name";
         return db.execute(sql);
     };
 
     static findActiveAllByUserId(tenantId, userId) {
         let sql = `
-            SELECT c.*
+            SELECT c.id,
+            c.company_name,
+            c.legal_name,
+            c.authorize_person_name,
+            c.address,
+            c.contact_no,
+            c.email,
+            c.website,
+            c.pan,
+            c.gstin,
+            c.status,
+            c.createdBy,
+            get_datetime_in_server_datetime(c.createdOn) AS createdOn,
+            c.updatedBy,
+            get_datetime_in_server_datetime(c.updatedOn) AS updatedOn
             FROM company_master c
             INNER JOIN company_access ca ON c.id = ca.company_id
             WHERE status =1 AND c.tenantId = ${tenantId}
@@ -114,18 +161,30 @@ class Company {
     };
 
     static findActiveAll(tenantId) {
-        let sql = `
-            SELECT c.*
-            FROM company_master c
-            WHERE status =1 AND c.tenantId = ${tenantId}
-            ORDER BY c.company_name
-        `;
+        let sql = this.AllCompany(tenantId)
+        sql += ` AND c.status = 1`
+        sql += `  ORDER BY c.company_name;`
+
         return db.execute(sql);
     };
 
     static findByIdWithUserId(tenantId, id, userId) {
         let sql = `
-            SELECT c.*
+            SELECT  c.id,
+            c.company_name,
+            c.legal_name,
+            c.authorize_person_name,
+            c.address,
+            c.contact_no,
+            c.email,
+            c.website,
+            c.pan,
+            c.gstin,
+            c.status,
+            c.createdBy,
+            get_datetime_in_server_datetime(c.createdOn) AS createdOn,
+            c.updatedBy,
+            get_datetime_in_server_datetime(c.updatedOn) AS updatedOn
             FROM company_master c
             INNER JOIN company_access ca ON c.id = ca.company_id
             WHERE c.tenantId = ${tenantId}
@@ -139,7 +198,21 @@ class Company {
 
     static findById(tenantId, id) {
         let sql = `
-            SELECT c.*
+            SELECT  c.id,
+            c.company_name,
+            c.legal_name,
+            c.authorize_person_name,
+            c.address,
+            c.contact_no,
+            c.email,
+            c.website,
+            c.pan,
+            c.gstin,
+            c.status,
+            c.createdBy,
+            get_datetime_in_server_datetime(c.createdOn) AS createdOn,
+            c.updatedBy,
+            get_datetime_in_server_datetime(c.updatedOn) AS updatedOn
             FROM company_master c
             INNER JOIN company_access ca ON c.id = ca.company_id
             WHERE c.tenantId = ${tenantId}
@@ -166,7 +239,7 @@ class Company {
                 gstin='${this.gstin}',
                 status='${this.status}',
                 updatedBy='${this.updatedBy}',
-                updatedOn='${this.dateandtime()}'
+                updatedOn=UTC_TIMESTAMP()
                 WHERE tenantId = ${tenantId} AND id = ${id}`;
         return db.execute(sql);
     };

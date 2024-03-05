@@ -14,18 +14,32 @@ class User {
         this.createdBy = createdBy;
         this.updatedBy = updatedBy;
         this.roleId = roleId;
-    }
+    };
 
-    dateandtime = () => {
-        let d = new Date();
-        let yyyy = d.getFullYear();
-        let mm = d.getMonth() + 1;
-        let dd = d.getDate();
-        let hours = d.getUTCHours();
-        let minutes = d.getUTCMinutes();
-        let seconds = d.getUTCSeconds();
-
-        return `${yyyy}-${mm}-${dd}` + " " + `${hours}:${minutes}:${seconds}`;
+    static getUser(tenantId) {
+        return `SELECT u.id,
+                   u.username,
+                   u.fullname,
+                   u.email,
+                   u.password,
+                   u.confirmpassword,
+                   u.profile_image,
+                   u.status,
+                   u.createdBy,
+                   get_datetime_in_server_datetime(u.createdOn) AS createdOn,
+                   u.updatedBy,
+                   get_datetime_in_server_datetime(u.updatedOn) AS updatedOn,
+                   u.otp,
+                   u.roleId,
+                   u.profile_image_filename,
+                   r.roleName,
+                   GROUP_CONCAT(c.company_name ORDER BY c.company_name ASC) AS companyNames
+            FROM user_master u
+            LEFT JOIN role_master r ON u.tenantId = r.tenantId AND u.roleId = r.id
+            LEFT JOIN company_access ca ON u.tenantId = ca.tenantId AND u.id = ca.user_id
+            LEFT JOIN company_master c ON u.tenantId = c.tenantId AND ca.company_id = c.id
+            WHERE u.tenantId = ${tenantId}
+        `;
     }
 
     async save() {
@@ -60,8 +74,8 @@ class User {
                 '${this.profile_image_filename}',
                 '${this.status}',
                 '${this.createdBy}',
-                '${this.dateandtime()}',
-                '${this.dateandtime()}',
+                UTC_TIMESTAMP(),
+                UTC_TIMESTAMP(),
                 '${this.roleId}'
             )`;
             const tmp = await db.execute(sql);
@@ -71,80 +85,36 @@ class User {
             throw error;
         }
     }
+
     static comparePassword(password, hashedPassword) {
         return bcrypt.compare(password, hashedPassword);
     }
 
     static findAll(tenantId) {
-        let sql = `
-            SELECT u.*,
-                   r.roleName,
-                   GROUP_CONCAT(c.company_name ORDER BY c.company_name ASC) AS companyNames,
-                   DATE_SUB(u.createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn,
-                   DATE_SUB(u.updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn
-            FROM user_master u
-            LEFT JOIN role_master r ON u.tenantId = r.tenantId AND u.roleId = r.id
-            LEFT JOIN company_access ca ON u.tenantId = ca.tenantId AND u.id = ca.user_id
-            LEFT JOIN company_master c ON u.tenantId = c.tenantId AND ca.company_id = c.id
-        `;
-        if (tenantId) {
-            sql += ` WHERE u.tenantId = '${tenantId}'`;
-        }
-        sql += 'GROUP BY u.id';
-        sql += " ORDER BY fullname ASC, u.id";
+        let sql = this.getUser(tenantId)
+        sql += ` GROUP BY u.id`;
+        sql += ` ORDER BY u.fullname ASC, u.id`;
         return db.execute(sql);
     }
 
     static findActiveAll(tenantId) {
-        let sql = `
-            SELECT u.*,
-                   r.roleName,
-                   GROUP_CONCAT(c.company_name) AS companyNames,
-                   DATE_SUB(u.createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn,
-                   DATE_SUB(u.updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn
-            FROM user_master u
-            LEFT JOIN role_master r ON u.tenantId = r.tenantId AND u.roleId = r.id
-            LEFT JOIN company_access ca ON u.tenantId = ca.tenantId AND u.id = ca.user_id
-            LEFT JOIN company_master c ON u.tenantId = c.tenantId AND ca.company_id = c.id
-            WHERE u.status = 1
-        `;
-        if (tenantId) {
-            sql += ` AND u.tenantId = '${tenantId}'`;
-        }
-        sql += 'GROUP BY u.id';
-        sql += " ORDER BY fullname ASC";
+        let sql = this.getUser(tenantId)
+        sql += ` GROUP BY u.id`;
+        sql += ` ORDER BY u.fullname ASC`;
         return db.execute(sql);
     }
 
-    static findById(id) {
-        let sql = ` SELECT u.*,
-        r.roleName,
-        GROUP_CONCAT(c.company_name) AS companyNames,
-        DATE_SUB(u.createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn,
-        DATE_SUB(u.updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn
-        FROM user_master u
-        LEFT JOIN role_master r ON u.tenantId = r.tenantId AND u.roleId = r.id
-        LEFT JOIN company_access ca ON u.tenantId = ca.tenantId AND u.id = ca.user_id
-        LEFT JOIN company_master c ON u.tenantId = c.tenantId AND ca.company_id = c.id
-    `;
+    static findById(tenantId, id) {
+        let sql = this.getUser(tenantId)
         sql += ` AND u.id = ${id}`
         sql += ' GROUP BY u.id';
         return db.execute(sql)
     }
 
-    static findOne(userId) {
-        let sql = `
-            SELECT u.*,
-                   r.roleName,
-                   GROUP_CONCAT(c.id) AS companyIds,
-                   GROUP_CONCAT(c.company_name) AS companyNames
-            FROM user_master u
-            LEFT JOIN role_master r ON u.tenantId = r.tenantId AND u.roleId = r.id
-            LEFT JOIN company_access ca ON u.tenantId = ca.tenantId AND u.id = ca.user_id
-            LEFT JOIN company_master c ON u.tenantId = c.tenantId AND ca.company_id = c.id
-            WHERE u.id = ${userId}
-            GROUP BY u.id
-        `;
+    static findOne(tenantId, id) {
+        let sql = this.getUser(tenantId)
+        sql += ` AND u.id = ${id}`
+        sql += ' GROUP BY u.id';
         return db.execute(sql);
     }
 
@@ -182,7 +152,7 @@ class User {
                     status='${this.status}',
                     createdBy='${this.createdBy}',
                     updatedBy='${this.updatedBy}',
-                    updatedOn='${this.dateandtime()}',
+                    updatedOn=UTC_TIMESTAMP(),
                     roleId='${this.roleId}'
                     ${profileImageQueryPart}
                 WHERE id = ${id}`;
@@ -199,7 +169,7 @@ class User {
                         UPDATE company_access
                         SET tenantId='${this.tenantId}',
                             user_id='${id}',
-                            updatedOn='${this.dateandtime()}'
+                            updatedOn=UTC_TIMESTAMP()
                         WHERE user_id = '${id}' AND company_id = '${companyId}'`;
 
                     await db.execute(updateCompanySql);
@@ -209,7 +179,7 @@ class User {
                 for (const newCompanyId of newCompanies) {
                     const addCompanySql = `
                         INSERT INTO company_access(tenantId, user_id, company_id, createdOn, updatedOn)
-                        VALUES('${this.tenantId}', '${id}', '${newCompanyId}', '${this.dateandtime()}', '${this.dateandtime()}')`;
+                        VALUES('${this.tenantId}', '${id}', '${newCompanyId}', UTC_TIMESTAMP(), UTC_TIMESTAMP())`;
                     await db.execute(addCompanySql);
                 }
 

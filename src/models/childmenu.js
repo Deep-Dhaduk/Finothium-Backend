@@ -45,9 +45,9 @@ class Childmenu {
                 '${this.display_rank}',
                 '${this.status}',
                 '${this.createdBy}',
-                '${this.dateandtime()}',
+                UTC_TIMESTAMP(),
                 '${this.updatedBy}',
-                '${this.dateandtime()}'
+                UTC_TIMESTAMP()
             )`;
             return db.execute(sql)
 
@@ -58,11 +58,17 @@ class Childmenu {
 
     static findChildmenuQuery(tenantId) {
         return `
-        SELECT c.*,
+        SELECT c.id,
+               c.menu_name,
+               c.parent_id,
+               c.display_rank,
+               c.status,
+               c.createdBy,
+               get_datetime_in_server_datetime(c.createdOn) AS createdOn,
+               c.updatedBy,
+               get_datetime_in_server_datetime(c.updatedOn) AS updatedOn,
                p.menu_name as parent_menu_name,
-               p.display_rank as parent_display_rank,
-               DATE_SUB(c.createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn,
-               DATE_SUB(c.updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn
+               p.display_rank as parent_display_rank
         FROM childmenu_master c
         LEFT JOIN parentmenu_master p ON c.tenantId = p.tenantId AND c.parent_id = p.id
         WHERE c.tenantId = ${tenantId}
@@ -93,7 +99,7 @@ class Childmenu {
     };
 
     async update(tenantId, id) {
-        let sql = `UPDATE childmenu_master SET menu_name='${this.menu_name}',parent_id='${this.parent_id}',display_rank='${this.display_rank}',status='${this.status}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}' WHERE tenantId = ${tenantId} AND id = ${id} `;
+        let sql = `UPDATE childmenu_master SET menu_name='${this.menu_name}',parent_id='${this.parent_id}',display_rank='${this.display_rank}',status='${this.status}',updatedBy='${this.updatedBy}',updatedOn=UTC_TIMESTAMP() WHERE tenantId = ${tenantId} AND id = ${id} `;
         return db.execute(sql)
 
     };

@@ -1,4 +1,5 @@
 const Report = require("../models/reports");
+const CompanySetting = require("../models/company_setting")
 const { getDecodeToken } = require('../middlewares/decoded');
 
 const reportTransaction = (transaction) => {
@@ -26,6 +27,23 @@ const reportTransaction = (transaction) => {
     };
 };
 
+let reportSearch = (q, report) => {
+    if (q) {
+        const queryLowered = q.toLowerCase();
+        return report.filter(report =>
+            (report.payment_type_name && report.payment_type_name.toLowerCase().includes(queryLowered)) ||
+            (report.account_name && report.account_name.toLowerCase().includes(queryLowered)) ||
+            (report.PaidAmount && report.PaidAmount.toString().toLowerCase().includes(queryLowered)) ||
+            (report.ReceiveAmount && report.ReceiveAmount.toString().toLowerCase().includes(queryLowered)) ||
+            (report.description && report.description.toLowerCase().includes(queryLowered)) ||
+            (report.clientName && report.clientName.toLowerCase().includes(queryLowered))
+        );
+    }
+    else {
+        return report
+    }
+};
+
 const ListPaymentReport = async (req, res, next) => {
     const tokenInfo = getDecodeToken(req);
 
@@ -40,18 +58,18 @@ const ListPaymentReport = async (req, res, next) => {
         const { q = '' } = req.query;
         const companyId = tokenInfo.decodedToken.companyId;
         const { tenantId } = tokenInfo.decodedToken;
-        const { startDate, endDate, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds } = req.body;
+        const { startDate, endDate, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds, fromAmount, toAmount } = req.body;
 
         if (companyId && req.body.companyId && companyId !== req.body.companyId) {
             return res.status(403).json({
                 success: false,
                 message: 'Unauthorized: CompanyId in token does not match the requested companyId',
             });
-        }
+        };
 
-        let reportType = null;
+        let report = await Report.findAllPayment(tenantId, companyId, startDate, endDate, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds, fromAmount, toAmount);
 
-        let report = await Report.findAllPayment(tenantId, companyId, startDate, endDate, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds, reportType);
+        report[0] = reportSearch(q, report[0]);
 
         const paymentMap = new Map();
         report[0].forEach(transaction => {
@@ -94,34 +112,7 @@ const ListPaymentReport = async (req, res, next) => {
 
                 return 0;
             })
-
         };
-        if (q) {
-            const queryLowered = q.toLowerCase();
-            const filteredData = responseData.data.filter(payment =>
-                (payment.payment_type_name && payment.payment_type_name.toLowerCase().includes(queryLowered)) ||
-                (payment.account_name && payment.account_name.toLowerCase().includes(queryLowered)) ||
-                (payment.PaidAmount && payment.PaidAmount.toString().toLowerCase().includes(queryLowered)) ||
-                (payment.ReceiveAmount && payment.ReceiveAmount.toString().toLowerCase().includes(queryLowered)) ||
-                (payment.description && payment.description.toLowerCase().includes(queryLowered)) ||
-                (payment.clientName && payment.clientName.toLowerCase().includes(queryLowered))
-            );
-
-            if (filteredData.length > 0) {
-                responseData = {
-                    ...responseData,
-                    data: filteredData,
-                    total: filteredData.length,
-                };
-            } else {
-                responseData = {
-                    ...responseData,
-                    message: 'No matching Payment Report found',
-                    data: [],
-                    total: 0,
-                };
-            }
-        }
 
         res.status(200).json(responseData);
     } catch (error) {
@@ -144,20 +135,20 @@ const ListClientReport = async (req, res, next) => {
         const { q = '' } = req.query;
         const companyId = tokenInfo.decodedToken.companyId;
         const { tenantId } = tokenInfo.decodedToken;
-        const { startDate, endDate, clientTypeIds, paymentTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds } = req.body;
+        const { startDate, endDate, clientTypeIds, paymentTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds, fromAmount, toAmount } = req.body;
         if (companyId && req.body.companyId && companyId !== req.body.companyId) {
             return res.status(403).json({
                 success: false,
                 message: 'Unauthorized: CompanyId in token does not match the requested companyId',
             });
-        }
+        };
 
-        let reportType = "Client";
+        let report = await Report.findAllClient(tenantId, companyId, startDate, endDate, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds, fromAmount, toAmount);
 
-        let report = await Report.findAllClient(tenantId, companyId, startDate, endDate, clientTypeIds, paymentTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds, reportType);
+        report[0] = reportSearch(q, report[0])
 
         const clientMap = new Map();
-        report[0].forEach(transaction => {
+        report[0].filter(x => x.clientId != null).forEach(transaction => {
             const clientId = transaction.clientId;
             const clientName = transaction.clientName;
             const PaidAmount = +(parseFloat(transaction.PaidAmount)).toFixed(2);
@@ -199,33 +190,6 @@ const ListClientReport = async (req, res, next) => {
             })
         };
 
-        if (q) {
-            const queryLowered = q.toLowerCase();
-            const filteredData = responseData.data.filter(client =>
-                (client.payment_type_name && client.payment_type_name.toLowerCase().includes(queryLowered)) ||
-                (client.account_name && client.account_name.toLowerCase().includes(queryLowered)) ||
-                (client.PaidAmount && client.PaidAmount.toString().toLowerCase().includes(queryLowered)) ||
-                (client.ReceiveAmount && client.ReceiveAmount.toString().toLowerCase().includes(queryLowered)) ||
-                (client.description && client.description.toLowerCase().includes(queryLowered)) ||
-                (client.clientName && client.clientName.toLowerCase().includes(queryLowered))
-            );
-
-            if (filteredData.length > 0) {
-                responseData = {
-                    ...responseData,
-                    data: filteredData,
-                    total: filteredData.length,
-                };
-            } else {
-                responseData = {
-                    ...responseData,
-                    message: 'No matching Client Report found',
-                    data: [],
-                    total: 0,
-                };
-            }
-        }
-
         res.status(200).json(responseData);
     } catch (error) {
         console.log(error);
@@ -247,20 +211,20 @@ const ListCategoryReport = async (req, res, next) => {
         const { q = '' } = req.query;
         const companyId = tokenInfo.decodedToken.companyId;
         const { tenantId } = tokenInfo.decodedToken;
-        const { startDate, endDate, categoryTypeIds, paymentTypeIds, clientTypeIds, accountIds, groupTypeIds, accountTypeIds } = req.body;
+        const { startDate, endDate, categoryTypeIds, paymentTypeIds, clientTypeIds, accountIds, groupTypeIds, accountTypeIds, fromAmount, toAmount } = req.body;
         if (companyId && req.body.companyId && companyId !== req.body.companyId) {
             return res.status(403).json({
                 success: false,
                 message: 'Unauthorized: CompanyId in token does not match the requested companyId',
             });
-        }
+        };
 
-        let reportType = "Category";
+        let report = await Report.findAllCategory(tenantId, companyId, startDate, endDate, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds, fromAmount, toAmount);
 
-        let report = await Report.findAllCategory(tenantId, companyId, startDate, endDate, categoryTypeIds, paymentTypeIds, clientTypeIds, accountIds, groupTypeIds, accountTypeIds, reportType);
+        report[0] = reportSearch(q, report[0]);
 
         const clientMap = new Map();
-        report[0].forEach(transaction => {
+        report[0].filter(x => x.clientId != null).forEach(transaction => {
             const clientId = transaction.clientId;
             const clientName = transaction.clientName;
             const PaidAmount = +(parseFloat(transaction.PaidAmount)).toFixed(2);
@@ -302,33 +266,6 @@ const ListCategoryReport = async (req, res, next) => {
             })
         };
 
-        if (q) {
-            const queryLowered = q.toLowerCase();
-            const filteredData = responseData.data.filter(category =>
-                (category.payment_type_name && category.payment_type_name.toLowerCase().includes(queryLowered)) ||
-                (category.account_name && category.account_name.toLowerCase().includes(queryLowered)) ||
-                (category.PaidAmount && category.PaidAmount.toString().toLowerCase().includes(queryLowered)) ||
-                (category.ReceiveAmount && category.ReceiveAmount.toString().toLowerCase().includes(queryLowered)) ||
-                (category.description && category.description.toLowerCase().includes(queryLowered)) ||
-                (category.clientName && category.clientName.toLowerCase().includes(queryLowered))
-            );
-
-            if (filteredData.length > 0) {
-                responseData = {
-                    ...responseData,
-                    data: filteredData,
-                    total: filteredData.length,
-                };
-            } else {
-                responseData = {
-                    ...responseData,
-                    message: 'No matching Category Report found',
-                    data: [],
-                    total: 0,
-                };
-            }
-        }
-
         res.status(200).json(responseData);
     } catch (error) {
         console.log(error);
@@ -350,18 +287,18 @@ const ListAccountReport = async (req, res, next) => {
         const { q = '' } = req.query;
         const companyId = tokenInfo.decodedToken.companyId;
         const { tenantId } = tokenInfo.decodedToken;
-        const { startDate, endDate, accountIds, paymentTypeIds, clientTypeIds, categoryTypeIds, groupTypeIds, accountTypeIds } = req.body;
+        const { startDate, endDate, accountIds, paymentTypeIds, clientTypeIds, categoryTypeIds, groupTypeIds, accountTypeIds, fromAmount, toAmount } = req.body;
 
         if (companyId && req.body.companyId && companyId !== req.body.companyId) {
             return res.status(403).json({
                 success: false,
                 message: 'Unauthorized: CompanyId in token does not match the requested companyId',
             });
-        }
+        };
 
-        let reportType = null;
+        let report = await Report.findAllAccount(tenantId, companyId, startDate, endDate, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds, fromAmount, toAmount);
 
-        let report = await Report.findAllAccount(tenantId, companyId, startDate, endDate, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds, reportType);
+        report[0] = reportSearch(q, report[0])
 
         const accountMap = new Map();
         report[0].forEach(transaction => {
@@ -405,32 +342,6 @@ const ListAccountReport = async (req, res, next) => {
                 return 0;
             })
         };
-        if (q) {
-            const queryLowered = q.toLowerCase();
-            const filteredData = responseData.data.filter(account =>
-                (account.payment_type_name && account.payment_type_name.toLowerCase().includes(queryLowered)) ||
-                (account.account_name && account.account_name.toLowerCase().includes(queryLowered)) ||
-                (account.PaidAmount && account.PaidAmount.toString().toLowerCase().includes(queryLowered)) ||
-                (account.ReceiveAmount && account.ReceiveAmount.toString().toLowerCase().includes(queryLowered)) ||
-                (account.description && account.description.toLowerCase().includes(queryLowered)) ||
-                (account.clientName && account.clientName.toLowerCase().includes(queryLowered))
-            );
-
-            if (filteredData.length > 0) {
-                responseData = {
-                    ...responseData,
-                    data: filteredData,
-                    total: filteredData.length,
-                };
-            } else {
-                responseData = {
-                    ...responseData,
-                    message: 'No matching Account Report found',
-                    data: [],
-                    total: 0,
-                };
-            }
-        }
 
         res.status(200).json(responseData);
     } catch (error) {
@@ -447,7 +358,7 @@ const ListGroupReport = async (req, res, next) => {
         const companyId = tokenInfo.decodedToken.companyId;
 
         const { tenantId } = tokenInfo.decodedToken;
-        const { startDate, endDate, groupTypeIds, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, accountTypeIds } = req.body;
+        const { startDate, endDate, groupTypeIds, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, accountTypeIds, fromAmount, toAmount } = req.body;
 
         if (companyId && req.body.companyId && companyId !== req.body.companyId) {
             return res.status(403).json({
@@ -456,9 +367,9 @@ const ListGroupReport = async (req, res, next) => {
             });
         }
 
-        let reportType = null;
+        let report = await Report.findAllGroup(tenantId, companyId, startDate, endDate, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds, fromAmount, toAmount);
 
-        let report = await Report.findAllGroup(tenantId, companyId, startDate, endDate, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds, reportType);
+        report[0] = reportSearch(q, report[0])
 
         const groupMap = new Map();
         report[0].forEach(transaction => {
@@ -502,32 +413,6 @@ const ListGroupReport = async (req, res, next) => {
                 return 0;
             })
         };
-        if (q) {
-            const queryLowered = q.toLowerCase();
-            const filteredData = responseData.data.filter(group =>
-                (group.payment_type_name && group.payment_type_name.toLowerCase().includes(queryLowered)) ||
-                (group.account_name && group.account_name.toLowerCase().includes(queryLowered)) ||
-                (group.PaidAmount && group.PaidAmount.toString().toLowerCase().includes(queryLowered)) ||
-                (group.ReceiveAmount && group.ReceiveAmount.toString().toLowerCase().includes(queryLowered)) ||
-                (group.description && group.description.toLowerCase().includes(queryLowered)) ||
-                (group.clientName && group.clientName.toLowerCase().includes(queryLowered))
-            );
-
-            if (filteredData.length > 0) {
-                responseData = {
-                    ...responseData,
-                    data: filteredData,
-                    total: filteredData.length,
-                };
-            } else {
-                responseData = {
-                    ...responseData,
-                    message: 'No matching Group Report found',
-                    data: [],
-                    total: 0,
-                };
-            }
-        }
 
         res.status(200).json(responseData);
     } catch (error) {
@@ -550,7 +435,7 @@ const ListCompanyReport = async (req, res, next) => {
         const { q = '' } = req.query;
         const companyId = tokenInfo.decodedToken.companyId;
         const { tenantId } = tokenInfo.decodedToken;
-        const { startDate, endDate, clientTypeIds, paymentTypeIds, categoryTypeIds, accountIds, groupTypeIds } = req.body;
+        const { startDate, endDate, clientTypeIds, paymentTypeIds, categoryTypeIds, accountIds, groupTypeIds, fromAmount, toAmount } = req.body;
         if (companyId && req.body.companyId && companyId !== req.body.companyId) {
             return res.status(403).json({
                 success: false,
@@ -558,42 +443,15 @@ const ListCompanyReport = async (req, res, next) => {
             });
         }
 
-        let reportType = null;
+        let report = await Report.findAllCompany(tenantId, companyId, startDate, endDate, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, fromAmount, toAmount);
 
-        let report = await Report.findAllCompany(tenantId, companyId, startDate, endDate, clientTypeIds, paymentTypeIds, categoryTypeIds, accountIds, groupTypeIds, reportType);
+        report[0] = reportSearch(q, report[0])
 
         let responseData = {
             success: true,
             message: 'Company Report List Successfully!',
             data: report[0]
         };
-
-        if (q) {
-            const queryLowered = q.toLowerCase();
-            const filteredData = responseData.data.filter(category =>
-                (category.payment_type_name && category.payment_type_name.toLowerCase().includes(queryLowered)) ||
-                (category.account_name && category.account_name.toLowerCase().includes(queryLowered)) ||
-                (category.PaidAmount && category.PaidAmount.toString().toLowerCase().includes(queryLowered)) ||
-                (category.ReceiveAmount && category.ReceiveAmount.toString().toLowerCase().includes(queryLowered)) ||
-                (category.description && category.description.toLowerCase().includes(queryLowered)) ||
-                (category.clientName && category.clientName.toLowerCase().includes(queryLowered))
-            );
-
-            if (filteredData.length > 0) {
-                responseData = {
-                    ...responseData,
-                    data: filteredData,
-                    total: filteredData.length,
-                };
-            } else {
-                responseData = {
-                    ...responseData,
-                    message: 'No matching Category Report found',
-                    data: [],
-                    total: 0,
-                };
-            }
-        }
 
         res.status(200).json(responseData);
     } catch (error) {
@@ -616,7 +474,7 @@ const ListAccountTypeReport = async (req, res, next) => {
         const { q = '' } = req.query;
         const companyId = tokenInfo.decodedToken.companyId;
         const { tenantId } = tokenInfo.decodedToken;
-        const { startDate, endDate, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds } = req.body;
+        const { startDate, endDate, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds, fromAmount, toAmount } = req.body;
 
         if (companyId && req.body.companyId && companyId !== req.body.companyId) {
             return res.status(403).json({
@@ -625,9 +483,9 @@ const ListAccountTypeReport = async (req, res, next) => {
             });
         }
 
-        let reportType = null;
+        let report = await Report.findAllAccountType(tenantId, companyId, startDate, endDate, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds, fromAmount, toAmount);
 
-        let report = await Report.findAllAccountType(tenantId, companyId, startDate, endDate, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds, reportType);
+        report[0] = reportSearch(q, report[0])
 
         const accountTypeMap = new Map();
         report[0].forEach(transaction => {
@@ -670,8 +528,389 @@ const ListAccountTypeReport = async (req, res, next) => {
 
                 return 0;
             })
-
         };
+
+        res.status(200).json(responseData);
+    } catch (error) {
+        console.log(error);
+        next(error);
+    }
+};
+
+const getFiscalAndFrequencyYearMonth = (dateString, fiscalStartMonth, selectedFrequency) => {
+    let startYear;
+    let fiscalMonthYear;
+    let FrequencyValue = 12;
+
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+
+    if (selectedFrequency == 'quarterly') {
+        FrequencyValue = 3;
+    } else if (selectedFrequency == 'semiannual') {
+        FrequencyValue = 6;
+    }
+
+    if (month < fiscalStartMonth) {
+        startYear = year - 1;
+    } else {
+        startYear = year;
+    }
+
+    if (FrequencyValue === 12) {
+        return `${startYear}-${String(startYear + 1).slice(2)}`;
+    }
+
+    if (month < fiscalStartMonth) {
+        fiscalMonthYear = 12 - fiscalStartMonth + month + 1;
+    } else {
+        fiscalMonthYear = month - fiscalStartMonth + 1;
+    }
+
+    let finalQueter = Math.ceil(fiscalMonthYear / FrequencyValue);
+    if (FrequencyValue == 3) {
+        return `${startYear}-Q${finalQueter}`
+    }
+    if (FrequencyValue == 6) {
+        return `${startYear}-H${finalQueter}`
+    }
+
+    return `${startYear}`;
+};
+
+const getDateMonth = (dateString) => {
+    let now = new Date(dateString);
+    if (now.getMonth() == 11) {
+        var current = new Date(now.getFullYear() + 1, 0, 1);
+    } else {
+        var current = new Date(now.getFullYear(), now.getMonth(), 1);
+    };
+    let year = current.getFullYear();
+    let month = current.getMonth() + 1;
+    let formattedMonth = month < 10 ? '0' + month : month;
+    return year + '-' + formattedMonth + '-' + '01';
+}
+
+const ListAnnuallyReport = async (req, res, next) => {
+    const tokenInfo = getDecodeToken(req);
+
+    if (!tokenInfo.success) {
+        return res.status(401).json({
+            success: false,
+            message: tokenInfo.message,
+        });
+    }
+
+    try {
+        const { q = '' } = req.query;
+        const companyId = tokenInfo.decodedToken.companyId;
+        const { tenantId } = tokenInfo.decodedToken;
+        const { startDate, endDate, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds, fromAmount, toAmount } = req.body;
+
+        if (companyId && req.body.companyId && companyId !== req.body.companyId) {
+            return res.status(403).json({
+                success: false,
+                message: 'Unauthorized: CompanyId in token does not match the requested companyId',
+            });
+        }
+
+        let companysetting = await CompanySetting.findAll(tenantId, companyId)
+        let fiscalStartMonth = 4
+        if (companysetting[0].length > 0) {
+            fiscalStartMonth = companysetting[0][0].fiscal_start_month
+        }
+
+        let report = await Report.findAllAnnually(tenantId, companyId, startDate, endDate, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds, fromAmount, toAmount);
+
+        report[0] = reportSearch(q, report[0])
+
+        const accountTypeMap = new Map();
+        report[0].forEach(transaction => {
+            const PaidAmount = +(parseFloat(transaction.PaidAmount)).toFixed(2);
+            const ReceiveAmount = +(parseFloat(transaction.ReceiveAmount)).toFixed(2);
+            const fiscalId = getFiscalAndFrequencyYearMonth(transaction.transaction_date, fiscalStartMonth, 'annually')
+            const fiscalName = fiscalId
+            if (accountTypeMap.has(fiscalId)) {
+                const existingData = accountTypeMap.get(fiscalId);
+                existingData.PaidAmount = +(existingData.PaidAmount + PaidAmount).toFixed(2);
+                existingData.ReceiveAmount = +(existingData.ReceiveAmount + ReceiveAmount).toFixed(2);
+                existingData.BalanceAmount = +(existingData.ReceiveAmount - existingData.PaidAmount).toFixed(2);
+                existingData.paymentDetails.push(reportTransaction(transaction));
+            } else {
+                accountTypeMap.set(fiscalId, {
+                    fiscalId,
+                    fiscalName,
+                    PaidAmount,
+                    ReceiveAmount,
+                    BalanceAmount: +(ReceiveAmount - PaidAmount).toFixed(2),
+                    paymentDetails: [reportTransaction(transaction)]
+                });
+            }
+        });
+
+        let responseData = {
+            success: true,
+            message: 'Annually Report List Successfully!',
+            data: Array.from(accountTypeMap.values()).sort((a, b) => {
+                const nameA = a.fiscalId.toUpperCase();
+                const nameB = b.fiscalId.toUpperCase();
+
+                if (nameA < nameB) {
+                    return -1;
+                }
+                if (nameA > nameB) {
+                    return 1;
+                }
+
+                return 0;
+            })
+        };
+
+        res.status(200).json(responseData);
+    } catch (error) {
+        console.log(error);
+        next(error);
+    }
+};
+
+const ListQuarterlyReport = async (req, res, next) => {
+    const tokenInfo = getDecodeToken(req);
+
+    if (!tokenInfo.success) {
+        return res.status(401).json({
+            success: false,
+            message: tokenInfo.message,
+        });
+    }
+
+    try {
+        const { q = '' } = req.query;
+        const companyId = tokenInfo.decodedToken.companyId;
+        const { tenantId } = tokenInfo.decodedToken;
+        const { startDate, endDate, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds, fromAmount, toAmount } = req.body;
+
+        if (companyId && req.body.companyId && companyId !== req.body.companyId) {
+            return res.status(403).json({
+                success: false,
+                message: 'Unauthorized: CompanyId in token does not match the requested companyId',
+            });
+        }
+
+        let companysetting = await CompanySetting.findAll(tenantId, companyId)
+        let fiscalStartMonth = 4
+        if (companysetting[0].length > 0) {
+            fiscalStartMonth = companysetting[0][0].fiscal_start_month
+        }
+
+        let report = await Report.findAllQuarterly(tenantId, companyId, startDate, endDate, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds, fromAmount, toAmount);
+
+        report[0] = reportSearch(q, report[0])
+
+        const accountTypeMap = new Map();
+        report[0].forEach(transaction => {
+            const PaidAmount = +(parseFloat(transaction.PaidAmount)).toFixed(2);
+            const ReceiveAmount = +(parseFloat(transaction.ReceiveAmount)).toFixed(2);
+            const fiscalId = getFiscalAndFrequencyYearMonth(transaction.transaction_date, fiscalStartMonth, 'quarterly')
+            const fiscalName = fiscalId.split('-').reverse().join(' ')
+            if (accountTypeMap.has(fiscalId)) {
+                const existingData = accountTypeMap.get(fiscalId);
+                existingData.PaidAmount = +(existingData.PaidAmount + PaidAmount).toFixed(2);
+                existingData.ReceiveAmount = +(existingData.ReceiveAmount + ReceiveAmount).toFixed(2);
+                existingData.BalanceAmount = +(existingData.ReceiveAmount - existingData.PaidAmount).toFixed(2);
+                existingData.paymentDetails.push(reportTransaction(transaction));
+            } else {
+                accountTypeMap.set(fiscalId, {
+                    fiscalId,
+                    fiscalName,
+                    PaidAmount,
+                    ReceiveAmount,
+                    BalanceAmount: +(ReceiveAmount - PaidAmount).toFixed(2),
+                    paymentDetails: [reportTransaction(transaction)]
+                });
+            }
+        });
+
+        let responseData = {
+            success: true,
+            message: 'Quarterly Report List Successfully!',
+            data: Array.from(accountTypeMap.values()).sort((a, b) => {
+                const nameA = a.fiscalId.toUpperCase();
+                const nameB = b.fiscalId.toUpperCase();
+
+                if (nameA < nameB) {
+                    return -1;
+                }
+                if (nameA > nameB) {
+                    return 1;
+                }
+
+                return 0;
+            })
+        };
+
+        res.status(200).json(responseData);
+    } catch (error) {
+        console.log(error);
+        next(error);
+    }
+};
+
+const ListSemiannualReport = async (req, res, next) => {
+    const tokenInfo = getDecodeToken(req);
+
+    if (!tokenInfo.success) {
+        return res.status(401).json({
+            success: false,
+            message: tokenInfo.message,
+        });
+    }
+
+    try {
+        const { q = '' } = req.query;
+        const companyId = tokenInfo.decodedToken.companyId;
+        const { tenantId } = tokenInfo.decodedToken;
+        const { startDate, endDate, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds, fromAmount, toAmount } = req.body;
+
+        if (companyId && req.body.companyId && companyId !== req.body.companyId) {
+            return res.status(403).json({
+                success: false,
+                message: 'Unauthorized: CompanyId in token does not match the requested companyId',
+            });
+        }
+
+        let companysetting = await CompanySetting.findAll(tenantId, companyId)
+        let fiscalStartMonth = 4
+        if (companysetting[0].length > 0) {
+            fiscalStartMonth = companysetting[0][0].fiscal_start_month
+        }
+
+        let report = await Report.findAllSemiannual(tenantId, companyId, startDate, endDate, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds, fromAmount, toAmount);
+
+        report[0] = reportSearch(q, report[0])
+
+        const accountTypeMap = new Map();
+        report[0].forEach(transaction => {
+            const PaidAmount = +(parseFloat(transaction.PaidAmount)).toFixed(2);
+            const ReceiveAmount = +(parseFloat(transaction.ReceiveAmount)).toFixed(2);
+            const fiscalId = getFiscalAndFrequencyYearMonth(transaction.transaction_date, fiscalStartMonth, 'semiannual')
+            const fiscalName = fiscalId.split('-').reverse().join(' ')
+            if (accountTypeMap.has(fiscalId)) {
+                const existingData = accountTypeMap.get(fiscalId);
+                existingData.PaidAmount = +(existingData.PaidAmount + PaidAmount).toFixed(2);
+                existingData.ReceiveAmount = +(existingData.ReceiveAmount + ReceiveAmount).toFixed(2);
+                existingData.BalanceAmount = +(existingData.ReceiveAmount - existingData.PaidAmount).toFixed(2);
+                existingData.paymentDetails.push(reportTransaction(transaction));
+            } else {
+                accountTypeMap.set(fiscalId, {
+                    fiscalId,
+                    fiscalName,
+                    PaidAmount,
+                    ReceiveAmount,
+                    BalanceAmount: +(ReceiveAmount - PaidAmount).toFixed(2),
+                    paymentDetails: [reportTransaction(transaction)]
+                });
+            }
+        });
+
+        let responseData = {
+            success: true,
+            message: 'Semiannual Report List Successfully!',
+            data: Array.from(accountTypeMap.values()).sort((a, b) => {
+                const nameA = a.fiscalId.toUpperCase();
+                const nameB = b.fiscalId.toUpperCase();
+
+                if (nameA < nameB) {
+                    return -1;
+                }
+                if (nameA > nameB) {
+                    return 1;
+                }
+
+                return 0;
+            })
+        };
+
+        res.status(200).json(responseData);
+    } catch (error) {
+        console.log(error);
+        next(error);
+    }
+};
+
+const ListMonthlyReport = async (req, res, next) => {
+    const tokenInfo = getDecodeToken(req);
+
+    if (!tokenInfo.success) {
+        return res.status(401).json({
+            success: false,
+            message: tokenInfo.message,
+        });
+    }
+
+    try {
+        const { q = '' } = req.query;
+        const companyId = tokenInfo.decodedToken.companyId;
+        const { tenantId } = tokenInfo.decodedToken;
+        const { startDate, endDate, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds } = req.body;
+
+        if (companyId && req.body.companyId && companyId !== req.body.companyId) {
+            return res.status(403).json({
+                success: false,
+                message: 'Unauthorized: CompanyId in token does not match the requested companyId',
+            });
+        }
+
+        let companysetting = await CompanySetting.findAll(tenantId, companyId)
+        let fiscalStartMonth = 4
+        if (companysetting[0].length > 0) {
+            fiscalStartMonth = companysetting[0][0].fiscal_start_month
+        }
+
+        let report = await Report.findAllMonthly(tenantId, companyId, startDate, endDate, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds);
+
+        const accountTypeMap = new Map();
+        report[0].forEach(transaction => {
+            const PaidAmount = +(parseFloat(transaction.PaidAmount)).toFixed(2);
+            const ReceiveAmount = +(parseFloat(transaction.ReceiveAmount)).toFixed(2);
+            const fiscalId = getDateMonth(transaction.transaction_date)
+            const fiscalName = new Date(fiscalId)
+            if (accountTypeMap.has(fiscalId)) {
+                const existingData = accountTypeMap.get(fiscalId);
+                existingData.PaidAmount = +(existingData.PaidAmount + PaidAmount).toFixed(2);
+                existingData.ReceiveAmount = +(existingData.ReceiveAmount + ReceiveAmount).toFixed(2);
+                existingData.BalanceAmount = +(existingData.ReceiveAmount - existingData.PaidAmount).toFixed(2);
+                existingData.paymentDetails.push(reportTransaction(transaction));
+            } else {
+                accountTypeMap.set(fiscalId, {
+                    fiscalId,
+                    fiscalName,
+                    PaidAmount,
+                    ReceiveAmount,
+                    BalanceAmount: +(ReceiveAmount - PaidAmount).toFixed(2),
+                    paymentDetails: [reportTransaction(transaction)]
+                });
+            }
+        });
+
+        let responseData = {
+            success: true,
+            message: 'Monthly Report List Successfully!',
+            data: Array.from(accountTypeMap.values()).sort((a, b) => {
+                const nameA = a.fiscalId.toUpperCase();
+                const nameB = b.fiscalId.toUpperCase();
+
+                if (nameA < nameB) {
+                    return -1;
+                }
+                if (nameA > nameB) {
+                    return 1;
+                }
+
+                return 0;
+            })
+        };
+
         if (q) {
             const queryLowered = q.toLowerCase();
             const filteredData = responseData.data.filter(accountType =>
@@ -713,5 +952,9 @@ module.exports = {
     ListAccountReport,
     ListGroupReport,
     ListCompanyReport,
-    ListAccountTypeReport
-}
+    ListAccountTypeReport,
+    ListAnnuallyReport,
+    ListQuarterlyReport,
+    ListSemiannualReport,
+    ListMonthlyReport
+};

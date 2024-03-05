@@ -4,6 +4,19 @@ const { getDecodeToken } = require('../middlewares/decoded');
 const db = require('../db/dbconnection');
 const message = ("This data is in used, you can't delete it.");
 
+let roleResultSearch = (q, roleResult) => {
+    if (q) {
+        const queryLowered = q.toLowerCase();
+        return roleResult.filter(role =>
+            (role.rolename.toLowerCase().includes(queryLowered)) ||
+            (typeof role.status === 'string' && role.status.toLowerCase() === "active" && "active".includes(queryLowered))
+        );
+    }
+    else {
+        return roleResult
+    }
+};
+
 const CreateRole = async (req, res) => {
     const token = getDecodeToken(req);
     try {
@@ -61,42 +74,15 @@ const ListRole = async (req, res, next) => {
             return res.status(200).json({ success: true, message: 'Role found', data: role[0][0] });
         }
 
-        const roleResult = await Role.findAll(tenantId);;
+        const roleResult = await Role.findAll(tenantId);
+
+        roleResult[0] = roleResultSearch(q, roleResult[0]);
+
         let responseData = {
             success: true,
             message: 'Role List Successfully!',
             data: roleResult[0]
         };
-
-        responseData.data = responseData.data.map(role => {
-            const { tenantId, ...rest } = role;
-            return rest;
-        });
-
-        if (q) {
-            const queryLowered = q.toLowerCase();
-            const filteredData = roleResult[0].filter(
-                role =>
-                    role.rolename.toLowerCase().includes(queryLowered) ||
-                    (typeof role.status === 'string' && role.status.toLowerCase() === "active" && "active".includes(queryLowered))
-            );
-
-            if (filteredData.length > 0) {
-                responseData = {
-                    ...responseData,
-                    data: filteredData,
-                    total: filteredData.length
-                };
-            } else {
-                responseData = {
-                    ...responseData,
-                    message: 'No matching role found',
-                    data: [],
-                    total: 0
-                };
-            }
-        }
-
         res.status(200).json(responseData);
 
     } catch (error) {
@@ -122,6 +108,9 @@ const ActiveRole = async (req, res, next) => {
         }
 
         const roleResult = await Role.findActiveAll(tenantId);
+
+        roleResult[0] = roleResultSearch(q, roleResult[0]);
+
         let responseData = {
             success: true,
             message: 'Role List Successfully!',
@@ -132,30 +121,6 @@ const ActiveRole = async (req, res, next) => {
             const { tenantId, ...rest } = role;
             return rest;
         });
-
-        if (q) {
-            const queryLowered = q.toLowerCase();
-            const filteredData = roleResult[0].filter(
-                role =>
-                    role.rolename.toLowerCase().includes(queryLowered) ||
-                    (typeof role.status === 'string' && role.status.toLowerCase() === "active" && "active".includes(queryLowered))
-            );
-
-            if (filteredData.length > 0) {
-                responseData = {
-                    ...responseData,
-                    data: filteredData,
-                    total: filteredData.length
-                };
-            } else {
-                responseData = {
-                    ...responseData,
-                    message: 'No matching role found',
-                    data: [],
-                    total: 0
-                };
-            }
-        }
 
         res.status(200).json(responseData);
 

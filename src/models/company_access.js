@@ -5,19 +5,6 @@ class CompanyAccess {
         this.tenantId = tenantId;
         this.user_id = user_id;
         this.company_id = companyId;
-    }
-
-    dateandtime = () => {
-
-        let d = new Date();
-        let yyyy = d.getFullYear();
-        let mm = d.getMonth() + 1;
-        let dd = d.getDate();
-        let hours = d.getUTCHours();
-        let minutes = d.getUTCMinutes();
-        let seconds = d.getUTCSeconds();
-
-        return `${yyyy}-${mm}-${dd}` + " " + `${hours}:${minutes}:${seconds}`;
     };
 
     async save() {
@@ -63,8 +50,8 @@ class CompanyAccess {
                         '${this.tenantId}',
                         '${this.user_id}',
                         '${chosenCompanyId}',
-                        '${this.dateandtime()}',
-                        '${this.dateandtime()}'
+                        UTC_TIMESTAMP(),
+                        UTC_TIMESTAMP()
                     )`;
 
                 const result = await db.execute(sql);
@@ -86,8 +73,9 @@ class CompanyAccess {
     }
 
     static findAllByCompanyAccess(tenantId, userId) {
-        let sql = "SELECT ca.*, cm.company_name FROM company_access ca "
+        let sql = "SELECT ca.*, cm.company_name, cs.default_date_option, cs.fiscal_start_month FROM company_access ca "
         sql += " LEFT JOIN company_master cm ON ca.tenantId = cm.tenantId AND ca.company_id = cm.id"
+        sql += " LEFT JOIN company_setting cs ON ca.tenantId = cs.tenantId AND ca.company_id = cs.companyId"
         sql += " WHERE 1 = 1";
         if (tenantId) {
             sql += ` AND ca.tenantId = '${tenantId}'`;
@@ -111,7 +99,6 @@ class CompanyAccess {
 
     async update(id) {
         try {
-            // Check if user exists
             const userExistsSql = `SELECT * FROM user_master WHERE id = '${this.user_id}'`;
             const [userExistsResult] = await db.execute(userExistsSql);
 
@@ -132,7 +119,7 @@ class CompanyAccess {
                 UPDATE company_access
                 SET tenantId='${this.tenantId}',
                     user_id='${this.user_id}',
-                    updatedOn='${this.dateandtime()}'
+                    updatedOn=UTC_TIMESTAMP()
                 WHERE user_id = '${id}'`;
 
             await db.execute(updateCompanySql);

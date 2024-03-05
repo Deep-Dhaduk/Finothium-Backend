@@ -12,20 +12,7 @@ class Tenant {
         this.status = status;
         this.createdBy = createdBy;
         this.updatedBy = updatedBy;
-    }
-
-    dateandtime = () => {
-
-        let d = new Date();
-        let yyyy = d.getFullYear();
-        let mm = d.getMonth() + 1;
-        let dd = d.getDate();
-        let hours = d.getUTCHours();
-        let minutes = d.getUTCMinutes();
-        let seconds = d.getUTCSeconds();
-
-        return `${yyyy}-${mm}-${dd}` + " " + `${hours}:${minutes}:${seconds}`;
-    }
+    };
 
     async save() {
         try {
@@ -55,9 +42,9 @@ class Tenant {
             '${this.enddate}',
             '${this.status}',
             '${this.createdBy}',
-            '${this.dateandtime()}',
+            UTC_TIMESTAMP(),
             '${this.updatedBy}',
-            '${this.dateandtime()}'
+            UTC_TIMESTAMP()
         )`;
             return db.execute(sql)
         } catch (error) {
@@ -81,18 +68,37 @@ class Tenant {
     //     }
     // }
 
+    static getTenants() {
+        return `SELECT tenantId,
+        tenantname,
+        personname,
+        address,
+        contact,
+        email,
+        startdate,
+        enddate,
+        status,
+        createdBy,
+        get_datetime_in_server_datetime(createdOn) AS createdOn,
+        get_datetime_in_server_datetime(updatedOn) AS updatedOn,
+        updatedBy
+        FROM tenant_master`
+    }
+
     static findAll() {
-        let sql = "SELECT *, DATE_SUB(createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn, DATE_SUB(updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn FROM tenant_master";
+        let sql = this.getTenants()
         return db.execute(sql)
     }
 
     static findActiveAll() {
-        let sql = "SELECT *, DATE_SUB(createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn, DATE_SUB(updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn FROM tenant_master WHERE status = 1";
+        let sql = this.getTenants()
+        sql += ` WHERE status = 1`
         return db.execute(sql)
     }
 
     static findById(id) {
-        let sql = `SELECT * FROM tenant_master WHERE tenantId = ${id}`;
+        let sql = this.getTenants()
+        sql += ` WHERE tenantId= ${id}`
         return db.execute(sql)
     }
 
@@ -102,7 +108,7 @@ class Tenant {
     }
 
     async update(id) {
-        let sql = `UPDATE tenant_master SET tenantname='${this.tenantname}',personname='${this.personname}',address='${this.address}',contact='${this.contact}',email='${this.email}',startdate='${this.startdate}',enddate='${this.enddate}',status='${this.status}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}' WHERE tenantId = ${id}`;
+        let sql = `UPDATE tenant_master SET tenantname='${this.tenantname}',personname='${this.personname}',address='${this.address}',contact='${this.contact}',email='${this.email}',startdate='${this.startdate}',enddate='${this.enddate}',status='${this.status}',updatedBy='${this.updatedBy}',updatedOn=UTC_TIMESTAMP() WHERE tenantId = ${id}`;
         return db.execute(sql)
 
     };

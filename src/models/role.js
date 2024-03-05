@@ -39,9 +39,9 @@ class Role {
             '${this.rolename}',
             '${this.status}',
             '${this.createdBy}',
-            '${this.dateandtime()}',
+            UTC_TIMESTAMP(),
             '${this.updatedBy}',
-            '${this.dateandtime()}'
+            UTC_TIMESTAMP()
         )`;
             return db.execute(sql)
 
@@ -50,25 +50,35 @@ class Role {
         }
     }
 
+    static getAllRoles(tenantId) {
+        return `
+        SELECT id,
+        rolename,
+        status,
+        createdBy,
+        get_datetime_in_server_datetime(createdOn) AS createdOn,
+        updatedBy,
+        get_datetime_in_server_datetime(updatedOn) AS updatedOn
+         FROM role_master
+         WHERE tenantId='${tenantId}'
+        `
+    }
+
     static findAll(tenantId) {
-        let sql = "SELECT *, DATE_SUB(createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn, DATE_SUB(updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn FROM role_master";
-        if (tenantId) {
-            sql += ` WHERE tenantId = '${tenantId}'`;
-        }
+        let sql = this.getAllRoles(tenantId)
         sql += `  ORDER BY rolename ASC;`;
         return db.execute(sql)
     }
 
     static findActiveAll(tenantId) {
-        let sql = "SELECT *, DATE_SUB(createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn, DATE_SUB(updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn FROM role_master WHERE status = 1";
-        if (tenantId) {
-            sql += ` AND tenantId = '${tenantId}'`;
-        }
+        let sql = this.getAllRoles(tenantId)
+        sql += ` AND status = 1`;
         return db.execute(sql)
     }
 
     static async findById(tenantId, id) {
-        let sql = `SELECT *, DATE_SUB(createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn, DATE_SUB(updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn FROM role_master WHERE tenantId = ${tenantId} AND id = ${id}`;
+        let sql = this.getAllRoles(tenantId)
+        sql += `AND id = ${id}`;
         return await db.execute(sql)
     }
 
@@ -78,7 +88,7 @@ class Role {
     };
 
     async update(tenantId, id) {
-        let sql = `UPDATE role_master SET rolename='${this.rolename}',status='${this.status}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}' WHERE tenantId = ${tenantId} AND id = ${id}`;
+        let sql = `UPDATE role_master SET rolename='${this.rolename}',status='${this.status}',updatedBy='${this.updatedBy}',updatedOn=UTC_TIMESTAMP() WHERE tenantId = ${tenantId} AND id = ${id}`;
         return db.execute(sql)
 
     };

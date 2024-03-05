@@ -2,7 +2,26 @@ const Company = require("../models/company");
 const { createCompanySchema, updateCompanySchema } = require('../validation/company.validation');
 const { getDecodeToken } = require('../middlewares/decoded');
 const db = require('../db/dbconnection');
+const CompanySetting = require("../models/company_setting");
 const message = ("This data is in used, you can't delete it.");
+
+let companyResultSearch = (q, companyResult) => {
+    if (q) {
+        const queryLowered = q.toLowerCase();
+        return companyResult.filter(company =>
+            (company.company_name.toLowerCase().includes(queryLowered)) ||
+            (company.legal_name.toLowerCase().includes(queryLowered)) ||
+            (company.authorize_person_name.toLowerCase().includes(queryLowered)) ||
+            (company.address.toLowerCase().includes(queryLowered)) ||
+            (company.pan.toLowerCase().includes(queryLowered)) ||
+            (typeof company.status === 'string' && company.status.toLowerCase() === "active" && "active".includes(queryLowered)) ||
+            (company.gstin.toString().toLowerCase().includes(queryLowered))
+        );
+    }
+    else {
+        return companyResult
+    }
+};
 
 const CreateCompany = async (req, res) => {
     try {
@@ -56,45 +75,15 @@ const ListCompany = async (req, res, next) => {
             return res.status(200).json({ success: true, message: 'Company found', data: company[0][0] });
         }
 
-        const companyResult = await Company.findAllByUserId(tenantId,userId);
+        const companyResult = await Company.findAllByUserId(tenantId, userId);
+
+        companyResult[0] = companyResultSearch(q, companyResult[0]);
+
         let responseData = {
             success: true,
             message: 'Company List Successfully!',
             data: companyResult[0]
         };
-
-        responseData.data = responseData.data.map(company => {
-            const { tenantId, ...rest } = company;
-            return rest;
-        })
-
-        if (q) {
-            const queryLowered = q.toLowerCase();
-            const filteredData = companyResult[0].filter(
-                company =>
-                    company.company_name.toLowerCase().includes(queryLowered) ||
-                    company.legal_name.toLowerCase().includes(queryLowered) ||
-                    company.authorize_person_name.toLowerCase().includes(queryLowered) ||
-                    company.address.toLowerCase().includes(queryLowered) ||
-                    company.pan.toLowerCase().includes(queryLowered) ||
-                    (typeof company.status === 'string' && company.status.toLowerCase() === "active" && "active".includes(queryLowered)) ||
-                    company.gstin.toString().toLowerCase().includes(queryLowered)
-            );
-            if (filteredData.length > 0) {
-                responseData = {
-                    ...responseData,
-                    data: filteredData,
-                    total: filteredData.length
-                };
-            } else {
-                responseData = {
-                    ...responseData,
-                    message: 'No matching companies found',
-                    data: [],
-                    total: 0
-                };
-            }
-        }
 
         res.status(200).json(responseData);
 
@@ -123,6 +112,9 @@ const ActiveCompany = async (req, res, next) => {
         }
 
         const companyResult = await Company.findActiveAll(tenantId);
+
+        companyResult[0] = companyResultSearch(q, companyResult[0]);
+
         let responseData = {
             success: true,
             message: 'Company List Successfully!',
@@ -132,35 +124,7 @@ const ActiveCompany = async (req, res, next) => {
         responseData.data = responseData.data.map(company => {
             const { tenantId, ...rest } = company;
             return rest;
-        })
-
-        if (q) {
-            const queryLowered = q.toLowerCase();
-            const filteredData = companyResult[0].filter(
-                company =>
-                    company.company_name.toLowerCase().includes(queryLowered) ||
-                    company.legal_name.toLowerCase().includes(queryLowered) ||
-                    company.authorize_person_name.toLowerCase().includes(queryLowered) ||
-                    company.address.toLowerCase().includes(queryLowered) ||
-                    company.pan.toLowerCase().includes(queryLowered) ||
-                    (typeof company.status === 'string' && company.status.toLowerCase() === "active" && "active".includes(queryLowered)) ||
-                    company.gstin.toString().toLowerCase().includes(queryLowered)
-            );
-            if (filteredData.length > 0) {
-                responseData = {
-                    ...responseData,
-                    data: filteredData,
-                    total: filteredData.length
-                };
-            } else {
-                responseData = {
-                    ...responseData,
-                    message: 'No matching companies found',
-                    data: [],
-                    total: 0
-                };
-            }
-        }
+        });
 
         res.status(200).json(responseData);
 
@@ -195,13 +159,31 @@ const deleteCompany = async (req, res, next) => {
     try {
         let companyId = req.params.id;
 
-        const [accountResults] = await db.execute(`SELECT COUNT(*) AS count FROM company_access WHERE company_id = ${companyId}`);
+        const [clientResults] = await db.execute(`SELECT COUNT(*) AS count FROM client_master WHERE companyId = ${companyId}`);
+
+        if (clientResults[0].count > 0) {
+            return res.status(200).json({ success: false, message: message });
+        };
+        const [accountResults] = await db.execute(`SELECT COUNT(*) AS count FROM account_master WHERE companyId = ${companyId}`);
 
         if (accountResults[0].count > 0) {
             return res.status(200).json({ success: false, message: message });
         };
+        const [transaction] = await db.execute(`SELECT COUNT(*) AS count FROM transaction WHERE companyId = ${companyId}`);
+
+        if (transaction[0].count > 0) {
+            return res.status(200).json({ success: false, message: message });
+        };
+
+        const [transfer] = await db.execute(`SELECT COUNT(*) AS count FROM transfer WHERE companyId = ${companyId}`);
+
+        if (transfer[0].count > 0) {
+            return res.status(200).json({ success: false, message: message });
+        };
 
         await Company.delete(tenantId, companyId);
+
+        await CompanySetting.delete(tenantId, companyId);
 
         res.status(200).json({
             success: true,

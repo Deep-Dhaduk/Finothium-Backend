@@ -10,19 +10,6 @@ class Parentmenu {
         this.updatedBy = updatedBy;
     }
 
-    dateandtime = () => {
-
-        let d = new Date();
-        let yyyy = d.getFullYear();
-        let mm = d.getMonth() + 1;
-        let dd = d.getDate();
-        let hours = d.getUTCHours();
-        let minutes = d.getUTCMinutes();
-        let seconds = d.getUTCSeconds();
-
-        return `${yyyy}-${mm}-${dd}` + " " + `${hours}:${minutes}:${seconds}`;
-    }
-
     async save() {
         try {
             let sql = `
@@ -42,9 +29,9 @@ class Parentmenu {
                 '${this.display_rank}',
                 '${this.status}',
                 '${this.createdBy}',
-                '${this.dateandtime()}',
+                UTC_TIMESTAMP(),
                 '${this.updatedBy}',
-                '${this.dateandtime()}'
+                UTC_TIMESTAMP()
             )`;
             return db.execute(sql)
 
@@ -54,7 +41,15 @@ class Parentmenu {
     };
 
     static findAllParentMenu(tenantId) {
-        return `SELECT *, DATE_SUB(createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn, DATE_SUB(updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn FROM parentmenu_master WHERE tenantId = ${tenantId}`
+        return `SELECT id,
+                       menu_name,
+                       display_rank,
+                       status,
+                       createdBy,
+                       get_datetime_in_server_datetime(createdOn) AS createdOn,
+                       updatedBy,
+                       get_datetime_in_server_datetime(updatedOn) AS updatedOn
+          FROM parentmenu_master WHERE tenantId = ${tenantId}`
     }
 
     static findAll(tenantId) {
@@ -81,7 +76,7 @@ class Parentmenu {
     };
 
     async update(tenantId, id) {
-        let sql = `UPDATE parentmenu_master SET menu_name='${this.menu_name}',display_rank='${this.display_rank}',status='${this.status}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}' WHERE tenantId = ${tenantId} AND id = ${id}`;
+        let sql = `UPDATE parentmenu_master SET menu_name='${this.menu_name}',display_rank='${this.display_rank}',status='${this.status}',updatedBy='${this.updatedBy}',updatedOn=UTC_TIMESTAMP() WHERE tenantId = ${tenantId} AND id = ${id}`;
         return db.execute(sql)
 
     };

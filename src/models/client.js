@@ -11,20 +11,6 @@ class Client {
         this.type = type;
     }
 
-    dateandtime = () => {
-
-        let d = new Date();
-        let yyyy = d.getFullYear();
-        let mm = d.getMonth() + 1;
-        let dd = d.getDate();
-        let hours = d.getUTCHours();
-        let minutes = d.getUTCMinutes();
-        let seconds = d.getUTCSeconds();
-
-        return `${yyyy}-${mm}-${dd}` + " " + `${hours}:${minutes}:${seconds}`;
-    }
-
-
     async save() {
         try {
             let sql = `
@@ -44,9 +30,9 @@ class Client {
                 '${this.clientName}',
                 '${this.status}',
                 '${this.createdBy}',
-                '${this.dateandtime()}',
+                UTC_TIMESTAMP(),
                 '${this.updatedBy}',
-                '${this.dateandtime()}',
+                UTC_TIMESTAMP(),
                 '${this.companyId}',
                 '${this.type}'
             )`;
@@ -66,7 +52,16 @@ class Client {
             whereClause += ` AND (type = 'Both' OR type = '${type}')`;
         }
 
-        const sql = `SELECT *, DATE_SUB(createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn, DATE_SUB(updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn FROM client_master${whereClause}`;
+        const sql =`SELECT clientId,
+                        clientName,
+                        status,
+                        type,
+                        createdBy,
+                        get_datetime_in_server_datetime(createdOn) AS createdOn,
+                        updatedBy,
+                        get_datetime_in_server_datetime(updatedOn) AS updatedOn,
+                        companyId
+        FROM client_master${whereClause}`;
 
         return sql;
     };
@@ -96,7 +91,7 @@ class Client {
     };
 
     async update(tenantId, companyId, id) {
-        let sql = `UPDATE client_master SET clientName='${this.clientName}',status='${this.status}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}',companyId='${this.companyId}',type='${this.type}' WHERE tenantId = ${tenantId} AND companyId = ${companyId} AND clientId = ${id}`;
+        let sql = `UPDATE client_master SET clientName='${this.clientName}',status='${this.status}',updatedBy='${this.updatedBy}',updatedOn=UTC_TIMESTAMP(), companyId='${this.companyId}',type='${this.type}' WHERE tenantId = ${tenantId} AND companyId = ${companyId} AND clientId = ${id}`;
         return db.execute(sql)
 
     };

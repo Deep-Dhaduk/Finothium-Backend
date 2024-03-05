@@ -13,21 +13,7 @@ class Transaction {
         this.updatedBy = updatedBy;
         this.companyId = companyId;
         this.clientId = clientId;
-    }
-
-    dateandtime = () => {
-
-        let d = new Date();
-        let yyyy = d.getFullYear();
-        let mm = d.getMonth() + 1;
-        let dd = d.getDate();
-        let hours = d.getUTCHours();
-        let minutes = d.getUTCMinutes();
-        let seconds = d.getUTCSeconds();
-
-        return `${yyyy}-${mm}-${dd}` + " " + `${hours}:${minutes}:${seconds}`;
-    }
-
+    };
 
     async save() {
         try {
@@ -56,9 +42,9 @@ class Transaction {
                 '${this.amount}',
                 '${this.description}',
                 '${this.createdBy}',
-                '${this.dateandtime()}',
+                UTC_TIMESTAMP(),
                 '${this.updatedBy}',
-                '${this.dateandtime()}',
+                UTC_TIMESTAMP(),
                 '${this.companyId}',
                 '${this.clientId}'
             )`;
@@ -91,7 +77,38 @@ class Transaction {
     };
 
     static findById(tenantId, id) {
-        let sql = `SELECT * FROM transaction WHERE tenantId = ${tenantId} AND transactionId = ${id}`;
+        let sql = `SELECT t.transactionId,
+        t.transaction_date,
+        t.transaction_type,
+        t.payment_type_Id,
+        t.accountId,
+        t.amount,
+        t.description,
+        t.createdBy,
+        get_datetime_in_server_datetime(t.createdOn) AS createdOn,
+        t.updatedBy,
+        get_datetime_in_server_datetime(t.updatedOn) AS updatedOn,
+        t.companyId,
+        t.clientId,
+        a.account_type_Id,
+        a.group_name_Id,
+        cp.name AS payment_type_name,
+        a.account_name AS account_name,
+        cn.clientName AS client_name,
+        atn.name AS account_type_name,
+        ag.name AS account_group_name
+        FROM transaction t
+        LEFT JOIN
+        common_master cp ON t.tenantId = cp.tenantId AND t.payment_type_Id = cp.common_id
+        LEFT JOIN
+            account_master a ON t.tenantId = a.tenantId AND t.accountId = a.account_id
+        LEFT JOIN
+            client_master cn ON t.tenantId = cn.tenantId AND t.clientId = cn.clientId
+        LEFT JOIN
+            common_master atn ON t.tenantId = atn.tenantId AND a.account_type_Id = atn.common_id
+        LEFT JOIN
+            common_master ag ON t.tenantId = ag.tenantId AND a.group_name_Id = ag.common_id
+        WHERE t.tenantId = ${tenantId} AND t.transactionId = ${id}`;
         return db.execute(sql)
     };
 
@@ -101,7 +118,7 @@ class Transaction {
     }
 
     async update(tenantId, id) {
-        let sql = `UPDATE transaction SET transaction_date='${this.transaction_date}', transaction_type='${this.transaction_type}', payment_type_Id='${this.payment_type_Id}',accountId='${this.accountId}', amount='${this.amount}', description='${this.description}',updatedBy='${this.updatedBy}', updatedOn='${this.dateandtime()}', clientId='${this.clientId}' WHERE tenantId= ${tenantId} AND transactionId = ${id}`;
+        let sql = `UPDATE transaction SET transaction_date='${this.transaction_date}', transaction_type='${this.transaction_type}', payment_type_Id='${this.payment_type_Id}',accountId='${this.accountId}', amount='${this.amount}', description='${this.description}',updatedBy='${this.updatedBy}', updatedOn=UTC_TIMESTAMP(), clientId='${this.clientId}' WHERE tenantId= ${tenantId} AND transactionId = ${id}`;
         return db.execute(sql);
     }
 }

@@ -45,4 +45,30 @@ router.post(
     Reportcontroller.ListAccountTypeReport
 );
 
+
+router.post(
+    "/filter-annuallyReport",
+    auth.verifyToken,
+    Reportcontroller.ListAnnuallyReport
+);
+
+router.post(
+    "/filter-quarterlyReport",
+    auth.verifyToken,
+    Reportcontroller.ListQuarterlyReport
+);
+
+router.post(
+    "/filter-monthlyReport",
+    auth.verifyToken,
+    Reportcontroller.ListMonthlyReport
+);
+
+router.post(
+    "/filter-semiannualReport",
+    auth.verifyToken,
+    Reportcontroller.ListSemiannualReport
+);
+
+
 module.exports = router;

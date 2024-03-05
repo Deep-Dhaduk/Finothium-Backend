@@ -1,6 +1,24 @@
 const Transaction = require("../models/transaction");
 const { createTransactionSchema, updateTransactionSchema } = require('../validation/transaction.validation');
 const { getDecodeToken } = require('../middlewares/decoded');
+const { date } = require("joi");
+
+let transactionSearch = (q, transaction) => {
+    if (q) {
+        const queryLowered = q.toLowerCase();
+        return transaction.filter(transaction =>
+            (typeof transaction.payment_type_name === 'string' && transaction.payment_type_name.toLowerCase().includes(queryLowered)) ||
+            (typeof transaction.description === 'string' && transaction.description.toLowerCase().includes(queryLowered)) ||
+            (typeof transaction.client_name === 'string' && transaction.client_name.toLowerCase().includes(queryLowered)) ||
+            (typeof transaction.account_name === 'string' && transaction.account_name.toLowerCase().includes(queryLowered)) ||
+            (typeof transaction.amount === 'string' && transaction.amount.toLowerCase().includes(queryLowered)) ||
+            (typeof transaction === 'string' && transaction.toLowerCase().includes(queryLowered))
+        );
+    }
+    else {
+        return transaction
+    }
+};
 
 const CreateTransaction = async (req, res) => {
     const token = getDecodeToken(req);
@@ -49,34 +67,13 @@ const ListTransaction = async (req, res, next) => {
 
         let transaction = await Transaction.findAll(tenantId, companyId, startDate, endDate, type, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds, limit);
 
+        transaction[0] = transactionSearch(q, transaction[0]);
+
         let responseData = {
             success: true,
             message: 'Transaction List Successfully!',
             data: transaction[0]
         };
-
-        if (q) {
-            const queryLowered = q.toLowerCase();
-            const filteredData = transaction[0].filter(transaction =>
-                (typeof transaction.payment_type_name === 'string' && transaction.payment_type_name.toLowerCase().includes(queryLowered)) ||
-                (typeof transaction === 'string' && transaction.toLowerCase().includes(queryLowered))
-            );
-
-            if (filteredData.length > 0) {
-                responseData = {
-                    ...responseData,
-                    data: filteredData,
-                    total: filteredData.length
-                };
-            } else {
-                responseData = {
-                    ...responseData,
-                    message: 'No matching Transaction found',
-                    data: [],
-                    total: 0
-                };
-            }
-        }
 
         res.status(200).json(responseData);
 

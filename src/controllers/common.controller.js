@@ -4,6 +4,19 @@ const { getDecodeToken } = require('../middlewares/decoded');
 const db = require('../db/dbconnection');
 const message = ("This data is in used, you can't delete it.");
 
+let commonResultSearch = (q, commonResult) => {
+    if (q) {
+        const queryLowered = q.toLowerCase();
+        return commonResult.filter(common =>
+            (common.name.toLowerCase().includes(queryLowered)) ||
+            (common.type.toLowerCase().includes(queryLowered)) ||
+            (typeof common.status === 'string' && common.status.toLowerCase() === "active" && "active".includes(queryLowered))
+        );
+    }
+    else {
+        return commonResult
+    }
+};
 
 const CreateCommon = async (req, res) => {
     const token = getDecodeToken(req)
@@ -58,41 +71,14 @@ const ListCommon = async (req, res, next) => {
         }
 
         const commonResult = await Common.findAll(tenantId, type);
+
+        commonResult[0] = commonResultSearch(q, commonResult[0]);
+
         let responseData = {
             success: true,
             message: 'Common List Successfully!',
             data: commonResult[0]
         };
-
-        responseData.data = responseData.data.map(common => {
-            const { tenantId, ...rest } = common;
-            return rest;
-        })
-
-        if (q) {
-            const queryLowered = q.toLowerCase();
-            const filteredData = commonResult[0].filter(
-                common =>
-                    common.name.toLowerCase().includes(queryLowered) ||
-                    common.type.toLowerCase().includes(queryLowered) ||
-                    (typeof common.status === 'string' && common.status.toLowerCase() === "active" && "active".includes(queryLowered))
-            );
-
-            if (filteredData.length > 0) {
-                responseData = {
-                    ...responseData,
-                    data: filteredData,
-                    total: filteredData.length
-                };
-            } else {
-                responseData = {
-                    ...responseData,
-                    message: 'No matching common found',
-                    data: [],
-                    total: 0
-                };
-            }
-        }
 
         res.status(200).json(responseData);
 
@@ -121,6 +107,9 @@ const Activecommon = async (req, res, next) => {
         }
 
         const commonResult = await Common.findActiveAll(tenantId, type);
+
+        commonResult[0] = commonResultSearch(q, commonResult[0]);
+
         let responseData = {
             success: true,
             message: 'Common List Successfully!',

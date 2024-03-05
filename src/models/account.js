@@ -12,21 +12,7 @@ class Account {
         this.createdBy = createdBy;
         this.updatedBy = updatedBy;
         this.companyId = companyId;
-    }
-
-    dateandtime = () => {
-
-        let d = new Date();
-        let yyyy = d.getFullYear();
-        let mm = d.getMonth() + 1;
-        let dd = d.getDate();
-        let hours = d.getUTCHours();
-        let minutes = d.getUTCMinutes();
-        let seconds = d.getUTCSeconds();
-
-        return `${yyyy}-${mm}-${dd}` + " " + `${hours}:${minutes}:${seconds}`;
-    }
-
+    };
 
     async save() {
         try {
@@ -54,9 +40,9 @@ class Account {
                 '${this.account_type_Id}',
                 '${this.status}',
                 '${this.createdBy}',
-                '${this.dateandtime()}',
+                UTC_TIMESTAMP(),
                 '${this.updatedBy}',
-                '${this.dateandtime()}',
+                UTC_TIMESTAMP(),
                 '${this.companyId}'
             )`;
             return db.execute(sql)
@@ -67,9 +53,19 @@ class Account {
     }
 
     static findAccountQuery(tenantId, companyId) {
-        return `SELECT a.*, c.name AS group_name, ct.name AS account_type_name,
-        DATE_SUB(a.createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn,
-        DATE_SUB(a.updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn
+        return `SELECT a.account_id,
+                a.account_name,
+                a.group_name_Id,
+                a.join_date,
+                a.exit_date,
+                a.account_type_Id,
+                a.status,
+                a.createdBy,
+                get_datetime_in_server_datetime(a.createdOn) AS createdOn,
+                a.updatedBy,
+                get_datetime_in_server_datetime(a.updatedOn) AS updatedOn,
+                a.companyId,
+                c.name AS group_name, ct.name AS account_type_name
         FROM account_master a
         LEFT JOIN common_master c ON a.tenantId = c.tenantId AND a.group_name_Id = c.common_id
         LEFT JOIN common_master ct ON a.tenantId = c.tenantId AND a.account_type_Id = ct.common_id
@@ -102,7 +98,7 @@ class Account {
     };
 
     async update(id, tenantId) {
-        let sql = `UPDATE account_master SET account_name='${this.account_name}',group_name_Id='${this.group_name_Id}',join_date='${this.join_date}',exit_date='${this.exit_date}',account_type_Id='${this.account_type_Id}',status='${this.status}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}' WHERE tenantId = ${tenantId} AND account_id = ${id}`;
+        let sql = `UPDATE account_master SET account_name='${this.account_name}',group_name_Id='${this.group_name_Id}',join_date='${this.join_date}',exit_date='${this.exit_date}',account_type_Id='${this.account_type_Id}',status='${this.status}',updatedBy='${this.updatedBy}',updatedOn=UTC_TIMESTAMP() WHERE tenantId = ${tenantId} AND account_id = ${id}`;
         return db.execute(sql)
     };
 }

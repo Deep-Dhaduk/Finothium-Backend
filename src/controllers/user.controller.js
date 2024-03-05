@@ -11,6 +11,23 @@ const { createUserSchema, updateUserSchema } = require('../validation/user.valid
 const { getDecodeToken } = require('../middlewares/decoded');
 const baseURL = process.env.API_BASE_URL;
 
+let userResultSearch = (q, userResult) => {
+    if (q) {
+        const queryLowered = q.toLowerCase();
+        return userResult.filter(user =>
+            (user.username && user.username.toLowerCase().includes(queryLowered)) ||
+            (user.fullname && user.fullname.toLowerCase().includes(queryLowered)) ||
+            (user.email && user.email.toLowerCase().includes(queryLowered)) ||
+            (user.roleName && user.roleName.toLowerCase().includes(queryLowered)) ||
+            (user.companyNames && user.companyNames.toLowerCase().includes(queryLowered)) ||
+            (typeof user.status === 'string' && user.status.toLowerCase() === "active" && "active".includes(queryLowered))
+        );
+    }
+    else {
+        return userResult
+    }
+};
+
 const loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -40,7 +57,7 @@ const loginUser = async (req, res) => {
 
         const userWithCompanies = {
             ...user[0],
-            companies: companyResult[0].map(comp => ({ companyId: comp.company_id, companyName: comp.company_name })),
+            companies: companyResult[0].map(comp => ({ companyId: comp.company_id, companyName: comp.company_name, fiscalStartMonth: comp.fiscal_start_month ?? 4, defaultDateOption: comp.default_date_option ?? 1 })),
             roleName: roleResult[0][0].rolename
         };
 
@@ -160,7 +177,6 @@ const CreateUser = async (req, res) => {
     }
 };
 
-
 const changeCompany = async (req, res) => {
     try {
         const { companyId } = req.body;
@@ -191,6 +207,7 @@ const changeCompany = async (req, res) => {
 const findOneRec = async (req, res) => {
     try {
         const tokenInfo = getDecodeToken(req);
+        const tenantId = tokenInfo.decodedToken.tenantId;
 
         if (!tokenInfo.success) {
             return res.status(401).json({
@@ -211,7 +228,7 @@ const findOneRec = async (req, res) => {
 
         const userId = userRecord[0].id;
 
-        let [user, _] = await User.findOne(userId);
+        let [user, _] = await User.findOne(tenantId, userId);
 
         user[0].companyNames = user[0].companyNames ? user[0].companyNames.split(',') : [];
         user[0].companyIds = user[0].companyIds ? user[0].companyIds.split(',').map(Number) : [];
@@ -236,7 +253,7 @@ const ListUser = async (req, res, next) => {
         const { q = '', id } = req.query;
 
         if (id) {
-            const user = await User.findById(id);
+            const user = await User.findById(tenantId, id);
 
             if (user[0].length === 0) {
                 return res.status(404).json({ success: false, message: 'User not found' });
@@ -248,37 +265,16 @@ const ListUser = async (req, res, next) => {
         const existingTokenPayload = getDecodeToken(req)
         const companyId = existingTokenPayload.decodedToken.companyId;
 
-        const userResult = await User.findAll(token.decodedToken.tenantId);;
+        const userResult = await User.findAll(token.decodedToken.tenantId);
+
+        userResult[0] = userResultSearch(q, userResult[0]);
+
         let responseData = {
             success: true,
             message: 'User List Successfully!',
             data: userResult[0]
         };
 
-        if (q) {
-            const queryLowered = q.toLowerCase();
-            const filteredData = userResult[0].filter(
-                user =>
-                    user.username.toLowerCase().includes(queryLowered) ||
-                    user.fullname.toLowerCase().includes(queryLowered) ||
-                    user.roleName.toLowerCase().includes(queryLowered) ||
-                    (typeof user.status === 'string' && user.status.toLowerCase() === "active" && "active".includes(queryLowered))
-            );
-            if (filteredData.length > 0) {
-                responseData = {
-                    ...responseData,
-                    data: filteredData,
-                    total: filteredData.length
-                };
-            } else {
-                responseData = {
-                    ...responseData,
-                    message: 'No matching user found',
-                    data: [],
-                    total: 0
-                };
-            }
-        }
         const companyResult = await CompanyAccess.findAll(token.decodedToken.tenantId);;
         let userResponse = responseData.data;
         let companyAccessResponse = companyResult[0];
@@ -331,7 +327,7 @@ const Activeuser = async (req, res, next) => {
         const { q = '', id } = req.query;
 
         if (id) {
-            const user = await User.findById(id);
+            const user = await User.findById(tenantId, id);
 
             if (user[0].length === 0) {
                 return res.status(404).json({ success: false, message: 'User not found' });
@@ -344,36 +340,15 @@ const Activeuser = async (req, res, next) => {
         const companyId = existingTokenPayload.decodedToken.companyId;
 
         const userResult = await User.findActiveAll(token.decodedToken.tenantId);
+
+        userResult[0] = userResultSearch(q, userResult[0]);
+
         let responseData = {
             success: true,
             message: 'User List Successfully!',
             data: userResult[0]
         };
 
-        if (q) {
-            const queryLowered = q.toLowerCase();
-            const filteredData = userResult[0].filter(
-                user =>
-                    user.username.toLowerCase().includes(queryLowered) ||
-                    user.fullname.toLowerCase().includes(queryLowered) ||
-                    user.roleName.toLowerCase().includes(queryLowered) ||
-                    (typeof user.status === 'string' && user.status.toLowerCase() === "active" && "active".includes(queryLowered))
-            );
-            if (filteredData.length > 0) {
-                responseData = {
-                    ...responseData,
-                    data: filteredData,
-                    total: filteredData.length
-                };
-            } else {
-                responseData = {
-                    ...responseData,
-                    message: 'No matching user found',
-                    data: [],
-                    total: 0
-                };
-            }
-        }
         const companyResult = await CompanyAccess.findAll(token.decodedToken.tenantId);;
         let userResponse = responseData.data;
         let companyAccessResponse = companyResult[0];
@@ -419,10 +394,12 @@ const Activeuser = async (req, res, next) => {
 };
 
 const getUserById = async (req, res, next) => {
+    const token = getDecodeToken(req);
+    const tenantId = token.decodedToken.tenantId
     try {
         let userId = req.params.id;
 
-        let [user, _] = await User.findOne(userId);
+        let [user, _] = await User.findOne(tenantId, userId);
 
         if (user.length === 0) {
             return res.status(404).json({ success: false, message: 'User not found' });
@@ -594,7 +571,7 @@ const changePassword = async (req, res) => {
         const { oldPassword, newPassword, confirmPassword } = req.body;
 
         const userId = req.params.id;
-        const [user, _] = await User.findById(userId);
+        const [user, _] = await User.findById(tenantId, userId);
 
         if (!user[0]) {
             return res.status(404).json({
@@ -640,7 +617,7 @@ const resetPassword = async (req, res) => {
         const { newPassword, confirmPassword } = req.body;
 
         const userId = req.params.id;
-        const [user, _] = await User.findById(userId);
+        const [user, _] = await User.findById(tenantId, userId);
 
         if (!user[0]) {
             return res.status(404).json({

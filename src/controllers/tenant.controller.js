@@ -3,6 +3,22 @@ const { use } = require("../routes/company.route");
 const { getDecodeToken } = require('../middlewares/decoded');
 const { createTenantSchema, updateTenantSchema } = require('../validation/tenant.validation');
 
+let tenantResultSearch = (q, tenantResult) => {
+    if (q) {
+        const queryLowered = q.toLowerCase();
+        return tenantResult.filter(tenant =>
+            (tenant.tenantname.toLowerCase().includes(queryLowered)) ||
+            (tenant.personname.toLowerCase().includes(queryLowered)) ||
+            (tenant.address.toLowerCase().includes(queryLowered)) ||
+            (typeof tenant.status === 'number' && tenant.status === 1 && "active".includes(queryLowered)) ||
+            (typeof tenant.status === 'number' && tenant.status === 0 && "inactive".includes(queryLowered))
+        );
+    }
+    else {
+        return tenantResult
+    }
+};
+
 const CreateTenant = async (req, res) => {
     const token = getDecodeToken(req);
     const userId = token.decodedToken.userId;
@@ -56,37 +72,14 @@ const ListTenant = async (req, res, next) => {
         }
 
         const tenantResult = await Tenant.findAll();
+
+        tenantResult[0] = tenantResultSearch(q, tenantResult[0]);
+
         let responseData = {
             success: true,
             message: 'Tenant List Successfully!',
             data: tenantResult[0]
         };
-
-        if (q) {
-            const queryLowered = q.toLowerCase();
-            const filteredData = tenantResult[0].filter(
-                tenant =>
-                    tenant.tenantname.toLowerCase().includes(queryLowered) ||
-                    tenant.personname.toLowerCase().includes(queryLowered) ||
-                    tenant.address.toLowerCase().includes(queryLowered) ||
-                    (typeof tenant.status === 'number' && tenant.status === 1 && "active".includes(queryLowered)) ||
-                    (typeof tenant.status === 'number' && tenant.status === 0 && "inactive".includes(queryLowered))
-            );
-            if (filteredData.length > 0) {
-                responseData = {
-                    ...responseData,
-                    data: filteredData,
-                    total: filteredData.length
-                };
-            } else {
-                responseData = {
-                    ...responseData,
-                    message: 'No matching tenant found',
-                    data: [],
-                    total: 0
-                };
-            }
-        }
 
         res.status(200).json(responseData);
 
@@ -108,40 +101,17 @@ const ActiveTenant = async (req, res, next) => {
             }
 
             return res.status(200).json({ success: true, message: 'Tenant found', data: tenant[0][0] });
-        }
+        };
 
         const tenantResult = await Tenant.findActiveAll();
+
+        tenantResult[0] = tenantResultSearch(q, tenantResult[0]);
+
         let responseData = {
             success: true,
             message: 'Tenant List Successfully!',
             data: tenantResult[0]
         };
-
-        if (q) {
-            const queryLowered = q.toLowerCase();
-            const filteredData = tenantResult[0].filter(
-                tenant =>
-                    tenant.tenantname.toLowerCase().includes(queryLowered) ||
-                    tenant.personname.toLowerCase().includes(queryLowered) ||
-                    tenant.address.toLowerCase().includes(queryLowered) ||
-                    (typeof tenant.status === 'number' && tenant.status === 1 && "active".includes(queryLowered)) ||
-                    (typeof tenant.status === 'number' && tenant.status === 0 && "inactive".includes(queryLowered))
-            );
-            if (filteredData.length > 0) {
-                responseData = {
-                    ...responseData,
-                    data: filteredData,
-                    total: filteredData.length
-                };
-            } else {
-                responseData = {
-                    ...responseData,
-                    message: 'No matching tenant found',
-                    data: [],
-                    total: 0
-                };
-            }
-        }
 
         res.status(200).json(responseData);
 
@@ -159,7 +129,7 @@ const getTenantById = async (req, res, next) => {
         res.status(200).json({
             success: true,
             message: "tenant Record Successfully!",
-            data: tenant[0]
+            data: tenant
         });
     } catch (error) {
         console.log(error);

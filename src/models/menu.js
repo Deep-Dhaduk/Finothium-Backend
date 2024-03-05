@@ -7,20 +7,7 @@ class Menu {
         this.menuItems = menuItems;
         this.createdBy = createdBy;
         this.updatedBy = updatedBy;
-    }
-
-    dateandtime = () => {
-
-        let d = new Date();
-        let yyyy = d.getFullYear();
-        let mm = d.getMonth() + 1;
-        let dd = d.getDate();
-        let hours = d.getUTCHours();
-        let minutes = d.getUTCMinutes();
-        let seconds = d.getUTCSeconds();
-
-        return `${yyyy}-${mm}-${dd}` + " " + `${hours}:${minutes}:${seconds}`;
-    }
+    };
 
     async save() {
         try {
@@ -37,7 +24,7 @@ class Menu {
                             allow_edit='${item.allow_edit}',
                             allow_delete='${item.allow_delete}',
                             createdBy='${this.createdBy}',
-                            updatedOn='${this.dateandtime()}',
+                            updatedOn=UTC_TIMESTAMP(),
                             updatedBy='${this.updatedBy}'
                             WHERE child_id = '${item.child_id}'`;
                     await db.execute(sql);
@@ -65,9 +52,9 @@ class Menu {
                             '${item.allow_edit}',
                             '${item.allow_delete}',
                             '${this.createdBy}',
-                            '${this.dateandtime()}',
+                            UTC_TIMESTAMP(),
                             '${this.updatedBy}',
-                            '${this.dateandtime()}'
+                            UTC_TIMESTAMP()
                         )`;
 
                     await db.execute(sql);
@@ -81,18 +68,35 @@ class Menu {
     }
 
     async findByChildId(tenantId, childId) {
-        let sql = `SELECT * FROM menu_master WHERE tenantId = ${tenantId} AND child_id = '${childId}'`;
+        let sql = `SELECT m.role_id,
+        m.child_id,
+        m.allow_access,
+        m.allow_add,
+        m.allow_edit,
+        m.allow_delete,
+        m.createdBy,
+        get_datetime_in_server_datetime(m.createdOn) AS createdOn,
+        m.updatedBy,
+        get_datetime_in_server_datetime(m.updatedOn) AS updatedOn
+         FROM menu_master WHERE tenantId = ${tenantId} AND child_id = '${childId}'`;
         const result = await db.execute(sql);
         return result[0][0];
     }
 
     static findAll(tenantId) {
-        let sql = `SELECT m.*,
-        c.menu_name AS child_menu_name,
-        c.parent_id,
-        p.menu_name AS parent_menu_name,
-        DATE_SUB(c.createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn,
-        DATE_SUB(c.updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn
+        let sql = `SELECT m.role_id,
+                          m.child_id,
+                          m.allow_access,
+                          m.allow_add,
+                          m.allow_edit,
+                          m.allow_delete,
+                          m.createdBy,
+                          get_datetime_in_server_datetime(m.createdOn) AS createdOn,
+                          m.updatedBy,
+                          get_datetime_in_server_datetime(m.updatedOn) AS updatedOn,
+                          c.menu_name AS child_menu_name,
+                          c.parent_id,
+                          p.menu_name AS parent_menu_name
         FROM menu_master m
         LEFT JOIN childmenu_master c ON m.tenantId = c.tenantId AND m.child_id = c.id
         LEFT JOIN parentmenu_master p ON m.tenantId = p.tenantId ANd c.parent_id = p.id
@@ -102,12 +106,22 @@ class Menu {
     };
 
     static findAllWithRoleId(tenantId, roleId) {
-        let sql = `SELECT m.*,
+        let sql = `SELECT m.role_id,
+        m.child_id,
+        m.allow_access,
+        m.allow_add,
+        m.allow_edit,
+        m.allow_delete,
+        m.createdBy,
+        get_datetime_in_server_datetime(m.createdOn) AS createdOn,
+        m.updatedBy,
+        get_datetime_in_server_datetime(m.updatedOn) AS updatedOn,
         c.menu_name AS child_menu_name,
         c.parent_id,
         p.menu_name AS parent_menu_name,
-        DATE_SUB(c.createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn,
-        DATE_SUB(c.updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn
+        c.menu_name AS child_menu_name,
+        c.parent_id,
+        p.menu_name AS parent_menu_name
         FROM menu_master m
         LEFT JOIN childmenu_master c ON m.tenantId = c.tenantId AND m.child_id = c.id
         LEFT JOIN parentmenu_master p ON m.tenantId = p.tenantId ANd c.parent_id = p.id
@@ -123,10 +137,21 @@ class Menu {
 
     static async findById(tenantId, roleId, id) {
         try {
-            let sql = `SELECT m.*, c.menu_name AS child_menu_name,
-                c.parent_id, p.menu_name AS parent_menu_name,
-                DATE_SUB(c.createdOn, INTERVAL 5 HOUR) AS adjusted_createdOn,
-                DATE_SUB(c.updatedOn, INTERVAL 5 HOUR) AS adjusted_updatedOn
+            let sql = `SELECT m.role_id,
+                            m.child_id,
+                            m.allow_access,
+                            m.allow_add,
+                            m.allow_edit,
+                            m.allow_delete,
+                            m.createdBy,
+                            get_datetime_in_server_datetime(m.createdOn) AS createdOn,
+                            m.updatedBy,
+                            get_datetime_in_server_datetime(m.updatedOn) AS updatedOn,
+                            c.menu_name AS child_menu_name,
+                            c.parent_id,
+                            p.menu_name AS parent_menu_name,
+                            c.menu_name AS child_menu_name,
+                c.parent_id, p.menu_name AS parent_menu_name
                 FROM menu_master m
                 LEFT JOIN childmenu_master c ON m.tenantId = c.tenantId AND m.child_id = c.id
                 LEFT JOIN parentmenu_master p ON m.tenantId = p.tenantId AND c.parent_id = p.id

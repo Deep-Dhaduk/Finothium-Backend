@@ -4,6 +4,19 @@ const { getDecodeToken } = require('../middlewares/decoded');
 const db = require('../db/dbconnection');
 const message = ("This data is in used, you can't delete it.");
 
+let clientResultSearch = (q, clientResult) => {
+    if (q) {
+        const queryLowered = q.toLowerCase();
+        return clientResult.filter(client =>
+            client.clientName.toLowerCase().includes(queryLowered) ||
+            (typeof client.status === 'string' && client.status.toLowerCase() === "active" && "active".includes(queryLowered))
+        );
+    }
+    else {
+        return clientResult
+    }
+};
+
 const CreateClient = async (req, res) => {
     const token = getDecodeToken(req)
     try {
@@ -58,40 +71,13 @@ const ListClient = async (req, res, next) => {
 
         const clientResult = await Client.findAll(tenantId, companyId, type);
 
+        clientResult[0] = clientResultSearch(q, clientResult[0]);
+
         let responseData = {
             success: true,
             message: 'Client List Successfully!',
             data: clientResult[0]
         };
-
-        responseData.data = responseData.data.map(client => {
-            const { tenantId, ...rest } = client;
-            return rest;
-        });
-
-        if (q) {
-            const queryLowered = q.toLowerCase();
-            const filteredData = clientResult[0].filter(
-                client =>
-                    client.clientName.toLowerCase().includes(queryLowered) ||
-                    (typeof client.status === 'string' && client.status.toLowerCase() === "active" && "active".includes(queryLowered))
-            );
-
-            if (filteredData.length > 0) {
-                responseData = {
-                    ...responseData,
-                    data: filteredData
-                };
-            } else {
-                responseData = {
-                    ...responseData,
-                    message: 'No matching Client found',
-                    data: [],
-                    total: 0
-                };
-            }
-        }
-
         res.status(200).json(responseData);
 
     } catch (error) {
@@ -118,40 +104,13 @@ const ActiveClient = async (req, res, next) => {
 
         const clientResult = await Client.findActiveAll(tenantId, companyId, type);
 
+        clientResult[0] = clientResultSearch(q, clientResult[0]);
+
         let responseData = {
             success: true,
             message: 'Client List Successfully!',
             data: clientResult[0]
         };
-
-        responseData.data = responseData.data.map(client => {
-            const { tenantId, ...rest } = client;
-            return rest;
-        });
-
-        if (q) {
-            const queryLowered = q.toLowerCase();
-            const filteredData = clientResult[0].filter(
-                client =>
-                    client.clientName.toLowerCase().includes(queryLowered) ||
-                    (typeof client.status === 'string' && client.status.toLowerCase() === "active" && "active".includes(queryLowered))
-            );
-
-            if (filteredData.length > 0) {
-                responseData = {
-                    ...responseData,
-                    data: filteredData
-                };
-            } else {
-                responseData = {
-                    ...responseData,
-                    message: 'No matching Client found',
-                    data: [],
-                    total: 0
-                };
-            }
-        }
-
         res.status(200).json(responseData);
 
     } catch (error) {
@@ -166,9 +125,7 @@ const getClientById = async (req, res, next) => {
     const tenantId = token.decodedToken.tenantId;
     try {
         let Id = req.params.id;
-        console.log(Id);
         let [client, _] = await Client.findById(tenantId, companyId, Id)
-        console.log(client);
 
         res.status(200).json({
             success: true,

@@ -30,6 +30,7 @@ app.use('/transfer', require("./routes/transfer.route"));
 app.use('/dashboard', require("./routes/dashboard.route"));
 app.use('/report', require("./routes/reports.route"));
 app.use('/companyaccess', require("./routes/company_access.route"));
+app.use('/companysetting', require("./routes/company_setting.route"));
 
 app.use((req, res, next) => {
         next(new Error("Route not found!"));

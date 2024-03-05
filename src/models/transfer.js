@@ -12,20 +12,7 @@ class Transfer {
         this.createdBy = createdBy;
         this.updatedBy = updatedBy;
         this.companyId = companyId;
-    }
-
-    dateandtime = () => {
-
-        let d = new Date();
-        let yyyy = d.getFullYear();
-        let mm = d.getMonth() + 1;
-        let dd = d.getDate();
-        let hours = d.getUTCHours();
-        let minutes = d.getUTCMinutes();
-        let seconds = d.getUTCSeconds();
-
-        return `${yyyy}-${mm}-${dd}` + " " + `${hours}:${minutes}:${seconds}`;
-    }
+    };
 
 
     async save() {
@@ -55,9 +42,9 @@ class Transfer {
                 '${this.amount}',
                 '${this.description}',
                 '${this.createdBy}',
-                '${this.dateandtime()}',
+                UTC_TIMESTAMP(),
                 '${this.updatedBy}',
-                '${this.dateandtime()}',
+                UTC_TIMESTAMP(),
                 '${this.companyId}'
             )`;
             return db.execute(sql)
@@ -97,7 +84,7 @@ class Transfer {
     }
 
     async update(tenantId, id) {
-        let sql = `UPDATE transfer SET transactionDate='${this.transactionDate}',paymentType_Id='${this.paymentType_Id}',fromAccount='${this.fromAccount}',toAccount='${this.toAccount}',amount='${this.amount}',description='${this.description}',updatedBy='${this.updatedBy}',updatedOn='${this.dateandtime()}' WHERE tenantId = ${tenantId} AND transfer_id = ${id}`;
+        let sql = `UPDATE transfer SET transactionDate='${this.transactionDate}',paymentType_Id='${this.paymentType_Id}',fromAccount='${this.fromAccount}',toAccount='${this.toAccount}',amount='${this.amount}',description='${this.description}',updatedBy='${this.updatedBy}',updatedOn=UTC_TIMESTAMP() WHERE tenantId = ${tenantId} AND transfer_id = ${id}`;
         return db.execute(sql)
     };
 }

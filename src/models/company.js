@@ -61,8 +61,8 @@ class Company {
             const companyId = rows[0].companyId;
 
             const insertCompanySetting = `
-            INSERT INTO company_setting (tenantId, companyId, fiscal_start_month, default_date_option, createdBy,createdOn, updatedBy, updatedOn)
-            VALUES ('${this.tenantId}', '${companyId}', 4, 1, '${this.createdBy}', UTC_TIMESTAMP(), '${this.updatedBy}', UTC_TIMESTAMP())`;
+            INSERT INTO company_setting (tenantId, companyId, default_date_option,fiscal_start_month, createdBy,createdOn, updatedBy, updatedOn)
+            VALUES ('${this.tenantId}', '${companyId}', 1, 4, '${this.createdBy}', UTC_TIMESTAMP(), '${this.updatedBy}', UTC_TIMESTAMP())`;
             await db.execute(insertCompanySetting);
 
             return result;

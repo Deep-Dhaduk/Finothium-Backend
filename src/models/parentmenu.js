@@ -46,7 +46,7 @@ class Parentmenu {
                        display_rank,
                        status,
                        createdBy,
-                       get_datetime_in_server_datetime(createdOn) AS createdOn,
+                       get_datetime_in_server_datetime(createdOn) AS createFdOn,
                        updatedBy,
                        get_datetime_in_server_datetime(updatedOn) AS updatedOn
           FROM parentmenu_master WHERE tenantId = ${tenantId}`

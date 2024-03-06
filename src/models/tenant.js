@@ -80,7 +80,7 @@ class Tenant {
         status,
         createdBy,
         get_datetime_in_server_datetime(createdOn) AS createdOn,
-        get_datetime_in_server_datetime(updatedOn) AS updatedOn,
+        get_datetime_in_server_datetime( updatedOn) AS updatedOn,
         updatedBy
         FROM tenant_master`
     }

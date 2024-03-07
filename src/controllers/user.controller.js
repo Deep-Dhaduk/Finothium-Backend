@@ -288,7 +288,7 @@ const ListUser = async (req, res, next) => {
                 userCompaniesMap[userId] = [];
             }
 
-            userCompaniesMap[userId].push({ companyId: access.company_id, roleName: access.roleName });
+            userCompaniesMap[userId].push({ companyId: access.company_id });
 
         });
 
@@ -304,11 +304,12 @@ const ListUser = async (req, res, next) => {
                 if (user.profile_image_filename) {
                     user.profile_image_filename = `${baseURL}/Images/Profile_Images/${user.profile_image_filename}`;
                 }
-                user.companyNames = user.companyNames.replaceAll(',', ', ');
+                user.companyNames = (user.companyNames.replaceAll(',', ', '));
             } else {
                 user.companies = [];
             }
         });
+
 
         res.status(200).json({
             data: userResponse

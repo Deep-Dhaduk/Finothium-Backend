@@ -537,29 +537,55 @@ const ListAccountTypeReport = async (req, res, next) => {
     }
 };
 
+const getStartDate = (startDate, monthsToAdd) => {
+    var inputDate = new Date(startDate);
+    inputDate.setMonth(inputDate.getMonth() + monthsToAdd);
+    return inputDate.toISOString().split('T')[0];
+}
+
+const getEndDate = (startDate, monthsToAdd) => {
+    var inputDate = new Date(startDate);
+    inputDate.setMonth(inputDate.getMonth() + monthsToAdd);
+    inputDate.setDate(0);
+    return inputDate.toISOString().split('T')[0];
+}
+
 const getFiscalAndFrequencyYearMonth = (dateString, fiscalStartMonth, selectedFrequency) => {
     let startYear;
     let fiscalMonthYear;
-    let FrequencyValue = 12;
+    let fiscalId;
+    let fiscalStartDate;
+    let fiscalEndDate;
+    let frequencyValue = 12;
 
     const date = new Date(dateString);
     const year = date.getFullYear();
     const month = date.getMonth() + 1;
 
+    // Set Frequency Value
     if (selectedFrequency == 'quarterly') {
-        FrequencyValue = 3;
+        frequencyValue = 3;
     } else if (selectedFrequency == 'semiannual') {
-        FrequencyValue = 6;
+        frequencyValue = 6;
     }
-
+    // Get Fiscal Year
     if (month < fiscalStartMonth) {
         startYear = year - 1;
     } else {
         startYear = year;
     }
+    // Get fiscalStartDate Base on Start Year
+    fiscalStartDate = `${startYear}-${String(fiscalStartMonth).padStart(2, '0')}-01`;
 
-    if (FrequencyValue === 12) {
-        return `${startYear}-${String(startYear + 1).slice(2)}`;
+    if (frequencyValue === 12) {
+        fiscalEndDate = getEndDate(fiscalStartDate, frequencyValue);
+        fiscalId = `${startYear}-${String(startYear + 1).slice(2)}`;
+        return {
+            fiscalId,
+            fiscalName: fiscalId,
+            fiscalStartDate: new Date(fiscalStartDate),
+            fiscalEndDate: new Date(fiscalEndDate)
+        };
     }
 
     if (month < fiscalStartMonth) {
@@ -568,28 +594,38 @@ const getFiscalAndFrequencyYearMonth = (dateString, fiscalStartMonth, selectedFr
         fiscalMonthYear = month - fiscalStartMonth + 1;
     }
 
-    let finalQueter = Math.ceil(fiscalMonthYear / FrequencyValue);
-    if (FrequencyValue == 3) {
-        return `${startYear}-Q${finalQueter}`
-    }
-    if (FrequencyValue == 6) {
-        return `${startYear}-H${finalQueter}`
-    }
+    const finalFrequencyValue = Math.ceil(fiscalMonthYear / frequencyValue);
+    const getMonthsBasedOnFrequency = (finalFrequencyValue - 1) * frequencyValue;
+    fiscalStartDate = getStartDate(fiscalStartDate, getMonthsBasedOnFrequency);
+    fiscalEndDate = getEndDate(fiscalStartDate, frequencyValue);
 
-    return `${startYear}`;
-};
+    if (frequencyValue == 3) {
+        fiscalId = `${startYear}-Q${finalFrequencyValue}`;
+    } else if (frequencyValue == 6) {
+        fiscalId = `${startYear}-H${finalFrequencyValue}`;
+    }
+    return {
+        fiscalId,
+        fiscalName: fiscalId.split('-').reverse().join(' '),
+        fiscalStartDate: new Date(fiscalStartDate),
+        fiscalEndDate: new Date(fiscalEndDate)
+    };
+}
 
 const getDateMonth = (dateString) => {
-    let now = new Date(dateString);
-    if (now.getMonth() == 11) {
-        var current = new Date(now.getFullYear() + 1, 0, 1);
-    } else {
-        var current = new Date(now.getFullYear(), now.getMonth(), 1);
+    const current = new Date(dateString);
+    const year = current.getFullYear();
+    const month = current.getMonth() + 1;
+    const fiscalStartDate = `${year}-${String(month).padStart(2, '0')}-01`;
+    const fiscalEndDate = getEndDate(fiscalStartDate, 1);
+
+    return {
+        fiscalId: fiscalStartDate,
+        fiscalName: new Date(fiscalStartDate),
+        fiscalStartDate: new Date(fiscalStartDate),
+        fiscalEndDate: new Date(fiscalEndDate)
     };
-    let year = current.getFullYear();
-    let month = current.getMonth() + 1;
-    let formattedMonth = month < 10 ? '0' + month : month;
-    return year + '-' + formattedMonth + '-' + '01';
+
 }
 
 const ListAnnuallyReport = async (req, res, next) => {
@@ -629,8 +665,8 @@ const ListAnnuallyReport = async (req, res, next) => {
         report[0].forEach(transaction => {
             const PaidAmount = +(parseFloat(transaction.PaidAmount)).toFixed(2);
             const ReceiveAmount = +(parseFloat(transaction.ReceiveAmount)).toFixed(2);
-            const fiscalId = getFiscalAndFrequencyYearMonth(transaction.transaction_date, fiscalStartMonth, 'annually')
-            const fiscalName = fiscalId
+            const fiscalData = getFiscalAndFrequencyYearMonth(transaction.transaction_date, fiscalStartMonth, 'annually');
+            const fiscalId = fiscalData.fiscalId;
             if (accountTypeMap.has(fiscalId)) {
                 const existingData = accountTypeMap.get(fiscalId);
                 existingData.PaidAmount = +(existingData.PaidAmount + PaidAmount).toFixed(2);
@@ -640,7 +676,9 @@ const ListAnnuallyReport = async (req, res, next) => {
             } else {
                 accountTypeMap.set(fiscalId, {
                     fiscalId,
-                    fiscalName,
+                    fiscalName: fiscalData.fiscalName,
+                    fiscalStartDate: fiscalData.fiscalStartDate,
+                    fiscalEndDate: fiscalData.fiscalEndDate,
                     PaidAmount,
                     ReceiveAmount,
                     BalanceAmount: +(ReceiveAmount - PaidAmount).toFixed(2),
@@ -711,8 +749,8 @@ const ListQuarterlyReport = async (req, res, next) => {
         report[0].forEach(transaction => {
             const PaidAmount = +(parseFloat(transaction.PaidAmount)).toFixed(2);
             const ReceiveAmount = +(parseFloat(transaction.ReceiveAmount)).toFixed(2);
-            const fiscalId = getFiscalAndFrequencyYearMonth(transaction.transaction_date, fiscalStartMonth, 'quarterly')
-            const fiscalName = fiscalId.split('-').reverse().join(' ')
+            const fiscalData = getFiscalAndFrequencyYearMonth(transaction.transaction_date, fiscalStartMonth, 'quarterly');
+            const fiscalId = fiscalData.fiscalId;
             if (accountTypeMap.has(fiscalId)) {
                 const existingData = accountTypeMap.get(fiscalId);
                 existingData.PaidAmount = +(existingData.PaidAmount + PaidAmount).toFixed(2);
@@ -722,7 +760,9 @@ const ListQuarterlyReport = async (req, res, next) => {
             } else {
                 accountTypeMap.set(fiscalId, {
                     fiscalId,
-                    fiscalName,
+                    fiscalName: fiscalData.fiscalName,
+                    fiscalStartDate: fiscalData.fiscalStartDate,
+                    fiscalEndDate: fiscalData.fiscalEndDate,
                     PaidAmount,
                     ReceiveAmount,
                     BalanceAmount: +(ReceiveAmount - PaidAmount).toFixed(2),
@@ -793,8 +833,8 @@ const ListSemiannualReport = async (req, res, next) => {
         report[0].forEach(transaction => {
             const PaidAmount = +(parseFloat(transaction.PaidAmount)).toFixed(2);
             const ReceiveAmount = +(parseFloat(transaction.ReceiveAmount)).toFixed(2);
-            const fiscalId = getFiscalAndFrequencyYearMonth(transaction.transaction_date, fiscalStartMonth, 'semiannual')
-            const fiscalName = fiscalId.split('-').reverse().join(' ')
+            const fiscalData = getFiscalAndFrequencyYearMonth(transaction.transaction_date, fiscalStartMonth, 'semiannual');
+            const fiscalId = fiscalData.fiscalId;
             if (accountTypeMap.has(fiscalId)) {
                 const existingData = accountTypeMap.get(fiscalId);
                 existingData.PaidAmount = +(existingData.PaidAmount + PaidAmount).toFixed(2);
@@ -804,7 +844,9 @@ const ListSemiannualReport = async (req, res, next) => {
             } else {
                 accountTypeMap.set(fiscalId, {
                     fiscalId,
-                    fiscalName,
+                    fiscalName: fiscalData.fiscalName,
+                    fiscalStartDate: fiscalData.fiscalStartDate,
+                    fiscalEndDate: fiscalData.fiscalEndDate,
                     PaidAmount,
                     ReceiveAmount,
                     BalanceAmount: +(ReceiveAmount - PaidAmount).toFixed(2),
@@ -873,8 +915,8 @@ const ListMonthlyReport = async (req, res, next) => {
         report[0].forEach(transaction => {
             const PaidAmount = +(parseFloat(transaction.PaidAmount)).toFixed(2);
             const ReceiveAmount = +(parseFloat(transaction.ReceiveAmount)).toFixed(2);
-            const fiscalId = getDateMonth(transaction.transaction_date)
-            const fiscalName = new Date(fiscalId)
+            const fiscalData = getDateMonth(transaction.transaction_date)
+            const fiscalId = fiscalData.fiscalId
             if (accountTypeMap.has(fiscalId)) {
                 const existingData = accountTypeMap.get(fiscalId);
                 existingData.PaidAmount = +(existingData.PaidAmount + PaidAmount).toFixed(2);
@@ -884,7 +926,9 @@ const ListMonthlyReport = async (req, res, next) => {
             } else {
                 accountTypeMap.set(fiscalId, {
                     fiscalId,
-                    fiscalName,
+                    fiscalName: fiscalData.fiscalName,
+                    fiscalStartDate: fiscalData.fiscalStartDate,
+                    fiscalEndDate: fiscalData.fiscalEndDate,
                     PaidAmount,
                     ReceiveAmount,
                     BalanceAmount: +(ReceiveAmount - PaidAmount).toFixed(2),

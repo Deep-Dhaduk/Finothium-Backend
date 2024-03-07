@@ -628,7 +628,7 @@ const getDateMonth = (dateString) => {
 
 }
 
-const ListAnnuallyReport = async (req, res, next) => {
+const ListMonthlyReport = async (req, res, next) => {
     const tokenInfo = getDecodeToken(req);
 
     if (!tokenInfo.success) {
@@ -642,7 +642,7 @@ const ListAnnuallyReport = async (req, res, next) => {
         const { q = '' } = req.query;
         const companyId = tokenInfo.decodedToken.companyId;
         const { tenantId } = tokenInfo.decodedToken;
-        const { startDate, endDate, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds, fromAmount, toAmount } = req.body;
+        const { startDate, endDate, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds } = req.body;
 
         if (companyId && req.body.companyId && companyId !== req.body.companyId) {
             return res.status(403).json({
@@ -657,16 +657,14 @@ const ListAnnuallyReport = async (req, res, next) => {
             fiscalStartMonth = companysetting[0][0].fiscal_start_month
         }
 
-        let report = await Report.findAllAnnually(tenantId, companyId, startDate, endDate, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds, fromAmount, toAmount);
-
-        report[0] = reportSearch(q, report[0])
+        let report = await Report.findAllMonthly(tenantId, companyId, startDate, endDate, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds);
 
         const accountTypeMap = new Map();
         report[0].forEach(transaction => {
             const PaidAmount = +(parseFloat(transaction.PaidAmount)).toFixed(2);
             const ReceiveAmount = +(parseFloat(transaction.ReceiveAmount)).toFixed(2);
-            const fiscalData = getFiscalAndFrequencyYearMonth(transaction.transaction_date, fiscalStartMonth, 'annually');
-            const fiscalId = fiscalData.fiscalId;
+            const fiscalData = getDateMonth(transaction.transaction_date)
+            const fiscalId = fiscalData.fiscalId
             if (accountTypeMap.has(fiscalId)) {
                 const existingData = accountTypeMap.get(fiscalId);
                 existingData.PaidAmount = +(existingData.PaidAmount + PaidAmount).toFixed(2);
@@ -689,7 +687,7 @@ const ListAnnuallyReport = async (req, res, next) => {
 
         let responseData = {
             success: true,
-            message: 'Annually Report List Successfully!',
+            message: 'Monthly Report List Successfully!',
             data: Array.from(accountTypeMap.values()).sort((a, b) => {
                 const nameA = a.fiscalId.toUpperCase();
                 const nameB = b.fiscalId.toUpperCase();
@@ -704,6 +702,33 @@ const ListAnnuallyReport = async (req, res, next) => {
                 return 0;
             })
         };
+
+        if (q) {
+            const queryLowered = q.toLowerCase();
+            const filteredData = responseData.data.filter(accountType =>
+                (accountType.payment_type_name && accountType.payment_type_name.toLowerCase().includes(queryLowered)) ||
+                (accountType.account_name && accountType.account_name.toLowerCase().includes(queryLowered)) ||
+                (accountType.PaidAmount && accountType.PaidAmount.toString().toLowerCase().includes(queryLowered)) ||
+                (accountType.ReceiveAmount && accountType.ReceiveAmount.toString().toLowerCase().includes(queryLowered)) ||
+                (accountType.description && accountType.description.toLowerCase().includes(queryLowered)) ||
+                (accountType.clientName && accountType.clientName.toLowerCase().includes(queryLowered))
+            );
+
+            if (filteredData.length > 0) {
+                responseData = {
+                    ...responseData,
+                    data: filteredData,
+                    total: filteredData.length,
+                };
+            } else {
+                responseData = {
+                    ...responseData,
+                    message: 'No matching Account Type Report found',
+                    data: [],
+                    total: 0,
+                };
+            }
+        }
 
         res.status(200).json(responseData);
     } catch (error) {
@@ -880,7 +905,7 @@ const ListSemiannualReport = async (req, res, next) => {
     }
 };
 
-const ListMonthlyReport = async (req, res, next) => {
+const ListAnnuallyReport = async (req, res, next) => {
     const tokenInfo = getDecodeToken(req);
 
     if (!tokenInfo.success) {
@@ -894,7 +919,7 @@ const ListMonthlyReport = async (req, res, next) => {
         const { q = '' } = req.query;
         const companyId = tokenInfo.decodedToken.companyId;
         const { tenantId } = tokenInfo.decodedToken;
-        const { startDate, endDate, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds } = req.body;
+        const { startDate, endDate, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds, fromAmount, toAmount } = req.body;
 
         if (companyId && req.body.companyId && companyId !== req.body.companyId) {
             return res.status(403).json({
@@ -909,14 +934,16 @@ const ListMonthlyReport = async (req, res, next) => {
             fiscalStartMonth = companysetting[0][0].fiscal_start_month
         }
 
-        let report = await Report.findAllMonthly(tenantId, companyId, startDate, endDate, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds);
+        let report = await Report.findAllAnnually(tenantId, companyId, startDate, endDate, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds, fromAmount, toAmount);
+
+        report[0] = reportSearch(q, report[0])
 
         const accountTypeMap = new Map();
         report[0].forEach(transaction => {
             const PaidAmount = +(parseFloat(transaction.PaidAmount)).toFixed(2);
             const ReceiveAmount = +(parseFloat(transaction.ReceiveAmount)).toFixed(2);
-            const fiscalData = getDateMonth(transaction.transaction_date)
-            const fiscalId = fiscalData.fiscalId
+            const fiscalData = getFiscalAndFrequencyYearMonth(transaction.transaction_date, fiscalStartMonth, 'annually');
+            const fiscalId = fiscalData.fiscalId;
             if (accountTypeMap.has(fiscalId)) {
                 const existingData = accountTypeMap.get(fiscalId);
                 existingData.PaidAmount = +(existingData.PaidAmount + PaidAmount).toFixed(2);
@@ -939,7 +966,7 @@ const ListMonthlyReport = async (req, res, next) => {
 
         let responseData = {
             success: true,
-            message: 'Monthly Report List Successfully!',
+            message: 'Annually Report List Successfully!',
             data: Array.from(accountTypeMap.values()).sort((a, b) => {
                 const nameA = a.fiscalId.toUpperCase();
                 const nameB = b.fiscalId.toUpperCase();
@@ -954,33 +981,6 @@ const ListMonthlyReport = async (req, res, next) => {
                 return 0;
             })
         };
-
-        if (q) {
-            const queryLowered = q.toLowerCase();
-            const filteredData = responseData.data.filter(accountType =>
-                (accountType.payment_type_name && accountType.payment_type_name.toLowerCase().includes(queryLowered)) ||
-                (accountType.account_name && accountType.account_name.toLowerCase().includes(queryLowered)) ||
-                (accountType.PaidAmount && accountType.PaidAmount.toString().toLowerCase().includes(queryLowered)) ||
-                (accountType.ReceiveAmount && accountType.ReceiveAmount.toString().toLowerCase().includes(queryLowered)) ||
-                (accountType.description && accountType.description.toLowerCase().includes(queryLowered)) ||
-                (accountType.clientName && accountType.clientName.toLowerCase().includes(queryLowered))
-            );
-
-            if (filteredData.length > 0) {
-                responseData = {
-                    ...responseData,
-                    data: filteredData,
-                    total: filteredData.length,
-                };
-            } else {
-                responseData = {
-                    ...responseData,
-                    message: 'No matching Account Type Report found',
-                    data: [],
-                    total: 0,
-                };
-            }
-        }
 
         res.status(200).json(responseData);
     } catch (error) {

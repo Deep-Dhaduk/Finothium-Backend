@@ -9,6 +9,7 @@ const bcrypt = require('bcrypt')
 const emailService = require('../service/email.service');
 const { createUserSchema, updateUserSchema } = require('../validation/user.validation');
 const { getDecodeToken } = require('../middlewares/decoded');
+const { log } = require("util");
 const baseURL = process.env.API_BASE_URL;
 
 let userResultSearch = (q, userResult) => {
@@ -57,7 +58,7 @@ const loginUser = async (req, res) => {
 
         const userWithCompanies = {
             ...user[0],
-            companies: companyResult[0].map(comp => ({ companyId: comp.company_id, companyName: comp.company_name, fiscalStartMonth: comp.fiscal_start_month ?? 4, defaultDateOption: comp.default_date_option ?? 1 })),
+            companies: companyResult[0].map(comp => ({ companyId: comp.company_id, companyName: comp.company_name })),
             roleName: roleResult[0][0].rolename
         };
 
@@ -101,7 +102,7 @@ const CreateUser = async (req, res) => {
             return res.status(400).json({ success: false, message: error.message });
         };
 
-        let { username, fullname, email, password, confirmpassword, profile_image, companies, status, createdBy, updatedBy, roleId } = req.body;
+        let { username, fullname, email, password, profile_image, companies, status, createdBy, updatedBy, roleId } = req.body;
 
         if (!Array.isArray(companies)) {
             return res.status(400).json({
@@ -112,7 +113,7 @@ const CreateUser = async (req, res) => {
 
         const tenantId = token.decodedToken.tenantId;
 
-        let user = new User(tenantId, username, fullname, email, password, confirmpassword, profile_image, null, status, createdBy, updatedBy, roleId);
+        let user = new User(tenantId, username, fullname, email, password, profile_image, null, status, createdBy, updatedBy, roleId);
 
         if (profile_image) {
             const matches = profile_image.match(/^data:(image\/([a-zA-Z]+));base64,(.+)$/);
@@ -304,12 +305,13 @@ const ListUser = async (req, res, next) => {
                 if (user.profile_image_filename) {
                     user.profile_image_filename = `${baseURL}/Images/Profile_Images/${user.profile_image_filename}`;
                 }
-                user.companyNames = (user.companyNames.replaceAll(',', ', '));
+                if (typeof user.companyNames === 'string') {
+                    user.companyNames = user.companyNames.replace(/,/g, ', ');
+                }
             } else {
                 user.companies = [];
             }
         });
-
 
         res.status(200).json({
             data: userResponse
@@ -447,7 +449,7 @@ const updateUser = async (req, res, next) => {
             return res.status(400).json({ success: false, message: error.message });
         };
 
-        const { username, fullname, email, password, confirmpassword, profile_image, companyId, status, createdBy, updatedBy, roleId } = req.body;
+        const { username, fullname, email, profile_image, companyId, status, createdBy, updatedBy, roleId } = req.body;
         if (!companyId) {
             throw new Error("companyId is required for updating user.");
         };
@@ -456,7 +458,7 @@ const updateUser = async (req, res, next) => {
 
         const tenantId = token.decodedToken.tenantId;
 
-        let user = new User(tenantId, username, fullname, email, password, confirmpassword, '', companyIdArray, status, createdBy, updatedBy, roleId);
+        let user = new User(tenantId, username, fullname, email, '', companyIdArray, status, createdBy, updatedBy, roleId);
         const userId = req.params.id;
 
         if (profile_image) {
@@ -614,6 +616,8 @@ const changePassword = async (req, res) => {
 
 const resetPassword = async (req, res) => {
     const token = getDecodeToken(req)
+    const tenantId = token.decodedToken.tenantId;
+    log
     try {
         const { newPassword, confirmPassword } = req.body;
 

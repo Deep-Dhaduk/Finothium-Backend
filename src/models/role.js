@@ -64,6 +64,21 @@ class Role {
         `
     }
 
+    async isRoleNameUnique() {
+        try {
+            let sql = `
+                SELECT COUNT(*) AS count
+                FROM role_master
+                WHERE tenantId = '${this.tenantId}'
+                AND rolename = '${this.rolename}'
+            `;
+            const [rows] = await db.execute(sql);
+            return rows[0].count === 0;
+        } catch (error) {
+            throw error;
+        }
+    }
+
     static findAll(tenantId) {
         let sql = this.getAllRoles(tenantId)
         sql += `  ORDER BY rolename ASC;`;

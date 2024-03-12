@@ -1,4 +1,4 @@
-const db = require('../db/dbconnection')
+const db = require('../db/dbconnection');
 
 class Account {
     constructor(tenantId, account_name, group_name_Id, join_date, exit_date, account_type_Id, status, createdBy, updatedBy, companyId) {

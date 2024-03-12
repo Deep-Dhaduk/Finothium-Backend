@@ -13,9 +13,9 @@ class CompanySetting {
     async save() {
         try {
             let sql = `
-            INSERT INTO company_setting (tenantId, companyId, default_date_option, , fiscal_start_month, createdBy,createdOn, updatedBy, updatedOn)
+            INSERT INTO company_setting (tenantId, companyId, default_date_option, fiscal_start_month, createdBy, createdOn, updatedBy, updatedOn)
             VALUES ('${this.tenantId}', '${this.companyId}', ${this.default_date_option}, ${this.fiscal_start_month}, '${this.createdBy}', UTC_TIMESTAMP(), '${this.updatedBy}', UTC_TIMESTAMP())`;
-            return db.execute(sql)
+            return db.execute(sql);
 
         } catch (error) {
             throw error;

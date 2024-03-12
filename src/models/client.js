@@ -1,4 +1,4 @@
-const db = require('../db/dbconnection')
+const db = require('../db/dbconnection');
 
 class Client {
     constructor(tenantId, clientName, status, createdBy, updatedBy, companyId, type) {

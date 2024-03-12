@@ -33,6 +33,14 @@ const CreateRole = async (req, res) => {
 
         let role = new Role(tenantId, rolename, status);
 
+        const isUnique = await role.isRoleNameUnique();
+        if (!isUnique) {
+            return res.status(400).json({
+                success: false,
+                message: "Role name already exists for this tenant."
+            });
+        }
+
         role.createdBy = userId;
         role.updatedBy = userId;
 

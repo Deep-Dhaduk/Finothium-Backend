@@ -60,6 +60,7 @@ class Parentmenu {
 
     static findActiveAll(tenantId) {
         let sql = this.findAllParentMenu(tenantId);
+        sql += ` AND status =1`
         sql += " ORDER BY menu_name, display_rank ASC";
         return db.execute(sql)
     };

@@ -69,7 +69,6 @@ const updateCompanySetting = async (req, res, next) => {
         companysetting.updatedBy = userId;
 
         let [findcompanysetting, _] = await CompanySetting.findBycompanyId(tenantId, companyId);
-        console.log(findcompanysetting);
         if (findcompanysetting.length > 0) {
             await companysetting.updateByCompanyId(tenantId, companyId)
         }

@@ -61,11 +61,13 @@ router.post(
 
 router.post(
     "/change-password/:id",
+    auth.verifyToken,
     UserController.changePassword
 );
 
 router.post(
     "/reset-password/:id",
+    auth.verifyToken,
     UserController.resetPassword
 );
 

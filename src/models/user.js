@@ -1,13 +1,12 @@
 const db = require('../db/dbconnection');
 const bcrypt = require('bcrypt');
 class User {
-    constructor(tenantId, username, fullname, email, password, confirmpassword, profile_image_filename, companyId, status, createdBy, updatedBy, roleId) {
+    constructor(tenantId, username, fullname, email, password, profile_image_filename, companyId, status, createdBy, updatedBy, roleId) {
         this.tenantId = tenantId;
         this.username = username;
         this.fullname = fullname;
         this.email = email;
         this.password = password;
-        this.confirmpassword = confirmpassword;
         this.profile_image_filename = profile_image_filename;
         this.companyId = companyId;
         this.status = status;
@@ -21,8 +20,6 @@ class User {
                    u.username,
                    u.fullname,
                    u.email,
-                   u.password,
-                   u.confirmpassword,
                    u.profile_image,
                    u.status,
                    u.createdBy,
@@ -44,9 +41,6 @@ class User {
 
     async save() {
         try {
-            if (this.password !== this.confirmpassword) {
-                throw new Error("Password and Confirm Password do not match");
-            }
             const hashedPassword = await bcrypt.hash(this.password, 8);
 
             let sql = `
@@ -56,7 +50,6 @@ class User {
                 fullname,
                 email,
                 password,
-                confirmpassword,
                 profile_image_filename,
                 status,
                 createdBy,
@@ -69,7 +62,6 @@ class User {
                 '${this.username}',
                 '${this.fullname}',
                 '${this.email}',
-                '${hashedPassword}',
                 '${hashedPassword}',
                 '${this.profile_image_filename}',
                 '${this.status}',
@@ -85,7 +77,6 @@ class User {
             throw error;
         }
     }
-
     static comparePassword(password, hashedPassword) {
         return bcrypt.compare(password, hashedPassword);
     }
@@ -147,8 +138,6 @@ class User {
                     username='${this.username}',
                     fullname='${this.fullname}',
                     email='${this.email}',
-                    password='${this.password}',
-                    confirmpassword='${this.password}',
                     status='${this.status}',
                     createdBy='${this.createdBy}',
                     updatedBy='${this.updatedBy}',
@@ -215,7 +204,7 @@ class User {
     }
 
     static updatePassword(email, hashedPassword) {
-        let sql = `UPDATE user_master SET password='${hashedPassword}', confirmpassword='${hashedPassword}'WHERE email = '${email}'`;
+        let sql = `UPDATE user_master SET password='${hashedPassword}' WHERE email = '${email}'`;
         return db.execute(sql);
     };
 };

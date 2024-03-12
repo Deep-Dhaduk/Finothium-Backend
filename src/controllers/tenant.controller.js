@@ -2,6 +2,8 @@ const Tenant = require("../models/tenant");
 const { use } = require("../routes/company.route");
 const { getDecodeToken } = require('../middlewares/decoded');
 const { createTenantSchema, updateTenantSchema } = require('../validation/tenant.validation');
+const db = require('../db/dbconnection');
+const message = ("This data is in used, you can't delete it.");
 
 let tenantResultSearch = (q, tenantResult) => {
     if (q) {
@@ -43,12 +45,6 @@ const CreateTenant = async (req, res) => {
             record: { tenant }
         });
     } catch (error) {
-        if (error.code === 'ER_DUP_ENTRY' && (error.sqlMessage.includes('tenantname') || error.sqlMessage.includes('email'))) {
-            return res.status(200).json({
-                success: false,
-                message: "Entry with provided tenant name or email already exists"
-            });
-        }
         res.status(400).json({
             success: false,
             message: error.message,
@@ -137,17 +133,77 @@ const getTenantById = async (req, res, next) => {
     }
 };
 
+// const deleteTenant = async (req, res, next) => {
+//     try {
+//         let tenantId = req.params.id;
+
+//         const [companyAccessResults] = await db.execute(`SELECT COUNT(*) AS count FROM company_access WHERE tenantId = ${tenantId}`);
+
+//         if (companyAccessResults[0].count > 0) {
+//             return res.status(200).json({ success: false, message: message });
+//         }
+
+//         const [companySettingResults] = await db.execute(`SELECT COUNT(*) AS count FROM company_setting WHERE tenantId = ${tenantId}`);
+
+//         if (companySettingResults[0].count > 0) {
+//             return res.status(200).json({ success: false, message: message });
+//         }
+
+//         const [companyMasterResult] = await db.execute(`SELECT COUNT(*) AS count FROM company_master WHERE tenantId = ${tenantId}`);
+
+//         if (companyMasterResult[0].count > 0) {
+//             return res.status(200).json({ success: false, message: message });
+//         }
+
+//         const [childmenuMasterResult] = await db.execute(`SELECT COUNT(*) AS count FROM childmenu_master WHERE tenantId = ${tenantId}`);
+
+//         if (childmenuMasterResult[0].count > 0) {
+//             return res.status(200).json({ success: false, message: message });
+//         }
+
+//         const [parentmenuMasterResult] = await db.execute(`SELECT COUNT(*) AS count FROM parentmenu_master WHERE tenantId = ${tenantId}`);
+
+//         if (parentmenuMasterResult[0].count > 0) {
+//             return res.status(200).json({ success: false, message: message });
+//         }
+
+//         const [userMasterResult] = await db.execute(`SELECT COUNT(*) AS count FROM user_master WHERE tenantId = ${tenantId}`);
+
+//         if (userMasterResult[0].count > 0) {
+//             return res.status(200).json({ success: false, message: message });
+//         }
+
+//         const [roleMasterResult] = await db.execute(`SELECT COUNT(*) AS count FROM role_master WHERE tenantId = ${tenantId}`);
+
+//         if (roleMasterResult[0].count > 0) {
+//             return res.status(200).json({ success: false, message: message });
+//         }
+
+//         await Tenant.delete(tenantId)
+//         res.status(200).json({
+//             success: true,
+//             message: "Tenant Delete Successfully!"
+//         });
+//     } catch (error) {
+//         console.log(error);
+//         next(error)
+//     }
+// };
+
 const deleteTenant = async (req, res, next) => {
     try {
-        let Id = req.params.id;
-        await Tenant.delete(Id)
+        let tenantId = req.params.id;
+
+        // Call the stored procedure to delete the tenant
+        await db.execute('CALL delete_tenant(?)', [tenantId]);
+
         res.status(200).json({
             success: true,
-            message: "Tenant Delete Successfully!"
+            message: "Tenant Deleted Successfully!"
         });
     } catch (error) {
         console.log(error);
-        next(error)
+        next(error);
     }
 };
 

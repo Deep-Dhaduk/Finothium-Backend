@@ -68,17 +68,18 @@ class Menu {
     }
 
     async findByChildId(tenantId, childId) {
-        let sql = `SELECT m.role_id,
-        m.child_id,
-        m.allow_access,
-        m.allow_add,
-        m.allow_edit,
-        m.allow_delete,
-        m.createdBy,
-        get_datetime_in_server_datetime(m.createdOn) AS createdOn,
-        m.updatedBy,
-        get_datetime_in_server_datetime(m.updatedOn) AS updatedOn
-         FROM menu_master WHERE tenantId = ${tenantId} AND child_id = '${childId}'`;
+        let sql = `SELECT
+        role_id,
+        child_id,
+        allow_access,
+        allow_add,
+        allow_edit,
+        allow_delete,
+        createdBy,
+        get_datetime_in_server_datetime(createdOn) AS createdOn,
+        updatedBy,
+        get_datetime_in_server_datetime(updatedOn) AS updatedOn
+        FROM menu_master WHERE tenantId = ${tenantId} AND child_id = '${childId}'`;
         const result = await db.execute(sql);
         return result[0][0];
     }

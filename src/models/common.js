@@ -68,6 +68,7 @@ class Common {
 
     static findActiveAll(tenantId, type) {
         let sql = this.getAllMasters(tenantId, type);
+        sql += " AND status = 1";
         sql += " ORDER BY name";
         return db.execute(sql);
     };

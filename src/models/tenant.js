@@ -1,4 +1,5 @@
-const db = require('../db/dbconnection')
+const db = require('../db/dbconnection');
+const bcrypt = require('bcrypt');
 
 class Tenant {
     constructor(tenantname, personname, address, contact, email, startdate, enddate, status, createdBy, updatedBy) {
@@ -14,59 +15,60 @@ class Tenant {
         this.updatedBy = updatedBy;
     };
 
-    async save() {
-        try {
-
-            let sql = `
-        INSERT INTO tenant_master(
-            tenantname,
-            personname,
-            address,
-            contact,
-            email,
-            startdate,
-            enddate,
-            status,
-            createdBy,
-            createdOn,
-            updatedBy,
-            updatedOn
-        )
-        VALUES(
-            '${this.tenantname}',
-            '${this.personname}',
-            '${this.address}',
-            '${this.contact}',
-            '${this.email}',
-            '${this.startdate}',
-            '${this.enddate}',
-            '${this.status}',
-            '${this.createdBy}',
-            UTC_TIMESTAMP(),
-            '${this.updatedBy}',
-            UTC_TIMESTAMP()
-        )`;
-            return db.execute(sql)
-        } catch (error) {
-            throw error;
-        }
-    }
-
     // async save() {
     //     try {
 
-    //         const sql = 'CALL create_new_tenant(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
-    //         const values = [
-    //             this.tenantname, this.personname, this.address, this.contact,
-    //             this.email, this.startdate, this.enddate, this.status, this.createdBy, this.updatedBy
-    //         ];
-
-    //         return db.execute(sql, values)
-
+    //         let sql = `
+    //     INSERT INTO tenant_master(
+    //         tenantname,
+    //         personname,
+    //         address,
+    //         contact,
+    //         email,
+    //         startdate,
+    //         enddate,
+    //         status,
+    //         createdBy,
+    //         createdOn,
+    //         updatedBy,
+    //         updatedOn
+    //     )
+    //     VALUES(
+    //         '${this.tenantname}',
+    //         '${this.personname}',
+    //         '${this.address}',
+    //         '${this.contact}',
+    //         '${this.email}',
+    //         '${this.startdate}',
+    //         '${this.enddate}',
+    //         '${this.status}',
+    //         '${this.createdBy}',
+    //         UTC_TIMESTAMP(),
+    //         '${this.updatedBy}',
+    //         UTC_TIMESTAMP()
+    //     )`;
+    //         return db.execute(sql)
     //     } catch (error) {
     //         throw error;
     //     }
     // }
+
+    async save() {
+        try {
+
+            const hashedPassword = await bcrypt.hash('Test@123', 8);
+
+            const sql = 'CALL create_new_tenant(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+            const values = [
+                this.tenantname, this.personname, this.address, this.contact,
+                this.email, this.startdate, this.enddate, this.status, this.createdBy, this.updatedBy, hashedPassword
+            ];
+            return db.execute(sql, values)
+
+        } catch (error) {
+            throw error;
+        }
+    }
 
     static getTenants() {
         return `SELECT tenantId,

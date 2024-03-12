@@ -19,6 +19,17 @@ class Company {
 
     async save() {
         try {
+            const checkEmailQuery = `
+            SELECT COUNT(*) AS count
+            FROM company_master
+            WHERE tenantId = '${this.tenantId}' AND email = '${this.email}'
+        `;
+            const [emailCountResult] = await db.execute(checkEmailQuery);
+            const emailCount = emailCountResult[0].count;
+
+            if (emailCount > 0) {
+                throw new Error("Email already exists for this tenant");
+            }
             let sql = `
             INSERT INTO company_master(
                 tenantId,
@@ -62,7 +73,7 @@ class Company {
 
             const insertCompanySetting = `
             INSERT INTO company_setting (tenantId, companyId, default_date_option,fiscal_start_month, createdBy,createdOn, updatedBy, updatedOn)
-            VALUES ('${this.tenantId}', '${companyId}', 1, 4, '${this.createdBy}', UTC_TIMESTAMP(), '${this.updatedBy}', UTC_TIMESTAMP())`;
+            VALUES ('${this.tenantId}', '${companyId}', 10, 4, '${this.createdBy}', UTC_TIMESTAMP(), '${this.updatedBy}', UTC_TIMESTAMP())`;
             await db.execute(insertCompanySetting);
 
             return result;

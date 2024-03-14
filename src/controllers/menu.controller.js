@@ -88,6 +88,49 @@ const ListMenu = async (req, res, next) => {
     }
 };
 
+const ListMenuWithRoleId = async (req, res, next) => {
+    const token = getDecodeToken(req);
+    const tenantId = token.decodedToken.tenantId;
+    try {
+        const { q = '', id } = req.query;
+        const roleId = req.params.id;
+
+        if (!roleId) {
+            return res.status(400).json({ success: false, message: 'roleId parameter is required' });
+        }
+
+        if (id) {
+            const menu = await Menu.findById(tenantId, roleId, id);
+
+            if (menu[0].length === 0) {
+                return res.status(404).json({ success: false, message: 'Menu not found' });
+            }
+
+            return res.status(200).json({ success: true, message: 'Menu found', data: menu[0][0] });
+        }
+
+        const menuResult = await Menu.findAllWithRoleId(tenantId, roleId);
+
+        menuResult[0] = menuResultSearch(q, menuResult[0]);
+
+        let responseData = {
+            success: true,
+            message: 'Menu List Successfully!',
+            data: menuResult[0]
+        };
+
+        responseData.data = responseData.data.map(menu => {
+            const { id, tenantId, ...rest } = menu;
+            return rest;
+        })
+
+        res.status(200).json(responseData);
+    } catch (error) {
+        console.log(error);
+        next(error);
+    }
+};
+
 const getMenuById = async (req, res, next) => {
     const token = getDecodeToken(req);
     const roleId = token.decodedToken.roleId;
@@ -156,6 +199,7 @@ const updateMenu = async (req, res, next) => {
 module.exports = {
     CreateMenu,
     ListMenu,
+    ListMenuWithRoleId,
     getMenuById,
     deleteMenu,
     updateMenu

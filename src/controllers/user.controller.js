@@ -1,6 +1,5 @@
 const User = require("../models/user");
 const CompanyAccess = require('../models/company_access');
-const Company = require('../models/company');
 const Role = require("../models/role");
 const fs = require('fs');
 const path = require('path');
@@ -441,29 +440,26 @@ const deleteUser = async (req, res, next) => {
 };
 
 const updateUser = async (req, res, next) => {
-    const token = getDecodeToken(req)
+    const token = getDecodeToken(req);
     try {
-
         const { error } = updateUserSchema.validate(req.body);
         if (error) {
             return res.status(400).json({ success: false, message: error.message });
-        };
+        }
 
         const { username, fullname, email, profile_image, companyId, status, createdBy, updatedBy, roleId } = req.body;
         if (!companyId) {
             throw new Error("companyId is required for updating user.");
-        };
+        }
 
         const companyIdArray = Array.isArray(companyId) ? companyId : [companyId];
-
         const tenantId = token.decodedToken.tenantId;
+        const userId = req.params.id;
 
         let user = new User(tenantId, username, fullname, email, '', companyIdArray, status, createdBy, updatedBy, roleId);
-        const userId = req.params.id;
 
         if (profile_image) {
             const matches = profile_image.match(/^data:(image\/([a-zA-Z]+));base64,(.+)$/);
-
             if (!matches || matches.length !== 4) {
                 return res.status(400).json({
                     success: false,
@@ -474,24 +470,22 @@ const updateUser = async (req, res, next) => {
             const contentType = matches[1];
             const fileExtension = matches[2];
             const base64Data = matches[3];
-
             const buffer = Buffer.from(base64Data, 'base64');
 
             const fileName = `${Date.now()}-profile.${fileExtension}`;
             const filePath = path.join(__dirname, '../public/Images/Profile_Images', fileName);
 
             fs.mkdirSync(path.dirname(filePath), { recursive: true });
-
             fs.writeFileSync(filePath, buffer);
-
             user.profile_image_filename = fileName;
         }
+
         let updateUserResult = await user.update(userId);
 
         res.status(200).json({
             success: true,
             message: "User Successfully Updated",
-            record: { updateUserResult },
+            record: updateUserResult,
             returnOriginal: false,
             runValidators: true
         });
@@ -566,6 +560,7 @@ const verifyOTPAndUpdatePassword = async (req, res) => {
         });
     }
 };
+
 
 const changePassword = async (req, res) => {
     const token = getDecodeToken(req)

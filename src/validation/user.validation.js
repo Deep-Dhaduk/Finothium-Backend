@@ -19,7 +19,6 @@ const updateUserSchema = Joi.object({
   username: Joi.string().required(),
   fullname: Joi.string().required(),
   email: Joi.string().required(),
-  password: Joi.string().required(),
   profile_image: Joi.string().allow(''),
   companyId: Joi.array().items(
     Joi.number().integer().required()

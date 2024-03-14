@@ -435,7 +435,7 @@ const ListCompanyReport = async (req, res, next) => {
         const { q = '' } = req.query;
         const companyId = tokenInfo.decodedToken.companyId;
         const { tenantId } = tokenInfo.decodedToken;
-        const { startDate, endDate, clientTypeIds, paymentTypeIds, categoryTypeIds, accountIds, groupTypeIds, fromAmount, toAmount } = req.body;
+        const { startDate, endDate, clientTypeIds, paymentTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds, fromAmount, toAmount } = req.body;
         if (companyId && req.body.companyId && companyId !== req.body.companyId) {
             return res.status(403).json({
                 success: false,
@@ -443,7 +443,7 @@ const ListCompanyReport = async (req, res, next) => {
             });
         }
 
-        let report = await Report.findAllCompany(tenantId, companyId, startDate, endDate, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, fromAmount, toAmount);
+        let report = await Report.findAllCompany(tenantId, companyId, startDate, endDate, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds, fromAmount, toAmount);
 
         report[0] = reportSearch(q, report[0])
 
@@ -642,7 +642,7 @@ const ListMonthlyReport = async (req, res, next) => {
         const { q = '' } = req.query;
         const companyId = tokenInfo.decodedToken.companyId;
         const { tenantId } = tokenInfo.decodedToken;
-        const { startDate, endDate, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds } = req.body;
+        const { startDate, endDate, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds, fromAmount, toAmount } = req.body;
 
         if (companyId && req.body.companyId && companyId !== req.body.companyId) {
             return res.status(403).json({
@@ -657,7 +657,7 @@ const ListMonthlyReport = async (req, res, next) => {
             fiscalStartMonth = companysetting[0][0].fiscal_start_month
         }
 
-        let report = await Report.findAllMonthly(tenantId, companyId, startDate, endDate, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds);
+        let report = await Report.findAllMonthly(tenantId, companyId, startDate, endDate, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds, fromAmount, toAmount);
 
         const accountTypeMap = new Map();
         report[0].forEach(transaction => {

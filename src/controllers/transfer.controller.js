@@ -64,7 +64,7 @@ const ListTransfer = async (req, res, next) => {
         const { q = '', id } = req.query;
         const companyId = tokenInfo.decodedToken.companyId;
         const { tenantId } = tokenInfo.decodedToken;
-        const { limit, startDate, endDate, paymentTypeIds, accountTypeIds } = req.body;
+        const { limit, startDate, endDate, paymentTypeIds, accountTypeIds, fromAmount, toAmount } = req.body;
 
         if (id) {
             const transfer = await Transfer.findById(tenantId, id);
@@ -75,7 +75,7 @@ const ListTransfer = async (req, res, next) => {
             return res.status(200).json({ success: true, message: 'Transfer found', data: transfer[0] });
         }
 
-        let transferResult = await Transfer.findAll(tenantId, companyId, startDate, endDate, paymentTypeIds, accountTypeIds, limit);
+        let transferResult = await Transfer.findAll(tenantId, companyId, startDate, endDate, paymentTypeIds, accountTypeIds, limit, fromAmount, toAmount);
 
         transferResult[0] = transferResultSearch(q, transferResult[0]);
 

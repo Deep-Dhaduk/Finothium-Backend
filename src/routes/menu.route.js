@@ -21,6 +21,12 @@ router.get(
     Menucontroller.getMenuById
 );
 
+router.post(
+    "/list-menurole/:id",
+    auth.verifyToken,
+    Menucontroller.ListMenuWithRoleId
+);
+
 router.delete(
     "/delete-menu/:id",
     auth.verifyToken,

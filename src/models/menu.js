@@ -12,7 +12,7 @@ class Menu {
     async save() {
         try {
             for (const item of this.menuItems) {
-                const existingMenu = await this.findByChildId(item.child_id);
+                const existingMenu = await this.findByChildId(this.tenantId, item.child_id);
 
                 if (existingMenu) {
                     let sql = `

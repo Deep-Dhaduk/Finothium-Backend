@@ -61,11 +61,11 @@ const ListTransaction = async (req, res, next) => {
     const token = getDecodeToken(req);
     try {
         const { q = '' } = req.query;
-        const { limit, startDate, endDate, type, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds } = req.body;
+        const { limit, startDate, endDate, type, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds, fromAmount, toAmount } = req.body;
         const companyId = token.decodedToken.companyId;
         const { tenantId } = token.decodedToken;
 
-        let transaction = await Transaction.findAll(tenantId, companyId, startDate, endDate, type, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds, limit);
+        let transaction = await Transaction.findAll(tenantId, companyId, startDate, endDate, type, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds, limit, fromAmount, toAmount);
 
         transaction[0] = transactionSearch(q, transaction[0]);
 

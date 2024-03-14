@@ -54,16 +54,15 @@ class Transfer {
         }
     };
 
-    static async findAll(tenantId, companyId, startDate = null, endDate = null, paymentTypeIds = null, accountTypeIds = null, limit = null) {
+    static async findAll(tenantId, companyId, startDate = null, endDate = null, paymentTypeIds = null, accountTypeIds = null, limit = null, fromAmount = null, toAmount = null) {
         try {
             let sql;
             let params;
 
             const paymentTypeIdsString = Array.isArray(paymentTypeIds) && paymentTypeIds.length > 0 ? paymentTypeIds.join(',') : null;
             const accountTypeIdsString = Array.isArray(accountTypeIds) && accountTypeIds.length > 0 ? accountTypeIds.join(',') : null;
-            sql = `CALL transfer(?, ?, ?, ?, ?, ?, ?)`;
-            params = [tenantId, companyId, startDate, endDate, paymentTypeIdsString, accountTypeIdsString, limit || 95];
-
+            sql = `CALL transfer(?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+            params = [tenantId, companyId, startDate, endDate, paymentTypeIdsString, accountTypeIdsString, limit || 95, fromAmount, toAmount];
 
             const [result, _] = await db.execute(sql, params, { nullUndefined: true });
             return result;

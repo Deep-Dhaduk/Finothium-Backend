@@ -1,12 +1,11 @@
 const db = require('../db/dbconnection');
 const bcrypt = require('bcrypt');
 class User {
-    constructor(tenantId, username, fullname, email, password, profile_image_filename, companyId, status, createdBy, updatedBy, roleId) {
+    constructor(tenantId, username, fullname, email, profile_image_filename, companyId, status, createdBy, updatedBy, roleId) {
         this.tenantId = tenantId;
         this.username = username;
         this.fullname = fullname;
         this.email = email;
-        this.password = password;
         this.profile_image_filename = profile_image_filename;
         this.companyId = companyId;
         this.status = status;

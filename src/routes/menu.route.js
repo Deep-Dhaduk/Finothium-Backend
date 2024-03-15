@@ -16,16 +16,17 @@ router.get(
 );
 
 router.get(
+    "/list-menurole/:id",
+    auth.verifyToken,
+    Menucontroller.ListMenuWithRoleId
+);
+
+router.get(
     "/list-menu/:id",
     auth.verifyToken,
     Menucontroller.getMenuById
 );
 
-router.post(
-    "/list-menurole/:id",
-    auth.verifyToken,
-    Menucontroller.ListMenuWithRoleId
-);
 
 router.delete(
     "/delete-menu/:id",

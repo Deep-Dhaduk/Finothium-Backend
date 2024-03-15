@@ -1,7 +1,6 @@
 const Client = require("../models/client");
 const { createClientSchema, updateClientSchema } = require('../validation/client.validation');
 const { getDecodeToken } = require('../middlewares/decoded');
-const db = require('../db/dbconnection');
 const message = ("This data is in used, you can't delete it.");
 
 let clientResultSearch = (q, clientResult) => {
@@ -139,27 +138,29 @@ const getClientById = async (req, res, next) => {
 };
 
 const deleteClient = async (req, res, next) => {
-    const token = getDecodeToken(req);
-    const companyId = token.decodedToken.companyId;
-    const tenantId = token.decodedToken.tenantId;
     try {
-        let clientId = req.params.id;
+        const token = getDecodeToken(req);
+        const companyId = token.decodedToken.companyId;
+        const tenantId = token.decodedToken.tenantId;
+        const clientId = req.params.id;
 
-        const [clientResults] = await db.execute(`SELECT COUNT(*) AS count FROM transaction WHERE clientId = ${clientId}`);
-
-        if (clientResults[0].count > 0) {
-            return res.status(200).json({ success: false, message: message });
-        };
+        const clientValidation = await Client.deleteValidation(clientId)
+        if (!clientValidation) {
+            res.status(200).json({
+                success: false,
+                message
+            });
+        }
 
         await Client.delete(tenantId, companyId, clientId);
 
         res.status(200).json({
             success: true,
-            message: "Account Delete Successfully!"
+            message: "Client Delete Successfully!"
         });
     } catch (error) {
         console.log(error);
-        next(error);
+        next(error)
     }
 };
 

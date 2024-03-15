@@ -71,9 +71,18 @@ class Parentmenu {
         return db.execute(sql)
     };
 
-    static delete(tenantId, parentId) {
-        let sql = `DELETE FROM parentmenu_master WHERE tenantId = ${tenantId} AND id = ${parentId}`;
-        return db.execute(sql)
+    static async deleteValidation(parentId) {
+        const [parentResults] = await db.execute(`SELECT COUNT(*) AS count FROM childmenu_master WHERE parent_id = ?`, [parentId]);
+
+        if (parentResults[0].count > 0) {
+            return false
+        }
+        return true
+    }
+
+    static async delete(tenantId, parentId) {
+        const [deleteResult] = await db.execute(`DELETE FROM parentmenu_master WHERE tenantId = ? AND id = ?`, [tenantId, parentId]);
+        return deleteResult;
     };
 
     async update(tenantId, id) {

@@ -1,6 +1,7 @@
 const User = require("../models/user");
 const CompanyAccess = require('../models/company_access');
 const Role = require("../models/role");
+const Tenant = require("../models/tenant");
 const fs = require('fs');
 const path = require('path');
 const jwt = require('jsonwebtoken');
@@ -36,21 +37,42 @@ const loginUser = async (req, res) => {
 
         if (!user[0]) {
             return res.status(401).json({
-                message: 'Invalid email or password'
+                success: true,
+                message: 'The Email or Password is Incorrect.'
+            });
+        };
+
+        if (user[0].status === 0) {
+            return res.status(401).json({
+                success: true,
+                message: 'The Email or Password is Incorrect.'
             });
         }
+
+        // const tenant = await Tenant.findById(user[0].tenantId);
+
+        // if (!tenant[0] || tenant[0].length === 0) {
+        //     return res.status(401).json({
+        //         message: 'Invalid tenant associated with the user'
+        //     });
+        // }
+
+        // if (tenant[0][0].status === 0) {
+        //     return res.status(401).json({
+        //         message: 'tenant is inactive'
+        //     });
+        // }
+
+        const isValidPassword = await User.comparePassword(password, user[0].password);
+        if (!isValidPassword) {
+            return res.status(401).json({
+                message: 'The Email or Password is Incorrect.'
+            });
+        }
+
         if (user[0].profile_image_filename) {
             user[0].profile_image_filename = `${baseURL}/Images/Profile_Images/${user[0].profile_image_filename}`;
         }
-
-        const isValidPassword = await User.comparePassword(password, user[0].password);
-
-        if (!isValidPassword) {
-            return res.status(401).json({
-                message: 'Invalid email or password'
-            });
-        }
-
         const companyResult = await CompanyAccess.findAllByCompanyAccess(user[0].tenantId, user[0].id);
 
         const roleResult = await Role.findById(user[0].tenantId, user[0].roleId);

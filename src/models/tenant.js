@@ -14,45 +14,6 @@ class Tenant {
         this.createdBy = createdBy;
         this.updatedBy = updatedBy;
     };
-
-    // async save() {
-    //     try {
-
-    //         let sql = `
-    //     INSERT INTO tenant_master(
-    //         tenantname,
-    //         personname,
-    //         address,
-    //         contact,
-    //         email,
-    //         startdate,
-    //         enddate,
-    //         status,
-    //         createdBy,
-    //         createdOn,
-    //         updatedBy,
-    //         updatedOn
-    //     )
-    //     VALUES(
-    //         '${this.tenantname}',
-    //         '${this.personname}',
-    //         '${this.address}',
-    //         '${this.contact}',
-    //         '${this.email}',
-    //         '${this.startdate}',
-    //         '${this.enddate}',
-    //         '${this.status}',
-    //         '${this.createdBy}',
-    //         UTC_TIMESTAMP(),
-    //         '${this.updatedBy}',
-    //         UTC_TIMESTAMP()
-    //     )`;
-    //         return db.execute(sql)
-    //     } catch (error) {
-    //         throw error;
-    //     }
-    // }
-
     async save() {
         try {
 
@@ -104,9 +65,73 @@ class Tenant {
         return db.execute(sql)
     }
 
-    static delete(id) {
-        let sql = `DELETE FROM tenant_master WHERE tenantId = ${id}`;
-        return db.execute(sql)
+    static async deleteValidation(tenantId) {
+        const [accountResults] = await db.execute(`SELECT COUNT(*) AS count FROM account_master WHERE tenantId = ${tenantId}`);
+
+        if (accountResults[0].count > 0) {
+            return false
+        }
+
+        const [clientResults] = await db.execute(`SELECT COUNT(*) AS count FROM client_master WHERE tenantId = ${tenantId}`);
+
+        if (clientResults[0].count > 0) {
+            return false
+        }
+
+        const [commonResult] = await db.execute(`SELECT COUNT(*) AS count FROM common_master WHERE tenantId = ${tenantId}`);
+
+        if (commonResult[0].count > 0) {
+            return false
+        }
+
+        const [transactionResult] = await db.execute(`SELECT COUNT(*) AS count FROM transaction WHERE tenantId = ${tenantId}`);
+
+        if (transactionResult[0].count > 0) {
+            return false
+        }
+
+        const [transferResult] = await db.execute(`SELECT COUNT(*) AS count FROM transfer WHERE tenantId = ${tenantId}`);
+
+        if (transferResult[0].count > 0) {
+            return false
+        };
+
+        const [tenantResult] = await db.execute(`SELECT COUNT(*) AS count FROM transfer WHERE tenantId = ${tenantId}`);
+
+        if (tenantResult[0].count > 0) {
+            return false
+        };
+
+        const [companyResult] = await db.execute(`SELECT CASE WHEN totalcount = 1 AND totalcount = unchangecount THEN 0 ELSE totalcount END AS count FROM (SELECT COUNT(*) AS totalcount, COUNT(CASE WHEN createdOn = updatedOn THEN 1 ELSE 0 END ) AS unchangecount FROM company_master WHERE tenantId = ${tenantId} ) AS a`);
+
+        if (companyResult[0].count > 0) {
+            return false
+        };
+
+        const [companySettingResult] = await db.execute(`SELECT CASE WHEN totalcount = 1 AND totalcount = unchangecount THEN 0 ELSE totalcount END AS count FROM (SELECT COUNT(*) AS totalcount, COUNT(CASE WHEN createdOn = updatedOn THEN 1 ELSE 0 END ) AS unchangecount FROM company_setting WHERE tenantId = ${tenantId} ) AS a`);
+
+        if (companySettingResult[0].count > 0) {
+            return false
+        };
+
+        const [userResult] = await db.execute(`SELECT CASE WHEN totalcount = 1 AND totalcount = unchangecount THEN 0 ELSE totalcount END AS count FROM (SELECT COUNT(*) AS totalcount, COUNT(CASE WHEN createdOn = updatedOn THEN 1 ELSE 0 END ) AS unchangecount FROM user_master WHERE tenantId = ${tenantId} ) AS a`);
+
+        if (userResult[0].count > 0) {
+            return false
+        };
+
+        const [companyAccessResult] = await db.execute(`SELECT CASE WHEN totalcount = 1 AND totalcount = unchangecount THEN 0 ELSE totalcount END AS count FROM (SELECT COUNT(*) AS totalcount, COUNT(CASE WHEN createdOn = updatedOn THEN 1 ELSE 0 END ) AS unchangecount FROM company_access WHERE tenantId = ${tenantId} ) AS a`);
+
+        if (companyAccessResult[0].count > 0) {
+            return false
+        };
+
+        return true
+    }
+
+    static async delete(tenantId) {
+        await db.execute('CALL delete_tenant(?)', [tenantId]);
+        return { success: true };
     }
 
     async update(id) {

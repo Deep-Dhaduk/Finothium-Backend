@@ -73,6 +73,7 @@ class Account {
             AND a.companyId = ${companyId}
         `;
     }
+
     static findAll(tenantId, companyId) {
         let sql = this.findAccountQuery(tenantId, companyId);
         sql += " ORDER BY group_name, a.account_name";
@@ -92,10 +93,32 @@ class Account {
         return db.execute(sql);
     };
 
-    static delete(accountId, tenantId) {
-        let sql = `DELETE FROM account_master WHERE tenantId = ${tenantId} AND account_id = ${accountId}`;
-        return db.execute(sql)
-    };
+    static async deleteValidation(accountId) {
+
+        const [accountResults] = await db.execute(`SELECT COUNT(*) AS count FROM transaction WHERE accountId = ?`, [accountId]);
+
+        if (accountResults[0].count > 0) {
+            return false
+        }
+
+        const [fromAccountResults] = await db.execute(`SELECT COUNT(*) AS count FROM transfer WHERE fromAccount = ?`, [accountId]);
+
+        if (fromAccountResults[0].count > 0) {
+            return false
+        }
+
+        const [toAccountResults] = await db.execute(`SELECT COUNT(*) AS count FROM transfer WHERE toAccount = ?`, [accountId]);
+
+        if (toAccountResults[0].count > 0) {
+            return false
+        }
+        return true
+    }
+    static async delete(accountId, tenantId) {
+
+        const [deleteResult] = await db.execute(`DELETE FROM account_master WHERE tenantId = ? AND account_id = ?`, [tenantId, accountId]);
+        return deleteResult;
+    }
 
     async update(id, tenantId) {
         let sql = `UPDATE account_master SET account_name='${this.account_name}',group_name_Id='${this.group_name_Id}',join_date='${this.join_date}',exit_date='${this.exit_date}',account_type_Id='${this.account_type_Id}',status='${this.status}',updatedBy='${this.updatedBy}',updatedOn=UTC_TIMESTAMP() WHERE tenantId = ${tenantId} AND account_id = ${id}`;

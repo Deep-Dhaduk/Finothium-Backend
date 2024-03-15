@@ -1,9 +1,10 @@
 const Tenant = require("../models/tenant");
+const Role = require("../models/role")
 const { use } = require("../routes/company.route");
 const { getDecodeToken } = require('../middlewares/decoded');
 const { createTenantSchema, updateTenantSchema } = require('../validation/tenant.validation');
-const db = require('../db/dbconnection');
-const TenantService = require('../services/tenant.service');
+const message = ("This data is in use, you can't delete it.");
+const unauthorizedmessage = ("Unauthorized User, you can not perform this opertion.")
 
 let tenantResultSearch = (q, tenantResult) => {
     if (q) {
@@ -22,10 +23,21 @@ let tenantResultSearch = (q, tenantResult) => {
 };
 
 const CreateTenant = async (req, res) => {
-    const token = getDecodeToken(req);
-    const userId = token.decodedToken.userId;
 
     try {
+        const token = getDecodeToken(req);
+        const userId = token.decodedToken.userId;
+        const tenantId = token.decodedToken.tenantId;
+        const roleId = token.decodedToken.roleId;
+
+        const isValidRole = await Role.isThisSuperAdminRole(tenantId, roleId)
+        if (!isValidRole) {
+            res.status(401).json({
+                success: false,
+                message: unauthorizedmessage
+            })
+        }
+
         const { error } = createTenantSchema.validate(req.body);
         if (error) {
             return res.status(400).json({ success: false, message: error.message });
@@ -55,6 +67,18 @@ const CreateTenant = async (req, res) => {
 
 const ListTenant = async (req, res, next) => {
     try {
+        const token = getDecodeToken(req)
+        const tenantId = token.decodedToken.tenantId;
+        const roleId = token.decodedToken.roleId;
+
+        const isValidRole = await Role.isThisSuperAdminRole(tenantId, roleId)
+        if (!isValidRole) {
+            res.status(401).json({
+                success: false,
+                message: unauthorizedmessage
+            })
+        }
+
         const { q = '', id } = req.query;
 
         if (id) {
@@ -87,6 +111,18 @@ const ListTenant = async (req, res, next) => {
 
 const ActiveTenant = async (req, res, next) => {
     try {
+        const token = getDecodeToken(req)
+        const tenantId = token.decodedToken.tenantId;
+        const roleId = token.decodedToken.roleId;
+
+        const isValidRole = await Role.isThisSuperAdminRole(tenantId, roleId)
+        if (!isValidRole) {
+            res.status(401).json({
+                success: false,
+                message: unauthorizedmessage
+            })
+        }
+
         const { q = '', id } = req.query;
 
         if (id) {
@@ -119,6 +155,18 @@ const ActiveTenant = async (req, res, next) => {
 
 const getTenantById = async (req, res, next) => {
     try {
+        const token = getDecodeToken(req)
+        const tenantId = token.decodedToken.tenantId;
+        const roleId = token.decodedToken.roleId;
+
+        const isValidRole = await Role.isThisSuperAdminRole(tenantId, roleId)
+        if (!isValidRole) {
+            res.status(401).json({
+                success: false,
+                message: unauthorizedmessage
+            })
+        }
+
         let Id = req.params.id;
         let [tenant, _] = await Tenant.findById(Id);
 
@@ -135,12 +183,37 @@ const getTenantById = async (req, res, next) => {
 
 const deleteTenant = async (req, res, next) => {
     try {
-        let tenantId = req.params.id;
-        const result = await TenantService.deleteTenant(tenantId);
-        res.status(200).json(result);
+        const token = getDecodeToken(req)
+        const tenantId = token.decodedToken.tenantId;
+        const roleId = token.decodedToken.roleId;
+
+        const isValidRole = await Role.isThisSuperAdminRole(tenantId, roleId)
+        if (!isValidRole) {
+            res.status(401).json({
+                success: false,
+                message: unauthorizedmessage
+            })
+        }
+
+        let id = req.params.id;
+
+        const tenantValidation = await Tenant.deleteValidation(id)
+        if (!tenantValidation) {
+            res.status(200).json({
+                success: false,
+                message
+            });
+        }
+        await Tenant.delete(tenantId);
+        res.status(200).json({
+            success: true,
+            message: "Tenant Delete Successfully!"
+        });
     } catch (error) {
-        console.log(error);
-        next(error);
+        res.status(200).json({
+            success: false,
+            message: error.message
+        });
     };
 };
 
@@ -161,9 +234,19 @@ const deleteTenant = async (req, res, next) => {
 // };
 
 const updateTenant = async (req, res, next) => {
-    const token = getDecodeToken(req);
-    const userId = token.decodedToken.userId;
     try {
+        const token = getDecodeToken(req);
+        const userId = token.decodedToken.userId;
+        const roleId = token.decodedToken.roleId;
+        const tenantId = token.decodedToken.tenantId;
+
+        const isValidRole = await Role.isThisSuperAdminRole(tenantId, roleId)
+        if (!isValidRole) {
+            res.status(401).json({
+                success: false,
+                message: unauthorizedmessage
+            })
+        }
 
         const { error } = updateTenantSchema.validate(req.body);
         if (error) {

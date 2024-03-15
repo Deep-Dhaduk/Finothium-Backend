@@ -1,7 +1,6 @@
 const Account = require("../models/account");
 const { createAccountSchema, updateAccountSchema } = require('../validation/account.validation');
 const { getDecodeToken } = require('../middlewares/decoded');
-const db = require('../db/dbconnection');
 const message = ("This data is in used, you can't delete it.");
 
 let accountResultSearch = (q, accountResult) => {
@@ -150,27 +149,17 @@ const getAccountById = async (req, res, next) => {
 const deleteAccount = async (req, res, next) => {
     try {
         const token = getDecodeToken(req);
-
-        let accountId = req.params.id;
+        const accountId = req.params.id;
         const tenantId = token.decodedToken.tenantId;
 
-        const [accountResults] = await db.execute(`SELECT COUNT(*) AS count FROM transaction WHERE accountId = ${accountId}`);
-
-        if (accountResults[0].count > 0) {
-            return res.status(200).json({ success: false, message: message });
+        const accountValidation = await Account.deleteValidation(accountId)
+        if (!accountValidation) {
+            res.status(200).json({
+                success: false,
+                message
+            });
         }
 
-        const [fromAccountResults] = await db.execute(`SELECT COUNT(*) AS count FROM transfer WHERE fromAccount = ${accountId}`);
-
-        if (fromAccountResults[0].count > 0) {
-            return res.status(200).json({ success: false, message: message });
-        }
-
-        const [toAccountResults] = await db.execute(`SELECT COUNT(*) AS count FROM transfer WHERE toAccount = ${accountId}`);
-
-        if (toAccountResults[0].count > 0) {
-            return res.status(200).json({ success: false, message: message });
-        }
         await Account.delete(accountId, tenantId);
 
         res.status(200).json({
@@ -179,7 +168,7 @@ const deleteAccount = async (req, res, next) => {
         });
     } catch (error) {
         console.log(error);
-        next(error);
+        next(error)
     }
 };
 

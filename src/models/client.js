@@ -52,7 +52,7 @@ class Client {
             whereClause += ` AND (type = 'Both' OR type = '${type}')`;
         }
 
-        const sql =`SELECT clientId,
+        const sql = `SELECT clientId,
                         clientName,
                         status,
                         type,
@@ -85,10 +85,19 @@ class Client {
         return db.execute(sql)
     };
 
-    static delete(tenantId, companyId, id) {
-        let sql = `DELETE FROM client_master WHERE tenantId = ${tenantId} AND companyId = ${companyId} AND clientId = ${id}`;
-        return db.execute(sql)
-    };
+    static async deleteValidation(clientId) {
+        const [clientResults] = await db.execute(`SELECT COUNT(*) AS count FROM transaction WHERE clientId = ?`, [clientId]);
+
+        if (clientResults[0].count > 0) {
+            return false
+        };
+        return true
+    }
+
+    static async delete(tenantId, companyId, clientId) {
+        const [deleteResult] = await db.execute(`DELETE FROM client_master WHERE tenantId = ? AND companyId = ? AND clientId = ?`, [tenantId, companyId, clientId]);
+        return deleteResult;
+    }
 
     async update(tenantId, companyId, id) {
         let sql = `UPDATE client_master SET clientName='${this.clientName}',status='${this.status}',updatedBy='${this.updatedBy}',updatedOn=UTC_TIMESTAMP(), companyId='${this.companyId}',type='${this.type}' WHERE tenantId = ${tenantId} AND companyId = ${companyId} AND clientId = ${id}`;

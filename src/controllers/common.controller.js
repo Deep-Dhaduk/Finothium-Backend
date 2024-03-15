@@ -1,7 +1,6 @@
 const Common = require("../models/common");
 const { createCommonSchema, updateCommonSchema } = require('../validation/common.validation');
 const { getDecodeToken } = require('../middlewares/decoded');
-const db = require('../db/dbconnection');
 const message = ("This data is in used, you can't delete it.");
 
 let commonResultSearch = (q, commonResult) => {
@@ -174,23 +173,18 @@ const getCommonById = async (req, res, next) => {
 };
 
 const deleteCommon = async (req, res, next) => {
-    const token = getDecodeToken(req)
-    const tenantId = token.decodedToken.tenantId;
     try {
+        const token = getDecodeToken(req)
+        const tenantId = token.decodedToken.tenantId;
         let commonId = req.params.id;
 
-        const [accountResults] = await db.execute(`SELECT COUNT(*) AS count FROM account_master WHERE group_name_Id = ${commonId} OR account_type_Id = ${commonId}`);
-
-        if (accountResults[0].count > 0) {
-            return res.status(200).json({ success: false, message: message });
+        const commonValidation = await Common.deleteValidation(tenantId, accountId)
+        if (!commonValidation) {
+            res.status(200).json({
+                success: false,
+                message
+            });
         }
-
-        const [transactionResults] = await db.execute(`SELECT COUNT(*) AS count FROM transaction WHERE payment_type_id = ${commonId}`);
-
-        if (transactionResults[0].count > 0) {
-            return res.status(200).json({ success: false, message: message });
-        }
-
         await Common.delete(tenantId, commonId);
 
         res.status(200).json({
@@ -199,7 +193,7 @@ const deleteCommon = async (req, res, next) => {
         });
     } catch (error) {
         console.log(error);
-        next(error);
+        next(error)
     }
 };
 

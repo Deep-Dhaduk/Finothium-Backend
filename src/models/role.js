@@ -91,6 +91,21 @@ class Role {
         return db.execute(sql)
     }
 
+    static async isThisSuperAdminRole(tenantId, roleId) {
+
+        const sql = `
+                SELECT COUNT(*) as count
+                FROM role_master
+                WHERE tenantId = ${tenantId} AND id = ${roleId} AND rolename = 'SuperAdmin'
+            `;
+        const [toAccountResults] = await db.execute(sql);
+
+        if (toAccountResults[0].count > 0) {
+            return true
+        }
+        return false
+    }
+
     static async findById(tenantId, id) {
         let sql = this.getAllRoles(tenantId)
         sql += `AND id = ${id}`;

@@ -143,10 +143,12 @@ const deleteParentmenu = async (req, res, next) => {
     try {
         let parentId = req.params.id;
 
-        const [parentResults] = await db.execute(`SELECT COUNT(*) AS count FROM childmenu_master WHERE parent_id = ${parentId}`);
-
-        if (parentResults[0].count > 0) {
-            return res.status(200).json({ success: false, message: message });
+        const parentmenuValidation = await Parentmenu.deleteValidation(accountId)
+        if (!parentmenuValidation) {
+            res.status(200).json({
+                success: false,
+                message
+            });
         }
 
         await Parentmenu.delete(tenantId, parentId);
@@ -157,7 +159,7 @@ const deleteParentmenu = async (req, res, next) => {
         });
     } catch (error) {
         console.log(error);
-        next(error);
+        next(error)
     }
 };
 

@@ -1,9 +1,8 @@
 const Company = require("../models/company");
 const { createCompanySchema, updateCompanySchema } = require('../validation/company.validation');
 const { getDecodeToken } = require('../middlewares/decoded');
-const db = require('../db/dbconnection');
 const CompanySetting = require("../models/company_setting");
-const message = ("This data is in used, you can't delete it.");
+const message = ("This data is in use, you can't delete it.");
 
 let companyResultSearch = (q, companyResult) => {
     if (q) {
@@ -154,32 +153,18 @@ const getCompanyById = async (req, res, next) => {
 };
 
 const deleteCompany = async (req, res, next) => {
-    const token = getDecodeToken(req)
-    const tenantId = token.decodedToken.tenantId;
     try {
-        let companyId = req.params.id;
+        const token = getDecodeToken(req)
+        const tenantId = token.decodedToken.tenantId;
+        const companyId = req.params.id;
 
-        const [clientResults] = await db.execute(`SELECT COUNT(*) AS count FROM client_master WHERE companyId = ${companyId}`);
-
-        if (clientResults[0].count > 0) {
-            return res.status(200).json({ success: false, message: message });
-        };
-        const [accountResults] = await db.execute(`SELECT COUNT(*) AS count FROM account_master WHERE companyId = ${companyId}`);
-
-        if (accountResults[0].count > 0) {
-            return res.status(200).json({ success: false, message: message });
-        };
-        const [transaction] = await db.execute(`SELECT COUNT(*) AS count FROM transaction WHERE companyId = ${companyId}`);
-
-        if (transaction[0].count > 0) {
-            return res.status(200).json({ success: false, message: message });
-        };
-
-        const [transfer] = await db.execute(`SELECT COUNT(*) AS count FROM transfer WHERE companyId = ${companyId}`);
-
-        if (transfer[0].count > 0) {
-            return res.status(200).json({ success: false, message: message });
-        };
+        const companyValidation = await Company.deleteValidation(accountId)
+        if (!companyValidation) {
+            res.status(200).json({
+                success: false,
+                message
+            });
+        }
 
         await Company.delete(tenantId, companyId);
 
@@ -191,7 +176,7 @@ const deleteCompany = async (req, res, next) => {
         });
     } catch (error) {
         console.log(error);
-        next(error);
+        next(error)
     }
 };
 

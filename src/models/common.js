@@ -1,4 +1,4 @@
-const db = require('../db/dbconnection')
+const db = require('../db/dbconnection');
 
 class Common {
     constructor(tenantId, name, type, status, createdBy, updatedBy) {
@@ -79,9 +79,24 @@ class Common {
         return db.execute(sql)
     };
 
-    static delete(tenantId, commonId) {
-        let sql = `DELETE FROM common_master WHERE tenantId = ${tenantId} AND common_id = ${commonId}`;
-        return db.execute(sql)
+    static async deleteValidation(tenantId, commonId) {
+        const [accountResults] = await db.execute(`SELECT COUNT(*) AS count FROM account_master WHERE group_name_Id = ? OR account_type_Id = ?`, [tenantId, commonId]);
+
+        if (accountResults[0].count > 0) {
+            return false
+        };
+
+        const [transactionResults] = await db.execute(`SELECT COUNT(*) AS count FROM transaction WHERE payment_type_id = ?`, [commonId]);
+
+        if (transactionResults[0].count > 0) {
+            return false
+        }
+        return true
+    }
+
+    static async delete(tenantId, commonId) {
+        const [deleteResult] = await db.execute(`DELETE FROM common_master WHERE tenantId = ? AND common_id = ?`, [tenantId, commonId]);
+        return deleteResult;
     };
 
     async update(tenantId, id) {

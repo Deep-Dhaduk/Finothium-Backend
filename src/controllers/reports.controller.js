@@ -60,13 +60,6 @@ const ListPaymentReport = async (req, res, next) => {
         const { tenantId } = tokenInfo.decodedToken;
         const { startDate, endDate, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds, fromAmount, toAmount } = req.body;
 
-        if (companyId && req.body.companyId && companyId !== req.body.companyId) {
-            return res.status(403).json({
-                success: false,
-                message: 'Unauthorized: CompanyId in token does not match the requested companyId',
-            });
-        };
-
         let report = await Report.findAllPayment(tenantId, companyId, startDate, endDate, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds, fromAmount, toAmount);
 
         report[0] = reportSearch(q, report[0]);
@@ -136,12 +129,6 @@ const ListClientReport = async (req, res, next) => {
         const companyId = tokenInfo.decodedToken.companyId;
         const { tenantId } = tokenInfo.decodedToken;
         const { startDate, endDate, clientTypeIds, paymentTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds, fromAmount, toAmount } = req.body;
-        if (companyId && req.body.companyId && companyId !== req.body.companyId) {
-            return res.status(403).json({
-                success: false,
-                message: 'Unauthorized: CompanyId in token does not match the requested companyId',
-            });
-        };
 
         let report = await Report.findAllClient(tenantId, companyId, startDate, endDate, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds, fromAmount, toAmount);
 
@@ -212,12 +199,6 @@ const ListCategoryReport = async (req, res, next) => {
         const companyId = tokenInfo.decodedToken.companyId;
         const { tenantId } = tokenInfo.decodedToken;
         const { startDate, endDate, categoryTypeIds, paymentTypeIds, clientTypeIds, accountIds, groupTypeIds, accountTypeIds, fromAmount, toAmount } = req.body;
-        if (companyId && req.body.companyId && companyId !== req.body.companyId) {
-            return res.status(403).json({
-                success: false,
-                message: 'Unauthorized: CompanyId in token does not match the requested companyId',
-            });
-        };
 
         let report = await Report.findAllCategory(tenantId, companyId, startDate, endDate, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds, fromAmount, toAmount);
 
@@ -289,13 +270,6 @@ const ListAccountReport = async (req, res, next) => {
         const { tenantId } = tokenInfo.decodedToken;
         const { startDate, endDate, accountIds, paymentTypeIds, clientTypeIds, categoryTypeIds, groupTypeIds, accountTypeIds, fromAmount, toAmount } = req.body;
 
-        if (companyId && req.body.companyId && companyId !== req.body.companyId) {
-            return res.status(403).json({
-                success: false,
-                message: 'Unauthorized: CompanyId in token does not match the requested companyId',
-            });
-        };
-
         let report = await Report.findAllAccount(tenantId, companyId, startDate, endDate, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds, fromAmount, toAmount);
 
         report[0] = reportSearch(q, report[0])
@@ -359,13 +333,6 @@ const ListGroupReport = async (req, res, next) => {
 
         const { tenantId } = tokenInfo.decodedToken;
         const { startDate, endDate, groupTypeIds, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, accountTypeIds, fromAmount, toAmount } = req.body;
-
-        if (companyId && req.body.companyId && companyId !== req.body.companyId) {
-            return res.status(403).json({
-                success: false,
-                message: 'Unauthorized: CompanyId in token does not match the requested companyId',
-            });
-        }
 
         let report = await Report.findAllGroup(tenantId, companyId, startDate, endDate, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds, fromAmount, toAmount);
 
@@ -436,12 +403,6 @@ const ListCompanyReport = async (req, res, next) => {
         const companyId = tokenInfo.decodedToken.companyId;
         const { tenantId } = tokenInfo.decodedToken;
         const { startDate, endDate, clientTypeIds, paymentTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds, fromAmount, toAmount } = req.body;
-        if (companyId && req.body.companyId && companyId !== req.body.companyId) {
-            return res.status(403).json({
-                success: false,
-                message: 'Unauthorized: CompanyId in token does not match the requested companyId',
-            });
-        }
 
         let report = await Report.findAllCompany(tenantId, companyId, startDate, endDate, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds, fromAmount, toAmount);
 
@@ -475,13 +436,6 @@ const ListAccountTypeReport = async (req, res, next) => {
         const companyId = tokenInfo.decodedToken.companyId;
         const { tenantId } = tokenInfo.decodedToken;
         const { startDate, endDate, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds, fromAmount, toAmount } = req.body;
-
-        if (companyId && req.body.companyId && companyId !== req.body.companyId) {
-            return res.status(403).json({
-                success: false,
-                message: 'Unauthorized: CompanyId in token does not match the requested companyId',
-            });
-        }
 
         let report = await Report.findAllAccountType(tenantId, companyId, startDate, endDate, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds, fromAmount, toAmount);
 
@@ -644,13 +598,6 @@ const ListMonthlyReport = async (req, res, next) => {
         const { tenantId } = tokenInfo.decodedToken;
         const { startDate, endDate, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds, fromAmount, toAmount } = req.body;
 
-        if (companyId && req.body.companyId && companyId !== req.body.companyId) {
-            return res.status(403).json({
-                success: false,
-                message: 'Unauthorized: CompanyId in token does not match the requested companyId',
-            });
-        }
-
         let companysetting = await CompanySetting.findAll(tenantId, companyId)
         let fiscalStartMonth = 4
         if (companysetting[0].length > 0) {
@@ -753,13 +700,6 @@ const ListQuarterlyReport = async (req, res, next) => {
         const { tenantId } = tokenInfo.decodedToken;
         const { startDate, endDate, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds, fromAmount, toAmount } = req.body;
 
-        if (companyId && req.body.companyId && companyId !== req.body.companyId) {
-            return res.status(403).json({
-                success: false,
-                message: 'Unauthorized: CompanyId in token does not match the requested companyId',
-            });
-        }
-
         let companysetting = await CompanySetting.findAll(tenantId, companyId)
         let fiscalStartMonth = 4
         if (companysetting[0].length > 0) {
@@ -837,13 +777,6 @@ const ListSemiannualReport = async (req, res, next) => {
         const { tenantId } = tokenInfo.decodedToken;
         const { startDate, endDate, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds, fromAmount, toAmount } = req.body;
 
-        if (companyId && req.body.companyId && companyId !== req.body.companyId) {
-            return res.status(403).json({
-                success: false,
-                message: 'Unauthorized: CompanyId in token does not match the requested companyId',
-            });
-        }
-
         let companysetting = await CompanySetting.findAll(tenantId, companyId)
         let fiscalStartMonth = 4
         if (companysetting[0].length > 0) {
@@ -920,13 +853,6 @@ const ListAnnuallyReport = async (req, res, next) => {
         const companyId = tokenInfo.decodedToken.companyId;
         const { tenantId } = tokenInfo.decodedToken;
         const { startDate, endDate, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds, fromAmount, toAmount } = req.body;
-
-        if (companyId && req.body.companyId && companyId !== req.body.companyId) {
-            return res.status(403).json({
-                success: false,
-                message: 'Unauthorized: CompanyId in token does not match the requested companyId',
-            });
-        }
 
         let companysetting = await CompanySetting.findAll(tenantId, companyId)
         let fiscalStartMonth = 4

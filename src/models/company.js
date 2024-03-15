@@ -232,9 +232,34 @@ class Company {
         return db.execute(sql)
     };
 
-    static delete(tenantId, id) {
-        let sql = `DELETE FROM company_master WHERE tenantId = ${tenantId} AND id = ${id}`;
-        return db.execute(sql)
+    static async deleteValidation(companyId) {
+        const [clientResults] = await db.execute(`SELECT COUNT(*) AS count FROM client_master WHERE companyId = ?`, [companyId]);
+
+        if (clientResults[0].count > 0) {
+            return false
+        };
+        const [accountResults] = await db.execute(`SELECT COUNT(*) AS count FROM account_master WHERE companyId = ?`, [companyId]);
+
+        if (accountResults[0].count > 0) {
+            return false
+        };
+        const [transaction] = await db.execute(`SELECT COUNT(*) AS count FROM transaction WHERE companyId = ?`, [companyId]);
+
+        if (transaction[0].count > 0) {
+            return false
+        };
+
+        const [transfer] = await db.execute(`SELECT COUNT(*) AS count FROM transfer WHERE companyId = ?`, [companyId]);
+
+        if (transfer[0].count > 0) {
+            return false
+        };
+        return true
+    }
+
+    static async delete(tenantId, companyId) {
+        const [deleteResult] = await db.execute(`DELETE FROM company_master WHERE tenantId = ? AND id = ?`, [tenantId, companyId]);
+        return deleteResult;
     };
 
     async update(tenantId, id) {

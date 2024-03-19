@@ -98,9 +98,9 @@ class Role {
                 FROM role_master
                 WHERE tenantId = ${tenantId} AND id = ${roleId} AND rolename = 'SuperAdmin'
             `;
-        const [toAccountResults] = await db.execute(sql);
+        const [toSuperAdminResults] = await db.execute(sql);
 
-        if (toAccountResults[0].count > 0) {
+        if (toSuperAdminResults[0].count > 0) {
             return true
         }
         return false

@@ -1,11 +1,12 @@
 const db = require('../db/dbconnection');
 const bcrypt = require('bcrypt');
 class User {
-    constructor(tenantId, username, fullname, email, profile_image_filename, companyId, status, createdBy, updatedBy, roleId) {
+    constructor(tenantId, username, fullname, email, password, profile_image_filename, companyId, status, createdBy, updatedBy, roleId) {
         this.tenantId = tenantId;
         this.username = username;
         this.fullname = fullname;
         this.email = email;
+        this.password = password
         this.profile_image_filename = profile_image_filename;
         this.companyId = companyId;
         this.status = status;
@@ -19,6 +20,7 @@ class User {
                    u.username,
                    u.fullname,
                    u.email,
+                   u.password,
                    u.profile_image,
                    u.status,
                    u.createdBy,
@@ -28,6 +30,7 @@ class User {
                    u.otp,
                    u.roleId,
                    u.profile_image_filename,
+                   u.force_password_change AS forcePasswordChange,
                    r.roleName,
                    GROUP_CONCAT(c.company_name ORDER BY c.company_name ASC) AS companyNames
             FROM user_master u
@@ -53,8 +56,10 @@ class User {
                 status,
                 createdBy,
                 createdOn,
+                updatedBy,
                 updatedOn,
-                roleId
+                roleId,
+                force_password_change
             )
             VALUES(
                 '${this.tenantId}',
@@ -66,8 +71,10 @@ class User {
                 '${this.status}',
                 '${this.createdBy}',
                 UTC_TIMESTAMP(),
+                '${this.updatedBy}',
                 UTC_TIMESTAMP(),
-                '${this.roleId}'
+                '${this.roleId}',
+                '1'
             )`;
             const tmp = await db.execute(sql);
             return tmp;
@@ -99,7 +106,7 @@ class User {
         let sql = this.getUser(tenantId)
         sql += ` AND u.id = ${id}`
         sql += ' GROUP BY u.id';
-        return db.execute(sql)
+        return db.execute(sql);
     }
 
     static findOne(tenantId, id) {
@@ -127,9 +134,9 @@ class User {
 
             let profileImageQueryPart = '';
             if (this.profile_image_filename) {
-                profileImageQueryPart = `, profile_image_filename='${this.profile_image_filename}'`;
+                profileImageQueryPart = `profile_image_filename='${this.profile_image_filename}'`;
             } else {
-                profileImageQueryPart = `, profile_image_filename=null`;
+                profileImageQueryPart = `profile_image_filename=null`;
             }
 
             let sql = `
@@ -142,7 +149,7 @@ class User {
                     createdBy='${this.createdBy}',
                     updatedBy='${this.updatedBy}',
                     updatedOn=UTC_TIMESTAMP(),
-                    roleId='${this.roleId}'
+                    roleId='${this.roleId}',
                     ${profileImageQueryPart}
                 WHERE id = ${id}`;
 
@@ -204,7 +211,7 @@ class User {
     }
 
     static updatePassword(email, hashedPassword) {
-        let sql = `UPDATE user_master SET password='${hashedPassword}' WHERE email = '${email}'`;
+        let sql = `UPDATE user_master SET password='${hashedPassword}', force_password_change = 0 WHERE email = '${email}'`;
         return db.execute(sql);
     };
 };

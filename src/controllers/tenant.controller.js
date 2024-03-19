@@ -73,10 +73,10 @@ const ListTenant = async (req, res, next) => {
 
         const isValidRole = await Role.isThisSuperAdminRole(tenantId, roleId)
         if (!isValidRole) {
-            res.status(401).json({
+            return res.status(401).json({
                 success: false,
                 message: unauthorizedmessage
-            })
+            });
         }
 
         const { q = '', id } = req.query;
@@ -101,11 +101,11 @@ const ListTenant = async (req, res, next) => {
             data: tenantResult[0]
         };
 
-        res.status(200).json(responseData);
+        return res.status(200).json(responseData);
 
     } catch (error) {
         console.log(error);
-        next(error);
+        return next(error);
     }
 };
 
@@ -204,7 +204,7 @@ const deleteTenant = async (req, res, next) => {
                 message
             });
         }
-        await Tenant.delete(tenantId);
+        await Tenant.delete(id);
         res.status(200).json({
             success: true,
             message: "Tenant Delete Successfully!"

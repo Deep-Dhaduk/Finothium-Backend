@@ -1,7 +1,7 @@
 const Transaction = require("../models/transaction");
+const TransactionDetails = require("../models/trasnaction_details")
 const { createTransactionSchema, updateTransactionSchema } = require('../validation/transaction.validation');
 const { getDecodeToken } = require('../middlewares/decoded');
-const { date } = require("joi");
 
 let transactionSearch = (q, transaction) => {
     if (q) {
@@ -29,7 +29,7 @@ const CreateTransaction = async (req, res) => {
             return res.status(400).json({ success: false, message: error.message });
         };
 
-        let { transaction_date, transaction_type, payment_type_Id, accountId, amount, description, clientId } = req.body;
+        let { transaction_date, transaction_type, payment_type_Id, accountId, amount, description, clientId, details } = req.body;
 
         const companyId = token.decodedToken.companyId;
         const tenantId = token.decodedToken.tenantId;
@@ -41,12 +41,18 @@ const CreateTransaction = async (req, res) => {
         transaction.createdBy = userId;
         transaction.updatedBy = userId;
 
-        transaction = await transaction.save()
+        const saveTransaction = await transaction.save()
+
+        if (details && details.length > 0) {
+            const transactionDetails = details.map(detail => new TransactionDetails(tenantId, saveTransaction[0].insertId, detail.name, detail.amount, detail.description, companyId, userId, userId));
+
+            await TransactionDetails.save(transactionDetails);
+        }
 
         res.status(200).json({
             success: true,
             message: "Transaction create successfully!",
-            record: { transaction }
+            record: { saveTransaction }
         });
     } catch (error) {
         res.status(400).json({
@@ -65,14 +71,20 @@ const ListTransaction = async (req, res, next) => {
         const companyId = token.decodedToken.companyId;
         const { tenantId } = token.decodedToken;
 
-        let transaction = await Transaction.findAll(tenantId, companyId, startDate, endDate, type, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds, limit, fromAmount, toAmount);
+        let transactions = await Transaction.findAll(tenantId, companyId, startDate, endDate, type, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds, limit, fromAmount, toAmount);
 
-        transaction[0] = transactionSearch(q, transaction[0]);
+        for (let i = 0; i < transactions.length; i++) {
+            const currentTransaction = transactions[i];
+            const details = await TransactionDetails.findAll(tenantId);
+            currentTransaction.details = details;
+        }
+
+        transactions[0] = transactionSearch(q, transactions[0]);
 
         let responseData = {
             success: true,
             message: 'Transaction List Successfully!',
-            data: transaction[0]
+            data: transactions[0]
         };
 
         res.status(200).json(responseData);

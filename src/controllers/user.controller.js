@@ -71,7 +71,7 @@ const loginUser = async (req, res) => {
         }
 
         if (user[0].profile_image_filename) {
-            user[0].profile_image_filename = `${baseURL}/Images/Profile_Images/${user[0].profile_image_filename}`;
+            user[0].profile_image_filename = `${baseURL}${user[0].profile_image_filename}`;
         }
         const companyResult = await CompanyAccess.findAllByCompanyAccess(user[0].tenantId, user[0].id);
 
@@ -159,10 +159,7 @@ const CreateUser = async (req, res) => {
 
             fs.writeFileSync(filePath, buffer);
 
-            profile_image = fileName;
-
-            user.profile_image = fileName;
-            user.profile_image_filename = fileName;
+            user.profile_image_filename = `Images/Profile_Images/${fileName}`;
         }
 
         let newUser = await user.save();
@@ -256,7 +253,7 @@ const findOneRec = async (req, res) => {
         user[0].companyIds = user[0].companyIds ? user[0].companyIds.split(',').map(Number) : [];
 
         if (user[0].profile_image_filename) {
-            user[0].profile_image_filename = `${baseURL}/Images/Profile_Images/${user[0].profile_image_filename}`;
+            user[0].profile_image_filename = `${baseURL}${user[0].profile_image_filename}`;
         }
 
         return res.status(200).json({
@@ -324,7 +321,7 @@ const ListUser = async (req, res, next) => {
             if (userCompaniesMap[userId]) {
                 user.companies = userCompaniesMap[userId];
                 if (user.profile_image_filename) {
-                    user.profile_image_filename = `${baseURL}/Images/Profile_Images/${user.profile_image_filename}`;
+                    user.profile_image_filename = `${baseURL}${user.profile_image_filename}`;
                 }
                 if (typeof user.companyNames === 'string') {
                     user.companyNames = user.companyNames.replace(/,/g, ', ');
@@ -400,7 +397,7 @@ const Activeuser = async (req, res, next) => {
             if (userCompaniesMap[userId]) {
                 user.companies = userCompaniesMap[userId];
                 if (user.profile_image_filename) {
-                    user.profile_image_filename = `${baseURL}/Images/Profile_Images/${user.profile_image_filename}`;
+                    user.profile_image_filename = `${baseURL}${user.profile_image_filename}`;
                 }
             } else {
                 user.companies = [];
@@ -433,7 +430,7 @@ const getUserById = async (req, res, next) => {
         user[0].companyIds = user[0].companyIds ? user[0].companyIds.split(',').map(Number) : [];
 
         if (user[0].profile_image_filename) {
-            user[0].profile_image_filename = `${baseURL}/Images/Profile_Images/${user[0].profile_image_filename}`;
+            user[0].profile_image_filename = `${baseURL}${user[0].profile_image_filename}`;
         }
 
         res.status(200).json({
@@ -478,7 +475,7 @@ const updateUser = async (req, res, next) => {
         const tenantId = token.decodedToken.tenantId;
         const userId = req.params.id;
 
-        let user = new User(tenantId, username, fullname, email, '', companyIdArray, status, createdBy, updatedBy, roleId);
+        let user = new User(tenantId, username, fullname, email, '', '', companyIdArray, status, createdBy, updatedBy, roleId);
 
         if (profile_image) {
             const matches = profile_image.match(/^data:(image\/([a-zA-Z]+));base64,(.+)$/);
@@ -499,7 +496,7 @@ const updateUser = async (req, res, next) => {
 
             fs.mkdirSync(path.dirname(filePath), { recursive: true });
             fs.writeFileSync(filePath, buffer);
-            user.profile_image_filename = fileName;
+            user.profile_image_filename = `Images/Profile_Images/${fileName}`;
         }
 
         let updateUserResult = await user.update(userId);
@@ -538,7 +535,6 @@ const forgotPassword = async (req, res) => {
 
         await emailService.sendEmail(email, `Your OTP for password reset is: ${otp}`, 'Password Reset OTP');
 
-        // Store the OTP in the database
         await User.saveOTP(email, otp);
 
         return res.status(200).json({

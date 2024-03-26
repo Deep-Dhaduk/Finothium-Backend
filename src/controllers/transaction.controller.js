@@ -41,24 +41,24 @@ const CreateTransaction = async (req, res) => {
         transaction.createdBy = userId;
         transaction.updatedBy = userId;
 
-        const saveTransaction = await transaction.save()
+        const saveTransaction = await transaction.save();
 
         if (details && details.length > 0) {
-            const transactionDetails = details.map(detail => new TransactionDetails(tenantId, saveTransaction[0].insertId, detail.name, detail.amount, detail.description, companyId, userId, userId));
+            const transactionDetails = details.map(detail => new TransactionDetails(tenantId, saveTransaction[0].insertId, transaction_type, detail.subCategoryId, detail.amount, detail.description, companyId, userId, userId));
 
             await TransactionDetails.save(transactionDetails);
         }
 
         res.status(200).json({
             success: true,
-            message: "Transaction create successfully!",
+            message: "Transaction created successfully!",
             record: { saveTransaction }
         });
     } catch (error) {
         res.status(400).json({
             success: false,
             message: error.message,
-        })
+        });
         console.log(error);
     }
 };
@@ -72,12 +72,6 @@ const ListTransaction = async (req, res, next) => {
         const { tenantId } = token.decodedToken;
 
         let transactions = await Transaction.findAll(tenantId, companyId, startDate, endDate, type, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds, limit, fromAmount, toAmount);
-
-        for (let i = 0; i < transactions.length; i++) {
-            const currentTransaction = transactions[i];
-            const details = await TransactionDetails.findAll(tenantId);
-            currentTransaction.details = details;
-        }
 
         transactions[0] = transactionSearch(q, transactions[0]);
 
@@ -116,16 +110,28 @@ const getTransactionById = async (req, res, next) => {
 const deleteTransaction = async (req, res, next) => {
     const token = getDecodeToken(req);
     const tenantId = token.decodedToken.tenantId;
+    const companyId = token.decodedToken.companyId;
     try {
         let Id = req.params.id;
-        await Transaction.delete(tenantId, Id)
+        await Transaction.delete(tenantId, Id);
+
+        const transactionDetails = await TransactionDetails.findAllByTransactionId(tenantId, companyId, Id);
+
+        if (transactionDetails.length > 0 && Array.isArray(transactionDetails[0])) {
+            const detailIds = transactionDetails[0].map(detail => detail.id);
+
+            if (detailIds.length > 0) {
+                await TransactionDetails.delete(tenantId, companyId, detailIds);
+            }
+        }
+
         res.status(200).json({
             success: true,
             message: "Transaction Delete Successfully!"
         });
     } catch (error) {
         console.log(error);
-        next(error)
+        next(error);
     }
 };
 
@@ -133,35 +139,67 @@ const updateTransaction = async (req, res, next) => {
     const token = getDecodeToken(req);
     const companyId = token.decodedToken.companyId;
     const tenantId = token.decodedToken.tenantId;
-    const userId = token.decodedToken.userId;
-    try {
+    const userId = token.decodedToken.userId || 0;
 
+    try {
         const { error } = updateTransactionSchema.validate(req.body);
         if (error) {
             return res.status(400).json({ success: false, message: error.message });
-        };
+        }
 
-        let { transaction_date, transaction_type, payment_type_Id, accountId, amount, description, clientId } = req.body;
+        const { transaction_date, transaction_type, payment_type_Id, accountId, amount, description, clientId, details } = req.body;
 
-        let transaction = new Transaction(tenantId, transaction_date, transaction_type, payment_type_Id, accountId, amount, description, '', '', companyId, clientId);
+        const transactionId = req.params.id;
+        const findTransaction = await Transaction.findById(tenantId, companyId, transactionId);
+        if (!findTransaction) {
+            throw new Error("Transaction not found!");
+        }
 
+        const transaction = new Transaction(tenantId, transaction_date, transaction_type, payment_type_Id, accountId, amount, description, '', '', companyId, clientId);
         transaction.createdBy = userId;
         transaction.updatedBy = userId;
 
-        let Id = req.params.id;
-        let [findtransaction, _] = await Transaction.findById(tenantId, Id);
-        if (!findtransaction) {
-            throw new Error("Transaction not found!")
+        await transaction.update(tenantId, transactionId);
+
+        const existingDetailsIds = details.map(detail => detail.id).filter(id => id);
+        const existingDetails = await TransactionDetails.findAllByTransactionId(tenantId, companyId, transactionId);
+
+        for (const detail of existingDetails[0]) {
+            if (!existingDetailsIds.includes(detail.id)) {
+                await TransactionDetails.delete(tenantId, companyId, detail.id);
+            }
         }
-        await transaction.update(tenantId, Id)
+
+        if (details && details.length > 0) {
+            for (const detail of details) {
+                if (detail.id) {
+                    const existingDetail = await TransactionDetails.findById(tenantId, companyId, detail.id);
+                    if (existingDetail) {
+                        const updatedDetail = new TransactionDetails(tenantId, transactionId, transaction_type, detail.subCategoryId, detail.amount, detail.description, companyId, userId, userId);
+                        await updatedDetail.update(tenantId, companyId, detail.id);
+                    } else {
+                        throw new Error(`Transaction detail with ID ${detail.id} not found!`);
+                    }
+                } else {
+                    const newDetail = new TransactionDetails(tenantId, transactionId, transaction_type, detail.subCategoryId, detail.amount, detail.description, companyId, userId, userId);
+                    await TransactionDetails.save([newDetail]);
+                }
+            }
+        }
+
         res.status(200).json({
             success: true,
             message: "Transaction Successfully Updated",
-            record: { transaction }, returnOriginal: false, runValidators: true
+            record: { transaction },
+            returnOriginal: false,
+            runValidators: true
         });
     } catch (error) {
+        if (error.message.includes("Transaction detail with ID")) {
+            return res.status(404).json({ success: false, message: error.message });
+        }
         console.log(error);
-        next(error)
+        next(error);
     }
 };
 

@@ -29,88 +29,89 @@ let userResultSearch = (q, userResult) => {
     }
 };
 
+const checkUserLogin = async (user) => {
+    const tenant = await Tenant.findById(user[0].tenantId);
+
+    if (!tenant || !tenant[0][0]) {
+        return {
+            success: false,
+            message: 'Tenant data not found or incomplete'
+        };
+    }
+
+    const currentDate = new Date();
+    const endDate = new Date(tenant[0][0].enddate);
+    const daysDifference = Math.ceil((endDate - currentDate) / (1000 * 60 * 60 * 24));
+    let tenantStatus = tenant[0][0].status;
+
+    let tenantExpire = (daysDifference < 0 || tenantStatus === 0) ? 1 : 0;
+
+    if (tenant[0][0].tenantId === -1) {
+        tenantExpire = 0;
+        tenantStatus = 1;
+    }
+
+    if (user[0].profile_image_filename) {
+        user[0].profile_image_filename = `${baseURL}${user[0].profile_image_filename}`;
+    }
+    const companyResult = await CompanyAccess.findAllByCompanyAccess(user[0].tenantId, user[0].id);
+
+    const roleResult = await Role.findById(user[0].tenantId, user[0].roleId);
+
+    const userWithCompanies = {
+        ...user[0],
+        companies: companyResult[0].map(comp => ({ companyId: comp.company_id, companyName: comp.company_name })),
+        roleName: roleResult[0][0].rolename,
+        tenantStatus: tenantStatus
+    };
+
+    let selectedCompany = userWithCompanies.companies.length > 0 ? userWithCompanies.companies[0] : null;
+
+    const tokenPayload = {
+        userId: userWithCompanies.id,
+        email: userWithCompanies.email,
+        tenantId: userWithCompanies.tenantId,
+        roleId: userWithCompanies.roleId,
+        companyId: selectedCompany.companyId,
+        tenantExpire: tenantExpire,
+        tenantDays: daysDifference
+    };
+
+    const token = jwt.sign(
+        tokenPayload,
+        process.env.JWT_SECRET,
+        { expiresIn: process.env.JWT_EXPIRES_IN }
+    );
+
+    return {
+        success: true,
+        message: 'Login successful',
+        userData: { ...userWithCompanies },
+        token: token
+    };
+};
+
 const loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
-
         const [user, _] = await User.findByEmail(email);
 
         if (!user[0]) {
-            return res.status(401).json({
-                success: true,
-                message: 'The Email or Password is Incorrect.'
-            });
-        };
-
-        if (user[0].status === 0) {
-            return res.status(401).json({
-                success: true,
-                message: 'The Email or Password is Incorrect.'
-            });
+            throw new Error('The Email or Password is Incorrect.');
         }
-
-        // const tenant = await Tenant.findById(user[0].tenantId);
-
-        // if (!tenant[0] || tenant[0].length === 0) {
-        //     return res.status(401).json({
-        //         message: 'Invalid tenant associated with the user'
-        //     });
-        // }
-
-        // if (tenant[0][0].status === 0) {
-        //     return res.status(401).json({
-        //         message: 'tenant is inactive'
-        //     });
-        // }
-
+        if (user[0].status === 0) {
+            throw new Error('The Email or Password is Incorrect.');
+        }
         const isValidPassword = await User.comparePassword(password, user[0].password);
         if (!isValidPassword) {
-            return res.status(401).json({
-                message: 'The Email or Password is Incorrect.'
-            });
+            throw new Error('The Email or Password is Incorrect.');
         }
-
-        if (user[0].profile_image_filename) {
-            user[0].profile_image_filename = `${baseURL}${user[0].profile_image_filename}`;
-        }
-        const companyResult = await CompanyAccess.findAllByCompanyAccess(user[0].tenantId, user[0].id);
-
-        const roleResult = await Role.findById(user[0].tenantId, user[0].roleId);
-
-        const userWithCompanies = {
-            ...user[0],
-            companies: companyResult[0].map(comp => ({ companyId: comp.company_id, companyName: comp.company_name })),
-            roleName: roleResult[0][0].rolename
-        };
-
-        let selectedCompany = userWithCompanies.companies.length > 0 ? userWithCompanies.companies[0] : null;
-
-        const tokenPayload = {
-            userId: userWithCompanies.id,
-            email: userWithCompanies.email,
-            tenantId: userWithCompanies.tenantId,
-            roleId: userWithCompanies.roleId,
-            companyId: selectedCompany.companyId
-        };
-
-        const token = jwt.sign(
-            tokenPayload,
-            process.env.JWT_SECRET,
-            { expiresIn: process.env.JWT_EXPIRES_IN }
-        );
-
-
-        return res.status(200).json({
-            success: true,
-            message: 'Login successful',
-            userData: { ...userWithCompanies },
-            token: token
-        });
-
+        const authenticationResult = await checkUserLogin(user);
+        return res.status(200).json(authenticationResult);
     } catch (error) {
         console.log(error);
-        return res.status(500).json({
-            message: 'Internal server error'
+        return res.status(401).json({
+            message: error.message
         });
     }
 };
@@ -579,7 +580,6 @@ const verifyOTPAndUpdatePassword = async (req, res) => {
     }
 };
 
-
 const changePassword = async (req, res) => {
     const token = getDecodeToken(req)
     const tenantId = token.decodedToken.tenantId;
@@ -612,7 +612,7 @@ const changePassword = async (req, res) => {
         }
 
         const hashedPassword = await bcrypt.hash(newPassword, 8);
-        await User.updatePassword(user[0].email, hashedPassword);
+        await User.updatePassword(user[0].email, hashedPassword, 0);
 
         return res.status(200).json({
             success: true,
@@ -630,7 +630,6 @@ const changePassword = async (req, res) => {
 const resetPassword = async (req, res) => {
     const token = getDecodeToken(req)
     const tenantId = token.decodedToken.tenantId;
-    log
     try {
         const { newPassword, confirmPassword } = req.body;
 
@@ -652,7 +651,7 @@ const resetPassword = async (req, res) => {
         }
 
         const hashedPassword = await bcrypt.hash(newPassword, 8);
-        await User.updatePassword(user[0].email, hashedPassword);
+        await User.updatePassword(user[0].email, hashedPassword, 1);
 
         return res.status(200).json({
             success: true,
@@ -668,6 +667,7 @@ const resetPassword = async (req, res) => {
 };
 
 module.exports = {
+    checkUserLogin,
     CreateUser,
     ListUser,
     Activeuser,

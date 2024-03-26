@@ -51,7 +51,6 @@ class Client {
         if (type) {
             whereClause += ` AND (type = 'Both' OR type = '${type}')`;
         }
-
         const sql = `SELECT clientId,
                         clientName,
                         status,

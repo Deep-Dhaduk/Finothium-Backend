@@ -16,6 +16,12 @@ router.get(
 );
 
 router.get(
+    "/login-tenant/:id",
+    auth.verifyToken,
+    TenantController.logintenant
+);
+
+router.get(
     "/active-tenant",
     auth.verifyToken,
     TenantController.ActiveTenant

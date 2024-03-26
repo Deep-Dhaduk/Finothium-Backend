@@ -1,4 +1,5 @@
 const Transfer = require("../models/transfer");
+const TransactionDetails = require("../models/trasnaction_details")
 const { createTransferSchema, updateTransferSchema } = require('../validation/transfer.validation');
 const { getDecodeToken } = require('../middlewares/decoded');
 
@@ -24,7 +25,7 @@ const CreateTransfer = async (req, res) => {
             return res.status(400).json({ success: false, message: error.message });
         };
 
-        let { transactionDate, paymentType_Id, fromAccount, toAccount, amount, description } = req.body;
+        let { transactionDate, paymentType_Id, fromAccount, toAccount, amount, description, details } = req.body;
 
         if (fromAccount === toAccount) {
             return res.status(400).json({ success: false, message: "From and to accounts cannot be the same." });
@@ -41,12 +42,18 @@ const CreateTransfer = async (req, res) => {
 
         transfer.companyId = companyId;
 
-        transfer = await transfer.save()
+        let saveTransfer = await transfer.save()
+
+        if (details && details.length > 0) {
+            const transactionDetails = details.map(detail => new TransactionDetails(tenantId, saveTransfer[0].insertId, 'Transfer', detail.subCategoryId, detail.amount, detail.description, companyId, userId, userId));
+
+            await TransactionDetails.save(transactionDetails);
+        }
 
         res.status(200).json({
             success: true,
             message: "Transfer create successfully!",
-            record: { transfer }
+            record: { saveTransfer }
         });
     } catch (error) {
         res.status(400).json({
@@ -139,16 +146,28 @@ const getTransferById = async (req, res, next) => {
 const deleteTransfer = async (req, res, next) => {
     const token = getDecodeToken(req);
     const tenantId = token.decodedToken.tenantId;
+    const companyId = token.decodedToken.companyId;
     try {
         let Id = req.params.id;
         await Transfer.delete(tenantId, Id)
+
+        const transactionDetails = await TransactionDetails.findAllByTransactionId(tenantId, companyId, Id);
+
+        if (transactionDetails.length > 0 && Array.isArray(transactionDetails[0])) {
+            const detailIds = transactionDetails[0].map(detail => detail.id);
+
+            if (detailIds.length > 0) {
+                await TransactionDetails.delete(tenantId, companyId, detailIds);
+            }
+        }
+
         res.status(200).json({
             success: true,
             message: "Transfer Delete Successfully!"
         });
     } catch (error) {
         console.log(error);
-        next(error)
+        next(error);
     }
 };
 
@@ -164,7 +183,7 @@ const updateTransfer = async (req, res, next) => {
             return res.status(400).json({ success: false, message: error.message });
         };
 
-        let { transactionDate, paymentType_Id, fromAccount, toAccount, amount, description } = req.body;
+        let { transactionDate, paymentType_Id, fromAccount, toAccount, amount, description, details } = req.body;
 
         if (fromAccount === toAccount) {
             return res.status(400).json({ success: false, message: "From and to accounts cannot be the same." });
@@ -174,12 +193,39 @@ const updateTransfer = async (req, res, next) => {
 
         transfer.updatedBy = userId
 
-        let Id = req.params.id;
-        let [findtransfer, _] = await Transfer.findById(tenantId, Id);
+        let transferId = req.params.id;
+        let [findtransfer, _] = await Transfer.findById(tenantId, transferId);
         if (!findtransfer) {
             throw new Error("Transfer not found!")
         }
-        await transfer.update(tenantId, Id)
+        await transfer.update(tenantId, transferId);
+
+        const existingDetailsIds = details.map(detail => detail.id).filter(id => id);
+        const existingDetails = await TransactionDetails.findAllByTransactionId(tenantId, companyId, transferId);
+
+        for (const detail of existingDetails[0]) {
+            if (!existingDetailsIds.includes(detail.id)) {
+                await TransactionDetails.delete(tenantId, companyId, detail.id);
+            }
+        }
+
+        if (details && details.length > 0) {
+            for (const detail of details) {
+                if (detail.id) {
+                    const existingDetail = await TransactionDetails.findById(tenantId, companyId, detail.id);
+                    if (existingDetail) {
+                        const updatedDetail = new TransactionDetails(tenantId, transferId, 'Transfer', detail.subCategoryId, detail.amount, detail.description, companyId, userId, userId);
+                        await updatedDetail.update(tenantId, companyId, detail.id);
+                    } else {
+                        throw new Error(`Transaction detail with ID ${detail.id} not found!`);
+                    }
+                } else {
+                    const newDetail = new TransactionDetails(tenantId, transferId, 'Transfer', detail.subCategoryId, detail.amount, detail.description, companyId, userId, userId);
+                    await TransactionDetails.save([newDetail]);
+                }
+            }
+        }
+
         res.status(200).json({
             success: true,
             message: "Transfer Successfully Updated",

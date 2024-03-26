@@ -48,6 +48,12 @@ class Tenant {
         FROM tenant_master`
     }
 
+    static findByEmail(email) {
+        let sql = `SELECT * FROM tenant_master WHERE email = '${email}'`;
+        return db.execute(sql);
+    }
+
+
     static findAll() {
         let sql = this.getTenants()
         return db.execute(sql)
@@ -96,9 +102,15 @@ class Tenant {
             return false
         };
 
-        const [tenantResult] = await db.execute(`SELECT COUNT(*) AS count FROM transfer WHERE tenantId = ${tenantId}`);
+        const [menuResult] = await db.execute(`SELECT COUNT(*) AS count FROM menu_master WHERE tenantId = ${tenantId}`);
 
-        if (tenantResult[0].count > 0) {
+        if (menuResult[0].count > 0) {
+            return false
+        };
+
+        const [transactionDetailsResult] = await db.execute(`SELECT COUNT(*) AS count FROM transaction_details WHERE tenantId = ${tenantId}`);
+
+        if (transactionDetailsResult[0].count > 0) {
             return false
         };
 

@@ -79,6 +79,11 @@ class Role {
         }
     }
 
+    static async adminRoleName (tenantId, roleName) {
+        let sql = `SELECT * FROM role_master WHERE tenantId = ${tenantId} AND rolename = '${roleName}'`;
+        return db.execute(sql);
+    }
+
     static findAll(tenantId) {
         let sql = this.getAllRoles(tenantId)
         sql += `  ORDER BY rolename ASC;`;

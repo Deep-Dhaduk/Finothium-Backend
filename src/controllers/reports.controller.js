@@ -93,8 +93,8 @@ const ListPaymentReport = async (req, res, next) => {
             success: true,
             message: 'Payment Report List Successfully!',
             data: Array.from(paymentMap.values()).sort((a, b) => {
-                const nameA = a.PaymentName.toUpperCase();
-                const nameB = b.PaymentName.toUpperCase();
+                const nameA = (a.PaymentName || '').toUpperCase();
+                const nameB = (b.PaymentName || '').toUpperCase();
 
                 if (nameA < nameB) {
                     return -1;
@@ -163,8 +163,8 @@ const ListClientReport = async (req, res, next) => {
             success: true,
             message: 'Client Report List Successfully!',
             data: Array.from(clientMap.values()).sort((a, b) => {
-                const nameA = a.clientName.toUpperCase();
-                const nameB = b.clientName.toUpperCase();
+                const nameA = (a.clientName || '').toUpperCase();
+                const nameB = (b.clientName || '').toUpperCase();
 
                 if (nameA < nameB) {
                     return -1;
@@ -233,8 +233,8 @@ const ListCategoryReport = async (req, res, next) => {
             success: true,
             message: 'Category Report List Successfully!',
             data: Array.from(clientMap.values()).sort((a, b) => {
-                const nameA = a.clientName.toUpperCase();
-                const nameB = b.clientName.toUpperCase();
+                const nameA = (a.clientName || '').toUpperCase();
+                const nameB = (b.clientName || '').toUpperCase();
 
                 if (nameA < nameB) {
                     return -1;
@@ -303,8 +303,8 @@ const ListAccountReport = async (req, res, next) => {
             success: true,
             message: 'Account Report List Successfully!',
             data: Array.from(accountMap.values()).sort((a, b) => {
-                const nameA = a.accountName.toUpperCase();
-                const nameB = b.accountName.toUpperCase();
+                const nameA = (a.accountName || '').toUpperCase();
+                const nameB = (b.accountName || '').toUpperCase();
 
                 if (nameA < nameB) {
                     return -1;
@@ -367,8 +367,8 @@ const ListGroupReport = async (req, res, next) => {
             success: true,
             message: 'Group Report List Successfully!',
             data: Array.from(groupMap.values()).sort((a, b) => {
-                const nameA = a.GroupName.toUpperCase();
-                const nameB = b.GroupName.toUpperCase();
+                const nameA = (a.GroupName || '').toUpperCase();
+                const nameB = (b.GroupName || '').toUpperCase();
 
                 if (nameA < nameB) {
                     return -1;
@@ -439,7 +439,7 @@ const ListAccountTypeReport = async (req, res, next) => {
 
         let report = await Report.findAllAccountType(tenantId, companyId, startDate, endDate, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds, fromAmount, toAmount);
 
-        report[0] = reportSearch(q, report[0])
+        report[0] = reportSearch(q, report[0]);
 
         const accountTypeMap = new Map();
         report[0].forEach(transaction => {
@@ -470,8 +470,8 @@ const ListAccountTypeReport = async (req, res, next) => {
             success: true,
             message: 'Account Type Report List Successfully!',
             data: Array.from(accountTypeMap.values()).sort((a, b) => {
-                const nameA = a.accountTypeName.toUpperCase();
-                const nameB = b.accountTypeName.toUpperCase();
+                const nameA = (a.accountTypeName || '').toUpperCase();
+                const nameB = (b.accountTypeName || '').toUpperCase();
 
                 if (nameA < nameB) {
                     return -1;
@@ -636,8 +636,8 @@ const ListMonthlyReport = async (req, res, next) => {
             success: true,
             message: 'Monthly Report List Successfully!',
             data: Array.from(accountTypeMap.values()).sort((a, b) => {
-                const nameA = a.fiscalId.toUpperCase();
-                const nameB = b.fiscalId.toUpperCase();
+                const nameA = (a.fiscalId || '').toUpperCase();
+                const nameB = (b.fiscalId || '').toUpperCase();
 
                 if (nameA < nameB) {
                     return -1;
@@ -740,8 +740,8 @@ const ListQuarterlyReport = async (req, res, next) => {
             success: true,
             message: 'Quarterly Report List Successfully!',
             data: Array.from(accountTypeMap.values()).sort((a, b) => {
-                const nameA = a.fiscalId.toUpperCase();
-                const nameB = b.fiscalId.toUpperCase();
+                const nameA = (a.fiscalId || '').toUpperCase();
+                const nameB = (b.fiscalId || '').toUpperCase();
 
                 if (nameA < nameB) {
                     return -1;
@@ -817,8 +817,8 @@ const ListSemiannualReport = async (req, res, next) => {
             success: true,
             message: 'Semiannual Report List Successfully!',
             data: Array.from(accountTypeMap.values()).sort((a, b) => {
-                const nameA = a.fiscalId.toUpperCase();
-                const nameB = b.fiscalId.toUpperCase();
+                const nameA = (a.fiscalId || '').toUpperCase();
+                const nameB = (b.fiscalId || '').toUpperCase();
 
                 if (nameA < nameB) {
                     return -1;
@@ -894,8 +894,8 @@ const ListAnnuallyReport = async (req, res, next) => {
             success: true,
             message: 'Annually Report List Successfully!',
             data: Array.from(accountTypeMap.values()).sort((a, b) => {
-                const nameA = a.fiscalId.toUpperCase();
-                const nameB = b.fiscalId.toUpperCase();
+                const nameA = (a.fiscalId || '').toUpperCase();
+                const nameB = (b.fiscalId || '').toUpperCase();
 
                 if (nameA < nameB) {
                     return -1;

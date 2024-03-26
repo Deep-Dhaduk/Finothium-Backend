@@ -143,7 +143,7 @@ const deleteParentmenu = async (req, res, next) => {
     try {
         let parentId = req.params.id;
 
-        const parentmenuValidation = await Parentmenu.deleteValidation(accountId)
+        const parentmenuValidation = await Parentmenu.deleteValidation(parentId)
         if (!parentmenuValidation) {
             res.status(200).json({
                 success: false,

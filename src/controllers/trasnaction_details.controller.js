@@ -1,71 +1,101 @@
-// const TransactionDetails = require("../models/trasnaction_details");
-// const { getDecodeToken } = require('../middlewares/decoded');
+const TransactionDetails = require("../models/trasnaction_details");
+const { getDecodeToken } = require('../middlewares/decoded');
 
-// // const CreateTransactionDetails = async (req, res) => {
-// //     const token = getDecodeToken(req);
-// //     try {
+const reportTransaction = (transaction) => {
+    const { id, transaction_date, transactionId, transaction_type, payment_type_Id, payment_type_name, clientId, clientName, type, accountId, account_name, group_name_Id, account_group_name, account_type_Id, account_type_name, subCategoryId, sub_category_name, description, PaidAmount, ReceiveAmount } = transaction;
 
-// //         let { name, amount, description } = req.body;
+    return {
+        id,
+        transactionDate: transaction_date,
+        trasactionId: transactionId,
+        transactionType: transaction_type,
+        paymentTypeId: payment_type_Id,
+        paymentTypeName: payment_type_name,
+        clientId: clientId,
+        clientName: clientName,
+        type,
+        accountId: accountId,
+        accountName: account_name,
+        groupId: group_name_Id,
+        groupName: account_group_name,
+        accountTypeId: account_type_Id,
+        accountTypeName: account_type_name,
+        subCategoryName: sub_category_name,
+        subCategoryId,
+        description,
+        paidAmount: +PaidAmount == 0 ? null : +PaidAmount,
+        receiveAmount: +ReceiveAmount == 0 ? null : +ReceiveAmount
+    };
+};
 
-// //         const companyId = token.decodedToken.companyId;
-// //         const tenantId = token.decodedToken.tenantId;
-// //         const userId = token.decodedToken.userId;
+const ListTransactionDetails = async (req, res, next) => {
+    const tokenInfo = getDecodeToken(req);
 
-// //         let transactionDetails = new TransactionDetails(tenantId, name, amount, description, '', '', '');
+    if (!tokenInfo.success) {
+        return res.status(401).json({
+            success: false,
+            message: tokenInfo.message,
+        });
+    }
 
-// //         transactionDetails.companyId = companyId;
-// //         transactionDetails.createdBy = userId;
-// //         transactionDetails.updatedBy = userId;
+    try {
+        const { q = '' } = req.query;
+        const companyId = tokenInfo.decodedToken.companyId;
+        const { tenantId } = tokenInfo.decodedToken;
+        const { startDate, endDate, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds, subcategoryTypeIds, fromAmount, toAmount } = req.body;
 
-// //         transactionDetails = await transactionDetails.save()
+        let report = await TransactionDetails.findAllTransactionDetails(tenantId, companyId, startDate, endDate, paymentTypeIds, clientTypeIds, categoryTypeIds, accountIds, groupTypeIds, accountTypeIds, subcategoryTypeIds, fromAmount, toAmount);
 
-// //         res.status(200).json({
-// //             success: true,
-// //             message: "TransactionDetails create successfully!",
-// //             record: { transactionDetails }
-// //         });
-// //     } catch (error) {
-// //         res.status(400).json({
-// //             success: false,
-// //             message: error.message,
-// //         })
-// //         console.log(error);
-// //     }
-// // };
+        const paymentMap = new Map();
+        report[0].forEach(transaction => {
+            const subCategoryId = transaction.subCategoryId;
+            const subCategoryName = transaction.sub_category_name;
+            const PaidAmount = +(parseFloat(transaction.PaidAmount)).toFixed(2);
+            const ReceiveAmount = +(parseFloat(transaction.ReceiveAmount)).toFixed(2);
 
-// // const ListTransactionDetails = async (req, res, next) => {
-// //     const token = getDecodeToken(req);
-// //     const tenantId = token.decodedToken.tenantId;
-// //     try {
-// //         const { id } = req.query;
+            if (paymentMap.has(subCategoryId)) {
+                const existingData = paymentMap.get(subCategoryId);
+                existingData.PaidAmount = +(existingData.PaidAmount + PaidAmount).toFixed(2);
+                existingData.ReceiveAmount = +(existingData.ReceiveAmount + ReceiveAmount).toFixed(2);
+                existingData.BalanceAmount = +(existingData.ReceiveAmount - existingData.PaidAmount).toFixed(2);
+                existingData.paymentDetails.push(reportTransaction(transaction));
+            } else {
+                paymentMap.set(subCategoryId, {
+                    subCategoryId,
+                    subCategoryName,
+                    PaidAmount,
+                    ReceiveAmount,
+                    BalanceAmount: +(ReceiveAmount - PaidAmount).toFixed(2),
+                    paymentDetails: [reportTransaction(transaction)]
+                });
+            }
+        });
 
-// //         if (id) {
-// //             const transactionDetails = await TransactionDetails.findById(tenantId, id);
+        let responseData = {
+            success: true,
+            message: 'Transaction Details List Successfully!',
+            data: Array.from(paymentMap.values()).sort((a, b) => {
+                const nameA = (a.subCategoryName || '').toUpperCase();
+                const nameB = (b.subCategoryName || '').toUpperCase();
 
-// //             if (transactionDetails[0].length === 0) {
-// //                 return res.status(404).json({ success: false, message: 'TransactionDetails not found' });
-// //             }
+                if (nameA < nameB) {
+                    return -1;
+                }
+                if (nameA > nameB) {
+                    return 1;
+                }
 
-// //             return res.status(200).json({ success: true, message: 'TransactionDetails found', data: transactionDetails[0][0] });
-// //         }
+                return 0;
+            })
+        };
 
-// //         const transactionDetailsResult = await TransactionDetails.findAll(tenantId);
+        res.status(200).json(responseData);
+    } catch (error) {
+        console.log(error);
+        next(error);
+    }
+};
 
-// //         let responseData = {
-// //             success: true,
-// //             message: 'TransactionDetails List Successfully!',
-// //             data: transactionDetailsResult[0]
-// //         };
-// //         res.status(200).json(responseData);
-
-// //     } catch (error) {
-// //         console.log(error);
-// //         next(error);
-// //     }
-// // };
-
-
-// module.exports = {
-//     CreateTransactionDetails,
-//     ListTransactionDetails
-// }
+module.exports = {
+    ListTransactionDetails
+}

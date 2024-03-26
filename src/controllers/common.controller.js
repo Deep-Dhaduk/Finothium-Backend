@@ -178,7 +178,7 @@ const deleteCommon = async (req, res, next) => {
         const tenantId = token.decodedToken.tenantId;
         let commonId = req.params.id;
 
-        const commonValidation = await Common.deleteValidation(tenantId, accountId)
+        const commonValidation = await Common.deleteValidation(tenantId, commonId)
         if (!commonValidation) {
             res.status(200).json({
                 success: false,

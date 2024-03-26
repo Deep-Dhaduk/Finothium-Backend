@@ -30,7 +30,7 @@ class User {
                    u.otp,
                    u.roleId,
                    u.profile_image_filename,
-                   u.force_password_change AS forcePasswordChange,
+                   u.forcePasswordChange AS forcePasswordChange,
                    r.roleName,
                    GROUP_CONCAT(c.company_name ORDER BY c.company_name ASC) AS companyNames
             FROM user_master u
@@ -59,7 +59,7 @@ class User {
                 updatedBy,
                 updatedOn,
                 roleId,
-                force_password_change
+                forcePasswordChange
             )
             VALUES(
                 '${this.tenantId}',
@@ -88,7 +88,7 @@ class User {
         return bcrypt.compare(password, hashedPassword);
     }
 
-    static findAll(tenantId) {
+    static async findAll(tenantId) {
         let sql = this.getUser(tenantId)
         sql += ` GROUP BY u.id`;
         sql += ` ORDER BY u.fullname ASC, u.id`;
@@ -113,6 +113,19 @@ class User {
         let sql = this.getUser(tenantId)
         sql += ` AND u.id = ${id}`
         sql += ' GROUP BY u.id';
+        return db.execute(sql);
+    }
+
+    static findByAdmin(tenantId, roleName) {
+        let sql = `SELECT u.*,
+                   GROUP_CONCAT(c.company_name ORDER BY c.company_name ASC) AS companyNames
+                FROM user_master u
+                LEFT JOIN role_master rm ON u.tenantId = rm.tenantId AND u.roleId = rm.id
+                LEFT JOIN company_access ca ON u.tenantId = ca.tenantId AND u.id = ca.user_id
+                LEFT JOIN company_master c ON u.tenantId = c.tenantId AND ca.company_id = c.id
+                WHERE u.tenantId = ${tenantId}
+                AND rm.roleName = '${roleName}'`;
+
         return db.execute(sql);
     }
 
@@ -210,8 +223,8 @@ class User {
         return db.execute(sql);
     }
 
-    static updatePassword(email, hashedPassword) {
-        let sql = `UPDATE user_master SET password='${hashedPassword}', force_password_change = 0 WHERE email = '${email}'`;
+    static updatePassword(email, hashedPassword, forcePasswordChange) {
+        let sql = `UPDATE user_master SET password='${hashedPassword}', forcePasswordChange=${forcePasswordChange} WHERE email = '${email}'`;
         return db.execute(sql);
     };
 };

@@ -1,4 +1,5 @@
 const db = require('../db/dbconnection')
+const TransactionDetails = require('./trasnaction_details')
 
 class Transfer {
     constructor(tenantId, transactionDate, paymentType_Id, fromAccount, toAccount, amount, description, createdBy, updatedBy, companyId) {
@@ -65,6 +66,13 @@ class Transfer {
             params = [tenantId, companyId, startDate, endDate, paymentTypeIdsString, accountTypeIdsString, limit || 95, fromAmount, toAmount];
 
             const [result, _] = await db.execute(sql, params, { nullUndefined: true });
+
+            for (let i = 0; i < result[0].length; i++) {
+                const transactionId = result[0][i].transfer_id;
+                const details = await TransactionDetails.findAllByTransactionId(tenantId, companyId, transactionId);
+                result[0][i].details = details[0];
+            }
+
             return result;
         } catch (error) {
             console.error('Error in findAll:', error);

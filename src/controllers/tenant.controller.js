@@ -1,10 +1,15 @@
 const Tenant = require("../models/tenant");
 const Role = require("../models/role")
+const User = require("../models/user")
+const CompanyAccess = require('../models/company_access');
+const jwt = require('jsonwebtoken');
+const userController = require("../controllers/user.controller")
 const { use } = require("../routes/company.route");
 const { getDecodeToken } = require('../middlewares/decoded');
 const { createTenantSchema, updateTenantSchema } = require('../validation/tenant.validation');
 const message = ("This data is in use, you can't delete it.");
 const unauthorizedmessage = ("Unauthorized User, you can not perform this opertion.")
+const baseURL = process.env.API_BASE_URL;
 
 let tenantResultSearch = (q, tenantResult) => {
     if (q) {
@@ -106,6 +111,36 @@ const ListTenant = async (req, res, next) => {
     } catch (error) {
         console.log(error);
         return next(error);
+    }
+};
+
+const logintenant = async (req, res, next) => {
+    try {
+        const tenantId = req.params.id;
+
+        if (!tenantId) {
+            return res.status(400).json({
+                message: 'TenantId is required'
+            });
+        }
+
+        const [adminUser] = await User.findByAdmin(tenantId, 'Admin');
+
+        if (!adminUser) {
+            return res.status(404).json({
+                message: 'Admin user not found for the given tenantId'
+            });
+        }
+
+        const authenticationResult = await userController.checkUserLogin(adminUser);
+
+        return res.status(200).json(authenticationResult);
+
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            message: 'Internal server error'
+        });
     }
 };
 
@@ -217,22 +252,6 @@ const deleteTenant = async (req, res, next) => {
     };
 };
 
-// const deleteTenant = async (req, res, next) => {
-//     try {
-//         let tenantId = req.params.id;
-
-//         await db.execute('CALL delete_tenant(?)', [tenantId]);
-
-//         res.status(200).json({
-//             success: true,
-//             message: "Tenant Deleted Successfully!"
-//         });
-//     } catch (error) {
-//         console.log(error);
-//         next(error);
-//     }
-// };
-
 const updateTenant = async (req, res, next) => {
     try {
         const token = getDecodeToken(req);
@@ -281,5 +300,6 @@ module.exports = {
     ActiveTenant,
     getTenantById,
     deleteTenant,
-    updateTenant
+    updateTenant,
+    logintenant
 }

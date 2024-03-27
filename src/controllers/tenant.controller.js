@@ -1,15 +1,12 @@
 const Tenant = require("../models/tenant");
-const Role = require("../models/role")
-const User = require("../models/user")
-const CompanyAccess = require('../models/company_access');
-const jwt = require('jsonwebtoken');
-const userController = require("../controllers/user.controller")
+const Role = require("../models/role");
+const User = require("../models/user");
+const userController = require("../controllers/user.controller");
 const { use } = require("../routes/company.route");
 const { getDecodeToken } = require('../middlewares/decoded');
 const { createTenantSchema, updateTenantSchema } = require('../validation/tenant.validation');
 const message = ("This data is in use, you can't delete it.");
-const unauthorizedmessage = ("Unauthorized User, you can not perform this opertion.")
-const baseURL = process.env.API_BASE_URL;
+const unauthorizedmessage = ("Unauthorized User, you can not perform this opertion.");
 
 let tenantResultSearch = (q, tenantResult) => {
     if (q) {
@@ -234,18 +231,18 @@ const deleteTenant = async (req, res, next) => {
 
         const tenantValidation = await Tenant.deleteValidation(id)
         if (!tenantValidation) {
-            res.status(200).json({
+            return res.status(200).json({
                 success: false,
                 message
             });
         }
         await Tenant.delete(id);
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
             message: "Tenant Delete Successfully!"
         });
     } catch (error) {
-        res.status(200).json({
+        return res.status(200).json({
             success: false,
             message: error.message
         });

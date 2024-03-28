@@ -37,7 +37,7 @@ const CreateRole = async (req, res) => {
         if (!isUnique) {
             return res.status(400).json({
                 success: false,
-                message: "Role name already exists for this tenant."
+                message: "Entry with provided Role name already exists."
             });
         }
 
@@ -52,16 +52,8 @@ const CreateRole = async (req, res) => {
             record: { role }
         });
     } catch (error) {
-        if (error.code === 'ER_DUP_ENTRY' && error.sqlMessage.includes('rolename')) {
-            return res.status(200).json({
-                success: false,
-                message: "Entry with provided role already exists"
-            });
-        }
-        res.status(400).json({
-            success: false,
-            message: error.message,
-        })
+        console.log(error);
+        next(error)
     }
 };
 
@@ -196,6 +188,14 @@ const updateRole = async (req, res, next) => {
 
         role.updatedBy = userId;
 
+        const isUnique = await role.isRoleNameUnique();
+        if (!isUnique) {
+            return res.status(400).json({
+                success: false,
+                message: "Entry with provided Role name already exists."
+            });
+        }
+
         let Id = req.params.id;
         let [findrole, _] = await Role.findById(tenantId, Id);
         if (!findrole) {
@@ -208,16 +208,8 @@ const updateRole = async (req, res, next) => {
             record: { role }, returnOriginal: false, runValidators: true
         });
     } catch (error) {
-        if (error.code === 'ER_DUP_ENTRY' && error.sqlMessage.includes('rolename')) {
-            return res.status(200).json({
-                success: false,
-                message: "Entry with provided role already exists"
-            });
-        }
-        res.status(400).json({
-            success: false,
-            message: error.message,
-        })
+        console.log(error);
+        next(error)
     }
 };
 

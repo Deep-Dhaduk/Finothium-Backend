@@ -9,14 +9,13 @@ let accountResultSearch = (q, accountResult) => {
         return accountResult.filter(account =>
             (account.account_name && account.account_name.toLowerCase().includes(queryLowered)) ||
             (account.group_name && account.group_name.toLowerCase().includes(queryLowered)) ||
-            (account.join_date && account.join_date.toLowerCase().includes(queryLowered)) ||
-            (account.exit_date && account.exit_date.toLowerCase().includes(queryLowered)) ||
+            (typeof account.join_date === 'string' && account.join_date.toLowerCase().includes(queryLowered)) ||
             (account.account_type_name && account.account_type_name.toLowerCase().includes(queryLowered)) ||
             (typeof account.status === 'string' && account.status.toLowerCase() === "active" && "active".includes(queryLowered))
         );
     }
     else {
-        return accountResult
+        return accountResult;
     }
 };
 

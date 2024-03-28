@@ -51,7 +51,6 @@ const CreateMenu = async (req, res) => {
 
 const ListMenu = async (req, res, next) => {
     const token = getDecodeToken(req);
-    const roleId = token.decodedToken.roleId;
     const tenantId = token.decodedToken.tenantId;
     try {
         const { q = '', id } = req.query;
@@ -166,6 +165,22 @@ const deleteMenu = async (req, res, next) => {
     }
 };
 
+const resetMenu = async (req, res, next) => {
+    const token = getDecodeToken(req);
+    const tenantId = token.decodedToken.tenantId;
+    let roleId = req.params.id;
+    try {
+        await Menu.roleBydelete(tenantId, roleId)
+        res.status(200).json({
+            success: true,
+            message: "Menu Reset Successfully!"
+        });
+    } catch (error) {
+        console.log(error);
+        next(error)
+    }
+}
+
 const updateMenu = async (req, res, next) => {
     try {
         const token = getDecodeToken(req);
@@ -202,5 +217,6 @@ module.exports = {
     ListMenuWithRoleId,
     getMenuById,
     deleteMenu,
+    resetMenu,
     updateMenu
 }

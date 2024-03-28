@@ -49,10 +49,15 @@ const CreateCompany = async (req, res) => {
             record: { company }
         });
     } catch (error) {
-        console.error(error);
+        if (error.code === 'ER_DUP_ENTRY' && (error.sqlMessage.includes('email'))) {
+            return res.status(200).json({
+                success: false,
+                message: "Entry with provided email already exists"
+            });
+        }
         res.status(500).json({
             success: false,
-            message: "Internal Server Error",
+            message: error.message,
         });
     }
 };
@@ -209,8 +214,16 @@ const updateCompany = async (req, res, next) => {
             record: { company }, returnOriginal: false, runValidators: true
         });
     } catch (error) {
-        console.log(error);
-        next(error)
+        if (error.code === 'ER_DUP_ENTRY' && (error.sqlMessage.includes('email'))) {
+            return res.status(200).json({
+                success: false,
+                message: "Entry with provided email already exists"
+            });
+        }
+        res.status(500).json({
+            success: false,
+            message: error.message,
+        });
     }
 };
 

@@ -62,7 +62,6 @@ const CreateRole = async (req, res) => {
             success: false,
             message: error.message,
         })
-        console.log(error);
     }
 };
 
@@ -209,8 +208,16 @@ const updateRole = async (req, res, next) => {
             record: { role }, returnOriginal: false, runValidators: true
         });
     } catch (error) {
-        console.log(error);
-        next(error)
+        if (error.code === 'ER_DUP_ENTRY' && error.sqlMessage.includes('rolename')) {
+            return res.status(200).json({
+                success: false,
+                message: "Entry with provided role already exists"
+            });
+        }
+        res.status(400).json({
+            success: false,
+            message: error.message,
+        })
     }
 };
 

@@ -27,11 +27,16 @@ router.get(
     Menucontroller.getMenuById
 );
 
-
 router.delete(
     "/delete-menu/:id",
     auth.verifyToken,
     Menucontroller.deleteMenu
+);
+
+router.delete(
+    "/reset-menu/:id",
+    auth.verifyToken,
+    Menucontroller.resetMenu
 );
 
 router.put(

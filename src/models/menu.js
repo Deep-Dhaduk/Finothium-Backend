@@ -11,11 +11,19 @@ class Menu {
 
     async save() {
         try {
-            for (const item of this.menuItems) {
-                const existingMenu = await this.findByChildId(this.tenantId, item.child_id);
+            const deletionPromises = [];
 
-                if (existingMenu) {
-                    let sql = `
+            for (const item of this.menuItems) {
+                const existingMenu = await this.findByChildIdAndRoleId(this.tenantId, item.child_id, this.role_id);
+
+                if (item.allow_access === 0 && item.allow_add === 0 && item.allow_edit === 0 && item.allow_delete === 0) {
+                    if (existingMenu) {
+                        let sql = `DELETE FROM menu_master WHERE child_id = '${item.child_id}' AND role_id='${this.role_id}'`;
+                        deletionPromises.push(db.execute(sql));
+                    }
+                } else {
+                    if (existingMenu) {
+                        let sql = `
                             UPDATE menu_master SET
                             tenantId='${this.tenantId}',
                             role_id='${this.role_id}',
@@ -26,40 +34,42 @@ class Menu {
                             createdBy='${this.createdBy}',
                             updatedOn=UTC_TIMESTAMP(),
                             updatedBy='${this.updatedBy}'
-                            WHERE child_id = '${item.child_id}'`;
-                    await db.execute(sql);
-                } else {
-                    let sql = `
-                        INSERT INTO menu_master(
-                            tenantId,
-                            role_id,
-                            child_id,
-                            allow_access,
-                            allow_add,
-                            allow_edit,
-                            allow_delete,
-                            createdBy,
-                            createdOn,
-                            updatedBy,
-                            updatedOn
-                        )
-                        VALUES (
-                            '${this.tenantId}',
-                            '${this.role_id}',
-                            '${item.child_id}',
-                            '${item.allow_access}',
-                            '${item.allow_add}',
-                            '${item.allow_edit}',
-                            '${item.allow_delete}',
-                            '${this.createdBy}',
-                            UTC_TIMESTAMP(),
-                            '${this.updatedBy}',
-                            UTC_TIMESTAMP()
-                        )`;
+                            WHERE child_id = '${item.child_id}' AND role_id='${this.role_id}'`;
+                        await db.execute(sql);
+                    } else {
+                        let sql = `
+                            INSERT INTO menu_master(
+                                tenantId,
+                                role_id,
+                                child_id,
+                                allow_access,
+                                allow_add,
+                                allow_edit,
+                                allow_delete,
+                                createdBy,
+                                createdOn,
+                                updatedBy,
+                                updatedOn
+                            )
+                            VALUES (
+                                '${this.tenantId}',
+                                '${this.role_id}',
+                                '${item.child_id}',
+                                '${item.allow_access}',
+                                '${item.allow_add}',
+                                '${item.allow_edit}',
+                                '${item.allow_delete}',
+                                '${this.createdBy}',
+                                UTC_TIMESTAMP(),
+                                '${this.updatedBy}',
+                                UTC_TIMESTAMP()
+                            )`;
 
-                    await db.execute(sql);
+                        await db.execute(sql);
+                    }
                 }
             }
+            await Promise.all(deletionPromises);
 
             return { success: true };
         } catch (error) {
@@ -67,24 +77,24 @@ class Menu {
         }
     }
 
-    async findByChildId(tenantId, childId) {
+    async findByChildIdAndRoleId(tenantId, childId, roleId) {
         let sql = `SELECT
-        role_id,
-        child_id,
-        allow_access,
-        allow_add,
-        allow_edit,
-        allow_delete,
-        createdBy,
-        get_datetime_in_server_datetime(createdOn) AS createdOn,
-        updatedBy,
-        get_datetime_in_server_datetime(updatedOn) AS updatedOn
-        FROM menu_master WHERE tenantId = ${tenantId} AND child_id = '${childId}'`;
-        const result = await db.execute(sql);
+            role_id,
+            child_id,
+            allow_access,
+            allow_add,
+            allow_edit,
+            allow_delete,
+            createdBy,
+            get_datetime_in_server_datetime(createdOn) AS createdOn,
+            updatedBy,
+            get_datetime_in_server_datetime(updatedOn) AS updatedOn
+            FROM menu_master WHERE tenantId = ? AND child_id = ? AND role_id = ?`;
+        const result = await db.execute(sql, [tenantId, childId, roleId]);
         return result[0][0];
     }
 
-    static findAll(tenantId) {
+    static async findAll(tenantId) {
         let sql = `SELECT m.role_id,
                           m.child_id,
                           m.allow_access,
@@ -179,6 +189,11 @@ class Menu {
 
     static delete(tenantId, id) {
         let sql = `DELETE FROM menu_master WHERE tenantId = ${tenantId} AND id = ${id}`;
+        return db.execute(sql)
+    };
+
+    static roleBydelete(tenantId, roleId) {
+        let sql = `DELETE FROM menu_master WHERE tenantId = ${tenantId} AND role_id = ${roleId}`;
         return db.execute(sql)
     };
 

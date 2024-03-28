@@ -62,6 +62,7 @@ const checkUserLogin = async (user) => {
         ...user[0],
         companies: companyResult[0].map(comp => ({ companyId: comp.company_id, companyName: comp.company_name })),
         roleName: roleResult[0][0].rolename,
+        tenantDays: daysDifference,
         tenantStatus: tenantStatus
     };
 
@@ -193,7 +194,6 @@ const CreateUser = async (req, res) => {
             success: false,
             message: error.message
         });
-        console.log(error);
     }
 };
 
@@ -219,7 +219,7 @@ const changeCompany = async (req, res) => {
         console.error('Error changing company:', error);
         return res.status(500).json({
             success: false,
-            message: 'Internal server error'
+            message: error.message
         });
     }
 };
@@ -510,8 +510,16 @@ const updateUser = async (req, res, next) => {
             runValidators: true
         });
     } catch (error) {
-        console.log(error);
-        next(error);
+        if (error.code === 'ER_DUP_ENTRY' && (error.sqlMessage.includes('email'))) {
+            return res.status(200).json({
+                success: false,
+                message: "Entry with provided email already exists"
+            });
+        }
+        res.status(400).json({
+            success: false,
+            message: error.message
+        });
     }
 };
 
@@ -546,7 +554,7 @@ const forgotPassword = async (req, res) => {
         console.log(error);
         return res.status(500).json({
             success: false,
-            message: 'Internal server error'
+            message: error.message
         });
     }
 };
@@ -575,7 +583,7 @@ const verifyOTPAndUpdatePassword = async (req, res) => {
         console.log(error);
         return res.status(500).json({
             success: false,
-            message: 'Internal server error'
+            message: error.message
         });
     }
 };
@@ -622,7 +630,7 @@ const changePassword = async (req, res) => {
         console.log(error);
         return res.status(500).json({
             success: false,
-            message: 'Internal server error'
+            message: error.message
         });
     }
 };
@@ -661,7 +669,7 @@ const resetPassword = async (req, res) => {
         console.log(error);
         return res.status(500).json({
             success: false,
-            message: 'Internal server error'
+            message: error.message
         });
     }
 };

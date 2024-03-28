@@ -5,7 +5,7 @@ const userController = require("../controllers/user.controller");
 const { use } = require("../routes/company.route");
 const { getDecodeToken } = require('../middlewares/decoded');
 const { createTenantSchema, updateTenantSchema } = require('../validation/tenant.validation');
-const message = ("This data is in use, you can't delete it.");
+const message = ("This Tenant contains Data, You can't Delete it.");
 const unauthorizedmessage = ("Unauthorized User, you can not perform this opertion.");
 
 let tenantResultSearch = (q, tenantResult) => {
@@ -24,8 +24,16 @@ let tenantResultSearch = (q, tenantResult) => {
     }
 };
 
-const CreateTenant = async (req, res) => {
+let tenantDifferenceDays = async (tenantResult) => {
+    const currentDate = new Date();
+    tenantResult[0].forEach(tenant => {
+        const endDate = new Date(tenant.enddate);
+        const daysDifference = Math.ceil((endDate - currentDate) / (1000 * 60 * 60 * 24));
+        tenant.tenantDays = daysDifference;
+    });
+}
 
+const CreateTenant = async (req, res) => {
     try {
         const token = getDecodeToken(req);
         const userId = token.decodedToken.userId;
@@ -59,11 +67,19 @@ const CreateTenant = async (req, res) => {
             record: { tenant }
         });
     } catch (error) {
-        res.status(400).json({
-            success: false,
-            message: error.message,
-        })
-        console.log(error);
+        if (error.code === 'ER_DUP_ENTRY') {
+            if (error.sqlMessage.includes('email')) {
+                return res.status(200).json({
+                    success: false,
+                    message: "Entry with provided email already exists"
+                });
+            } else if (error.sqlMessage.includes('tenantname')) {
+                return res.status(200).json({
+                    success: false,
+                    message: "Entry with provided tenant name already exists"
+                });
+            }
+        }
     }
 };
 
@@ -94,6 +110,8 @@ const ListTenant = async (req, res, next) => {
         }
 
         const tenantResult = await Tenant.findAll();
+
+        await tenantDifferenceDays(tenantResult)
 
         tenantResult[0] = tenantResultSearch(q, tenantResult[0]);
 
@@ -136,7 +154,7 @@ const logintenant = async (req, res, next) => {
     } catch (error) {
         console.log(error);
         return res.status(500).json({
-            message: 'Internal server error'
+            message: error.message
         });
     }
 };
@@ -169,6 +187,8 @@ const ActiveTenant = async (req, res, next) => {
 
         const tenantResult = await Tenant.findActiveAll();
 
+        await tenantDifferenceDays(tenantResult)
+
         tenantResult[0] = tenantResultSearch(q, tenantResult[0]);
 
         let responseData = {
@@ -200,12 +220,14 @@ const getTenantById = async (req, res, next) => {
         }
 
         let Id = req.params.id;
-        let [tenant, _] = await Tenant.findById(Id);
+        let tenantResult = await Tenant.findById(Id);
+
+        await tenantDifferenceDays(tenantResult)
 
         res.status(200).json({
             success: true,
             message: "tenant Record Successfully!",
-            data: tenant
+            data: tenantResult[0]
         });
     } catch (error) {
         console.log(error);
@@ -286,8 +308,19 @@ const updateTenant = async (req, res, next) => {
             record: { tenant }, returnOriginal: false, runValidators: true
         });
     } catch (error) {
-        console.log(error);
-        next(error)
+        if (error.code === 'ER_DUP_ENTRY') {
+            if (error.sqlMessage.includes('email')) {
+                return res.status(200).json({
+                    success: false,
+                    message: "Entry with provided email already exists"
+                });
+            } else if (error.sqlMessage.includes('tenantname')) {
+                return res.status(200).json({
+                    success: false,
+                    message: "Entry with provided tenant name already exists"
+                });
+            }
+        }
     }
 };
 

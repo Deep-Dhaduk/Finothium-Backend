@@ -16,7 +16,7 @@ pool.getConnection((err, connection) => {
         console.error('Error connecting to database: ', err);
         return;
     }
-    console.log('DATABASE CONNECTED  SUCCESSFULLY !');
+    console.log('DATABASE CONNECTED SUCCESSFULLY !');
     connection.release();
 });
 

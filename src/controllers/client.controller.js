@@ -1,7 +1,6 @@
 const Client = require("../models/client");
 const { createClientSchema, updateClientSchema } = require('../validation/client.validation');
 const { getDecodeToken } = require('../middlewares/decoded');
-const message = ("This data is in used, you can't delete it.");
 
 let clientResultSearch = (q, clientResult) => {
     if (q) {
@@ -41,7 +40,7 @@ const CreateClient = async (req, res) => {
 
         res.status(200).json({
             success: true,
-            message: "Client create successfully!",
+            message: "Client Created Successfully",
             record: { client }
         });
     } catch (error) {
@@ -64,7 +63,7 @@ const ListClient = async (req, res, next) => {
         if (id) {
             const client = await Client.findById(id);
             if (client[0].length === 0) {
-                return res.status(404).json({ success: false, message: 'Client not found' });
+                return res.status(404).json({ success: false, message: 'The specified Client was not found.' });
             }
         };
 
@@ -74,7 +73,7 @@ const ListClient = async (req, res, next) => {
 
         let responseData = {
             success: true,
-            message: 'Client List Successfully!',
+            message: 'Client list has been fetched Successfully.',
             data: clientResult[0]
         };
         res.status(200).json(responseData);
@@ -97,7 +96,7 @@ const ActiveClient = async (req, res, next) => {
         if (id) {
             const client = await Client.findById(tenantId, type, id);
             if (client[0].length === 0) {
-                return res.status(404).json({ success: false, message: 'Client not found' });
+                return res.status(404).json({ success: false, message: 'The specified Client was not found.' });
             }
         };
 
@@ -107,7 +106,7 @@ const ActiveClient = async (req, res, next) => {
 
         let responseData = {
             success: true,
-            message: 'Client List Successfully!',
+            message: 'Client list has been fetched Successfully.',
             data: clientResult[0]
         };
         res.status(200).json(responseData);
@@ -128,7 +127,7 @@ const getClientById = async (req, res, next) => {
 
         res.status(200).json({
             success: true,
-            message: "Client Record Successfully!",
+            message: "Client Record Successfully",
             data: client
         });
     } catch (error) {
@@ -148,7 +147,7 @@ const deleteClient = async (req, res, next) => {
         if (!clientValidation) {
             res.status(200).json({
                 success: false,
-                message
+                message: "This Client contains Data, You can't Delete it."
             });
         }
 
@@ -156,7 +155,7 @@ const deleteClient = async (req, res, next) => {
 
         res.status(200).json({
             success: true,
-            message: "Client Delete Successfully!"
+            message: "Client Delete Successfully"
         });
     } catch (error) {
         console.log(error);
@@ -185,7 +184,7 @@ const updateClient = async (req, res, next) => {
         let Id = req.params.id;
         let [findclient, _] = await Client.findById(tenantId, companyId, Id);
         if (!findclient) {
-            throw new Error("Client not found!")
+            throw new Error("The specified Client was not found.!")
         }
         await client.update(tenantId, companyId, Id)
 

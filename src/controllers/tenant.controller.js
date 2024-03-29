@@ -5,8 +5,7 @@ const userController = require("../controllers/user.controller");
 const { use } = require("../routes/company.route");
 const { getDecodeToken } = require('../middlewares/decoded');
 const { createTenantSchema, updateTenantSchema } = require('../validation/tenant.validation');
-const message = ("This Tenant contains Data, You can't Delete it.");
-const unauthorizedmessage = ("Unauthorized User, you can not perform this opertion.");
+const unauthorizedmessage = ("Access Denied: This operation cannot be performed by an unauthorized user.");
 
 let tenantResultSearch = (q, tenantResult) => {
     if (q) {
@@ -63,7 +62,7 @@ const CreateTenant = async (req, res) => {
 
         res.status(200).json({
             success: true,
-            message: "Tenant create successfully!",
+            message: "Tenant Created Successfully",
             record: { tenant }
         });
     } catch (error) {
@@ -71,7 +70,7 @@ const CreateTenant = async (req, res) => {
             if (error.sqlMessage.includes('email')) {
                 return res.status(200).json({
                     success: false,
-                    message: "Entry with provided email already exists"
+                    message: "Entry with provided email already exists."
                 });
             } else if (error.sqlMessage.includes('tenantname')) {
                 return res.status(200).json({
@@ -103,7 +102,7 @@ const ListTenant = async (req, res, next) => {
             const tenant = await Tenant.findById(id);
 
             if (tenant[0].length === 0) {
-                return res.status(404).json({ success: false, message: 'Tenant not found' });
+                return res.status(404).json({ success: false, message: 'The specified Tenant was not found.' });
             }
 
             return res.status(200).json({ success: true, message: 'Tenant found', data: tenant[0][0] });
@@ -117,7 +116,7 @@ const ListTenant = async (req, res, next) => {
 
         let responseData = {
             success: true,
-            message: 'Tenant List Successfully!',
+            message: 'Tenant list has been fetched Successfully.',
             data: tenantResult[0]
         };
 
@@ -143,7 +142,7 @@ const logintenant = async (req, res, next) => {
 
         if (!adminUser) {
             return res.status(404).json({
-                message: 'Admin user not found for the given tenantId'
+                message: 'Admin User not found for the given tenantId.'
             });
         }
 
@@ -179,7 +178,7 @@ const ActiveTenant = async (req, res, next) => {
             const tenant = await Tenant.findById(id);
 
             if (tenant[0].length === 0) {
-                return res.status(404).json({ success: false, message: 'Tenant not found' });
+                return res.status(404).json({ success: false, message: 'The specified Tenant was not found.' });
             }
 
             return res.status(200).json({ success: true, message: 'Tenant found', data: tenant[0][0] });
@@ -193,7 +192,7 @@ const ActiveTenant = async (req, res, next) => {
 
         let responseData = {
             success: true,
-            message: 'Tenant List Successfully!',
+            message: 'Tenant list has been fetched Successfully.',
             data: tenantResult[0]
         };
 
@@ -226,7 +225,7 @@ const getTenantById = async (req, res, next) => {
 
         res.status(200).json({
             success: true,
-            message: "tenant Record Successfully!",
+            message: "tenant Record Successfully",
             data: tenantResult[0]
         });
     } catch (error) {
@@ -255,13 +254,13 @@ const deleteTenant = async (req, res, next) => {
         if (!tenantValidation) {
             return res.status(200).json({
                 success: false,
-                message
+                message: "This Tenant contains Data, You can't Delete it."
             });
         }
         await Tenant.delete(id);
         return res.status(200).json({
             success: true,
-            message: "Tenant Delete Successfully!"
+            message: "Tenant Delete Successfully"
         });
     } catch (error) {
         return res.status(200).json({
@@ -299,7 +298,7 @@ const updateTenant = async (req, res, next) => {
         let Id = req.params.id;
         let [findtenant, _] = await Tenant.findById(Id);
         if (!findtenant) {
-            throw new Error("Tenant not found!")
+            throw new Error("The specified Tenant was not found.!")
         }
         await tenant.update(Id)
         res.status(200).json({
@@ -312,7 +311,7 @@ const updateTenant = async (req, res, next) => {
             if (error.sqlMessage.includes('email')) {
                 return res.status(200).json({
                     success: false,
-                    message: "Entry with provided email already exists"
+                    message: "Entry with provided email already exists."
                 });
             } else if (error.sqlMessage.includes('tenantname')) {
                 return res.status(200).json({

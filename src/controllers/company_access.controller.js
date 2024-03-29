@@ -13,7 +13,7 @@ const CreateCompanyAccess = async (req, res) => {
 
         res.status(200).json({
             success: true,
-            message: "CompanyAccess create successfully!",
+            message: "CompanyAccess Created Successfully",
             record: { companyAccess }
         });
     } catch (error) {
@@ -34,7 +34,7 @@ const ListCreateCompanyAccess = async (req, res, next) => {
             const companyAccess = await CompanyAccess.findById(id);
 
             if (companyAccess[0].length === 0) {
-                return res.status(404).json({ success: false, message: 'CompanyAccess not found' });
+                return res.status(404).json({ success: false, message: 'The specified CompanyAccess was not found.' });
             }
 
             return res.status(200).json({ success: true, message: 'CompanyAccess found', data: menu[0][0] });
@@ -43,7 +43,7 @@ const ListCreateCompanyAccess = async (req, res, next) => {
         const companyAccessResult = await CompanyAccess.findAll(token.decodedToken.tenantId);;
         let responseData = {
             success: true,
-            message: 'CompanyAccsess List Successfully!',
+            message: 'CompanyAccsess list has been fetched Successfully.',
             data: companyAccessResult[0]
         };
 
@@ -85,7 +85,7 @@ const getCreateCompanyAccessById = async (req, res, next) => {
 
         res.status(200).json({
             success: true,
-            message: "CompanyAccess Record Successfully!",
+            message: "CompanyAccess Record Successfully",
             data: companyAccess[0]
         });
     } catch (error) {
@@ -100,7 +100,7 @@ const deleteCompanyAccess = async (req, res, next) => {
         await CompanyAccess.delete(Id)
         res.status(200).json({
             success: true,
-            message: "CompanyAccess Delete Successfully!"
+            message: "CompanyAccess Delete Successfully"
         });
     } catch (error) {
         console.log(error);
@@ -115,7 +115,7 @@ const updateCompanyAccess = async (req, res, next) => {
         let Id = req.params.id;
         let [findcompanyAccess, _] = await CompanyAccess.findById(Id);
         if (!findcompanyAccess) {
-            throw new Error("CompanyAccess not found!")
+            throw new Error("The specified CompanyAccess was not found.!")
         }
         await companyAccess.update(Id)
         res.status(200).json({

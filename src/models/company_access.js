@@ -124,7 +124,7 @@ class CompanyAccess {
 
             await db.execute(updateCompanySql);
 
-            return { message: 'CompanyAccess successfully updated.' };
+            return { message: 'CompanyAccess Successfully updated.' };
         } catch (error) {
             throw error;
         }

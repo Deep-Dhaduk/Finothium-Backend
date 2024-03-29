@@ -1,7 +1,8 @@
 const db = require('../db/dbconnection')
 
 class Role {
-    constructor(tenantId, rolename, status, createdBy, updatedBy) {
+    constructor(roleId, tenantId, rolename, status, createdBy, updatedBy) {
+        this.roleId = roleId;
         this.tenantId = tenantId;
         this.rolename = rolename;
         this.status = status;
@@ -71,6 +72,7 @@ class Role {
                 FROM role_master
                 WHERE tenantId = '${this.tenantId}'
                 AND rolename = '${this.rolename}'
+                AND id != '${this.roleId}'
             `;
             const [rows] = await db.execute(sql);
             return rows[0].count === 0;
@@ -79,7 +81,7 @@ class Role {
         }
     }
 
-    static async adminRoleName (tenantId, roleName) {
+    static async adminRoleName(tenantId, roleName) {
         let sql = `SELECT * FROM role_master WHERE tenantId = ${tenantId} AND rolename = '${roleName}'`;
         return db.execute(sql);
     }

@@ -21,7 +21,7 @@ const ListCompanySetting = async (req, res, next) => {
         const companySettingResult = await CompanySetting.findAll(tenantId, companyId);
         let responseData = {
             success: true,
-            message: 'CompanySetting List Successfully!',
+            message: 'CompanySetting list has been fetched Successfully.',
             data: companySettingResult[0]
         };
 
@@ -47,7 +47,7 @@ const getIdCompanySetting = async (req, res, next) => {
 
         res.status(200).json({
             success: true,
-            message: "CompanySetting Record Successfully!",
+            message: "CompanySetting Record Successfully",
             data: companysetting[0]
         });
     } catch (error) {

@@ -37,8 +37,8 @@ const CreateMenu = async (req, res) => {
 
         res.status(200).json({
             success: true,
-            message: result.success ? "Menu items saved successfully!" : "Menu items updated successfully!",
-            record: { menu }
+            message: "Menu items Created Successfully",
+            record: { result }
         });
     } catch (error) {
         res.status(400).json({
@@ -59,7 +59,7 @@ const ListMenu = async (req, res, next) => {
             const menu = await Menu.findById(tenantId, id);
 
             if (menu[0].length === 0) {
-                return res.status(404).json({ success: false, message: 'Menu not found' });
+                return res.status(404).json({ success: false, message: 'The specified Menu was not found.' });
             }
 
             return res.status(200).json({ success: true, message: 'Menu found', data: menu[0][0] });
@@ -71,7 +71,7 @@ const ListMenu = async (req, res, next) => {
 
         let responseData = {
             success: true,
-            message: 'Menu List Successfully!',
+            message: 'Menu list has been fetched Successfully.',
             data: menuResult[0]
         };
 
@@ -102,7 +102,7 @@ const ListMenuWithRoleId = async (req, res, next) => {
             const menu = await Menu.findById(tenantId, roleId, id);
 
             if (menu[0].length === 0) {
-                return res.status(404).json({ success: false, message: 'Menu not found' });
+                return res.status(404).json({ success: false, message: 'The specified Menu was not found.' });
             }
 
             return res.status(200).json({ success: true, message: 'Menu found', data: menu[0][0] });
@@ -114,7 +114,7 @@ const ListMenuWithRoleId = async (req, res, next) => {
 
         let responseData = {
             success: true,
-            message: 'Menu List Successfully!',
+            message: 'Menu list has been fetched Successfully.',
             data: menuResult[0]
         };
 
@@ -140,7 +140,7 @@ const getMenuById = async (req, res, next) => {
 
         res.status(200).json({
             success: true,
-            message: "Menu Record Successfully!",
+            message: "Menu Record Successfully",
             data: menu[0]
         });
     } catch (error) {
@@ -157,7 +157,7 @@ const deleteMenu = async (req, res, next) => {
         await Menu.delete(tenantId, Id)
         res.status(200).json({
             success: true,
-            message: "Menu Delete Successfully!"
+            message: "Menu Delete Successfully"
         });
     } catch (error) {
         console.log(error);
@@ -173,7 +173,7 @@ const resetMenu = async (req, res, next) => {
         await Menu.roleBydelete(tenantId, roleId)
         res.status(200).json({
             success: true,
-            message: "Menu Reset Successfully!"
+            message: "Menu Reset Successfully"
         });
     } catch (error) {
         console.log(error);
@@ -197,7 +197,7 @@ const updateMenu = async (req, res, next) => {
         let Id = req.params.id;
         let [findmenu, _] = await Menu.findById(tenantId, Id, roleId);
         if (!findmenu) {
-            throw new Error("Menu not found!")
+            throw new Error("The specified Menu was not found.!")
         }
         await menu.update(tenantId, Id)
         res.status(200).json({

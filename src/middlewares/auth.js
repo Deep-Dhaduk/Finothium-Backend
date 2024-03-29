@@ -20,7 +20,7 @@ const verifyToken = async (req, res, next) => {
         if (!user) {
             return res.status(401).json({
                 success: false,
-                message: 'User not found',
+                message: 'The specified User was not found.',
             });
         }
 

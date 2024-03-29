@@ -39,7 +39,7 @@ const CreateChildmenu = async (req, res) => {
 
         res.status(200).json({
             success: true,
-            message: "Childmenu create successfully!",
+            message: "Childmenu Created Successfully",
             record: { childmenu }
         });
     } catch (error) {
@@ -61,7 +61,7 @@ const ListChildmenu = async (req, res, next) => {
             const childmenu = await Childmenu.findById(id);
 
             if (childmenu[0].length === 0) {
-                return res.status(404).json({ success: false, message: 'Childmenu not found' });
+                return res.status(404).json({ success: false, message: 'The specified Childmenu was not found.' });
             }
 
             return res.status(200).json({ success: true, message: 'Childmenu found', data: childmenu[0][0] });
@@ -73,7 +73,7 @@ const ListChildmenu = async (req, res, next) => {
 
         let responseData = {
             success: true,
-            message: 'Childmenu List Successfully!',
+            message: 'Childmenu list has been fetched Successfully.',
             data: childmenuResult[0]
         };
 
@@ -99,7 +99,7 @@ const ActiveChildmenu = async (req, res, next) => {
             const childmenu = await Childmenu.findById(id);
 
             if (childmenu[0].length === 0) {
-                return res.status(404).json({ success: false, message: 'Childmenu not found' });
+                return res.status(404).json({ success: false, message: 'The specified Childmenu was not found.' });
             }
 
             return res.status(200).json({ success: true, message: 'Childmenu found', data: childmenu[0][0] });
@@ -111,7 +111,7 @@ const ActiveChildmenu = async (req, res, next) => {
 
         let responseData = {
             success: true,
-            message: 'Childmenu List Successfully!',
+            message: 'Childmenu list has been fetched Successfully.',
             data: childmenuResult[0]
         };
 
@@ -137,7 +137,7 @@ const getChildmenuById = async (req, res, next) => {
 
         res.status(200).json({
             success: true,
-            message: "Childmenu Record Successfully!",
+            message: "Childmenu Record Successfully",
             data: childmenu[0]
         });
     } catch (error) {
@@ -154,7 +154,7 @@ const deleteChildmenu = async (req, res, next) => {
         await Childmenu.delete(tenantId, Id)
         res.status(200).json({
             success: true,
-            message: "Childmenu Delete Successfully!"
+            message: "Childmenu Delete Successfully"
         });
     } catch (error) {
         console.log(error);
@@ -186,7 +186,7 @@ const updateChildmenu = async (req, res, next) => {
 
         let [findchildmenu, _] = await Childmenu.findById(tenantId, Id);
         if (!findchildmenu) {
-            return res.status(404).json({ success: false, message: "Childmenu not found" });
+            return res.status(404).json({ success: false, message: "The specified Childmenu was not found." });
         }
 
         await childmenu.update(tenantId, Id);

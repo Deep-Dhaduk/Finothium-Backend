@@ -51,7 +51,7 @@ const CreateTransaction = async (req, res) => {
 
         res.status(200).json({
             success: true,
-            message: "Transaction created successfully!",
+            message: "Transaction Created Successfully",
             record: { saveTransaction }
         });
     } catch (error) {
@@ -77,7 +77,7 @@ const ListTransaction = async (req, res, next) => {
 
         let responseData = {
             success: true,
-            message: 'Transaction List Successfully!',
+            message: 'Transaction list has been fetched Successfully.',
             data: transactions[0]
         };
 
@@ -98,7 +98,7 @@ const getTransactionById = async (req, res, next) => {
 
         res.status(200).json({
             success: true,
-            message: "Transaction Record Successfully!",
+            message: "Transaction Record Successfully",
             data: transaction[0]
         });
     } catch (error) {
@@ -127,7 +127,7 @@ const deleteTransaction = async (req, res, next) => {
 
         res.status(200).json({
             success: true,
-            message: "Transaction Delete Successfully!"
+            message: "Transaction Delete Successfully"
         });
     } catch (error) {
         console.log(error);
@@ -152,7 +152,7 @@ const updateTransaction = async (req, res, next) => {
         const transactionId = req.params.id;
         const findTransaction = await Transaction.findById(tenantId, companyId, transactionId);
         if (!findTransaction) {
-            throw new Error("Transaction not found!");
+            throw new Error("The specified Transaction was not found.");
         }
 
         const transaction = new Transaction(tenantId, transaction_date, transaction_type, payment_type_Id, accountId, amount, description, '', '', companyId, clientId);

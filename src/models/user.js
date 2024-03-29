@@ -198,8 +198,6 @@ class User {
                     await db.execute(removeCompanySql);
                 }
             }
-
-            return { message: 'User and associated company access successfully updated.' };
         } catch (error) {
             throw error;
         }

@@ -73,7 +73,7 @@ const ListTransactionDetails = async (req, res, next) => {
 
         let responseData = {
             success: true,
-            message: 'Transaction Details List Successfully!',
+            message: 'Transaction list has been fetched Successfully.',
             data: Array.from(paymentMap.values()).sort((a, b) => {
                 const nameA = (a.subCategoryName || '').toUpperCase();
                 const nameB = (b.subCategoryName || '').toUpperCase();

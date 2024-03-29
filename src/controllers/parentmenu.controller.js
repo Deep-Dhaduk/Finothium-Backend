@@ -1,8 +1,6 @@
 const Parentmenu = require("../models/parentmenu");
 const { createParentMenuSchema, updateParentMenuSchema } = require('../validation/parentmenu.validation');
 const { getDecodeToken } = require('../middlewares/decoded');
-const db = require('../db/dbconnection');
-const message = ("This data is in used, you can't delete it.");
 
 let parentmenuResultSearch = (q, parentmenuResult) => {
     if (q) {
@@ -40,7 +38,7 @@ const CreateParentmenu = async (req, res) => {
 
         res.status(200).json({
             success: true,
-            message: "ParentMenu create successfully!",
+            message: "ParentMenu Created Successfully",
             record: { parentmenu }
         });
     } catch (error) {
@@ -62,7 +60,7 @@ const ListParentmenu = async (req, res, next) => {
             const parentmenu = await Parentmenu.findById(tenantId, id);
 
             if (parentmenu[0].length === 0) {
-                return res.status(404).json({ success: false, message: 'Parentmenu not found' });
+                return res.status(404).json({ success: false, message: 'The specified Parentmenu was not found.' });
             }
 
             return res.status(200).json({ success: true, message: 'parentmenu found', data: parentmenu[0][0] });
@@ -74,7 +72,7 @@ const ListParentmenu = async (req, res, next) => {
 
         let responseData = {
             success: true,
-            message: 'Parentmenu List Successfully!',
+            message: 'Parentmenu list has been fetched Successfully.',
             data: parentmenuResult[0]
         };
 
@@ -96,7 +94,7 @@ const ActiveParentmenu = async (req, res, next) => {
             const parentmenu = await Parentmenu.findById(tenantId, id);
 
             if (parentmenu[0].length === 0) {
-                return res.status(404).json({ success: false, message: 'Parentmenu not found' });
+                return res.status(404).json({ success: false, message: 'The specified Parentmenu was not found.' });
             }
 
             return res.status(200).json({ success: true, message: 'parentmenu found', data: parentmenu[0][0] });
@@ -108,7 +106,7 @@ const ActiveParentmenu = async (req, res, next) => {
 
         let responseData = {
             success: true,
-            message: 'Parentmenu List Successfully!',
+            message: 'Parentmenu list has been fetched Successfully.',
             data: parentmenuResult[0]
         };
         res.status(200).json(responseData);
@@ -128,7 +126,7 @@ const getParentmenuById = async (req, res, next) => {
 
         res.status(200).json({
             success: true,
-            message: "ParentMenu Record Successfully!",
+            message: "ParentMenu Record Successfully",
             data: parentmenu[0]
         });
     } catch (error) {
@@ -147,7 +145,7 @@ const deleteParentmenu = async (req, res, next) => {
         if (!parentmenuValidation) {
             res.status(200).json({
                 success: false,
-                message
+                message: "This Parentmenu contains Data, You can't Delete it."
             });
         }
 
@@ -155,7 +153,7 @@ const deleteParentmenu = async (req, res, next) => {
 
         res.status(200).json({
             success: true,
-            message: "Parent Delete Successfully!"
+            message: "Parent Delete Successfully"
         });
     } catch (error) {
         console.log(error);
@@ -183,7 +181,7 @@ const updateParentmenu = async (req, res, next) => {
         let Id = req.params.id;
         let [findparentmenu, _] = await Parentmenu.findById(tenantId, Id);
         if (!findparentmenu) {
-            throw new Error("ParentMenu not found!")
+            throw new Error("The specified Parentmenu was not found.!")
         }
         await parentmenu.update(tenantId, Id)
         res.status(200).json({

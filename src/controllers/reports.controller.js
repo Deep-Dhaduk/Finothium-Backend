@@ -91,7 +91,7 @@ const ListPaymentReport = async (req, res, next) => {
 
         let responseData = {
             success: true,
-            message: 'Payment Report List Successfully!',
+            message: 'Payment Report list has been fetched Successfully.',
             data: Array.from(paymentMap.values()).sort((a, b) => {
                 const nameA = (a.PaymentName || '').toUpperCase();
                 const nameB = (b.PaymentName || '').toUpperCase();
@@ -161,7 +161,7 @@ const ListClientReport = async (req, res, next) => {
 
         let responseData = {
             success: true,
-            message: 'Client Report List Successfully!',
+            message: 'Client Report list has been fetched Successfully.',
             data: Array.from(clientMap.values()).sort((a, b) => {
                 const nameA = (a.clientName || '').toUpperCase();
                 const nameB = (b.clientName || '').toUpperCase();
@@ -231,7 +231,7 @@ const ListCategoryReport = async (req, res, next) => {
 
         let responseData = {
             success: true,
-            message: 'Category Report List Successfully!',
+            message: 'Category Report list has been fetched Successfully.',
             data: Array.from(clientMap.values()).sort((a, b) => {
                 const nameA = (a.clientName || '').toUpperCase();
                 const nameB = (b.clientName || '').toUpperCase();
@@ -301,7 +301,7 @@ const ListAccountReport = async (req, res, next) => {
 
         const responseData = {
             success: true,
-            message: 'Account Report List Successfully!',
+            message: 'Account Report list has been fetched Successfully.',
             data: Array.from(accountMap.values()).sort((a, b) => {
                 const nameA = (a.accountName || '').toUpperCase();
                 const nameB = (b.accountName || '').toUpperCase();
@@ -365,7 +365,7 @@ const ListGroupReport = async (req, res, next) => {
 
         let responseData = {
             success: true,
-            message: 'Group Report List Successfully!',
+            message: 'Group Report list has been fetched Successfully.',
             data: Array.from(groupMap.values()).sort((a, b) => {
                 const nameA = (a.GroupName || '').toUpperCase();
                 const nameB = (b.GroupName || '').toUpperCase();
@@ -410,7 +410,7 @@ const ListCompanyReport = async (req, res, next) => {
 
         let responseData = {
             success: true,
-            message: 'Company Report List Successfully!',
+            message: 'Company Report list has been fetched Successfully.',
             data: report[0]
         };
 
@@ -468,7 +468,7 @@ const ListAccountTypeReport = async (req, res, next) => {
 
         let responseData = {
             success: true,
-            message: 'Account Type Report List Successfully!',
+            message: 'Account Type Report list has been fetched Successfully.',
             data: Array.from(accountTypeMap.values()).sort((a, b) => {
                 const nameA = (a.accountTypeName || '').toUpperCase();
                 const nameB = (b.accountTypeName || '').toUpperCase();
@@ -634,7 +634,7 @@ const ListMonthlyReport = async (req, res, next) => {
 
         let responseData = {
             success: true,
-            message: 'Monthly Report List Successfully!',
+            message: 'Monthly Report list has been fetched Successfully.',
             data: Array.from(accountTypeMap.values()).sort((a, b) => {
                 const nameA = (a.fiscalId || '').toUpperCase();
                 const nameB = (b.fiscalId || '').toUpperCase();
@@ -738,7 +738,7 @@ const ListQuarterlyReport = async (req, res, next) => {
 
         let responseData = {
             success: true,
-            message: 'Quarterly Report List Successfully!',
+            message: 'Quarterly Report list has been fetched Successfully.',
             data: Array.from(accountTypeMap.values()).sort((a, b) => {
                 const nameA = (a.fiscalId || '').toUpperCase();
                 const nameB = (b.fiscalId || '').toUpperCase();
@@ -815,7 +815,7 @@ const ListSemiannualReport = async (req, res, next) => {
 
         let responseData = {
             success: true,
-            message: 'Semiannual Report List Successfully!',
+            message: 'Semiannual Report list has been fetched Successfully.',
             data: Array.from(accountTypeMap.values()).sort((a, b) => {
                 const nameA = (a.fiscalId || '').toUpperCase();
                 const nameB = (b.fiscalId || '').toUpperCase();
@@ -892,7 +892,7 @@ const ListAnnuallyReport = async (req, res, next) => {
 
         let responseData = {
             success: true,
-            message: 'Annually Report List Successfully!',
+            message: 'Annually Report list has been fetched Successfully.',
             data: Array.from(accountTypeMap.values()).sort((a, b) => {
                 const nameA = (a.fiscalId || '').toUpperCase();
                 const nameB = (b.fiscalId || '').toUpperCase();

@@ -1,7 +1,6 @@
 const Account = require("../models/account");
 const { createAccountSchema, updateAccountSchema } = require('../validation/account.validation');
 const { getDecodeToken } = require('../middlewares/decoded');
-const message = ("This data is in used, you can't delete it.");
 
 let accountResultSearch = (q, accountResult) => {
     if (q) {
@@ -44,7 +43,7 @@ const CreateAccount = async (req, res) => {
 
         res.status(200).json({
             success: true,
-            message: "Account created successfully!",
+            message: "Account Created Successfully",
             record: { account }
         });
     } catch (error) {
@@ -67,7 +66,7 @@ const ListAccount = async (req, res, next) => {
             const account = await Account.findById(id);
 
             if (account[0].length === 0) {
-                return res.status(404).json({ success: false, message: 'Account not found' });
+                return res.status(404).json({ success: false, message: 'The specified Account was not found.' });
             }
 
             return res.status(200).json({ success: true, message: 'Account found', data: account[0][0] });
@@ -79,7 +78,7 @@ const ListAccount = async (req, res, next) => {
 
         let responseData = {
             success: true,
-            message: 'Account List Successfully!',
+            message: 'Account list has been fetched Successfully.',
             data: accountResult[0]
         };
 
@@ -101,7 +100,7 @@ const ActiveAccount = async (req, res, next) => {
             const account = await Account.findById(id);
 
             if (account[0].length === 0) {
-                return res.status(404).json({ success: false, message: 'Account not found' });
+                return res.status(404).json({ success: false, message: 'The specified Account was not found.' });
             }
 
             return res.status(200).json({ success: true, message: 'Account found', data: account[0][0] });
@@ -113,7 +112,7 @@ const ActiveAccount = async (req, res, next) => {
 
         let responseData = {
             success: true,
-            message: 'Account List Successfully!',
+            message: 'Account list has been fetched Successfully.',
             data: accountResult[0]
         };
 
@@ -136,7 +135,7 @@ const getAccountById = async (req, res, next) => {
 
         res.status(200).json({
             success: true,
-            message: "Account Record Successfully!",
+            message: "Account Record Successfully",
             data: account[0]
         });
     } catch (error) {
@@ -155,7 +154,7 @@ const deleteAccount = async (req, res, next) => {
         if (!accountValidation) {
             res.status(200).json({
                 success: false,
-                message
+                message: "This Account contains Data, You can't Delete it."
             });
         }
 
@@ -163,7 +162,7 @@ const deleteAccount = async (req, res, next) => {
 
         res.status(200).json({
             success: true,
-            message: "Account Delete Successfully!"
+            message: "Account Delete Successfully"
         });
     } catch (error) {
         console.log(error);
@@ -194,7 +193,7 @@ const updateAccount = async (req, res, next) => {
 
         let [findaccount, _] = await Account.findById(Id, tenantId, companyId);
         if (!findaccount) {
-            throw new Error("Account not found!")
+            throw new Error("The specified Account was not found.!")
         }
 
         await account.update(Id, tenantId)

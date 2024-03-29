@@ -52,7 +52,7 @@ const CreateTransfer = async (req, res) => {
 
         res.status(200).json({
             success: true,
-            message: "Transfer create successfully!",
+            message: "Transfer Created Successfully",
             record: { saveTransfer }
         });
     } catch (error) {
@@ -77,7 +77,7 @@ const ListTransfer = async (req, res, next) => {
             const transfer = await Transfer.findById(tenantId, id);
 
             if (transfer.length === 0) {
-                return res.status(404).json({ success: false, message: 'Transfer not found' });
+                return res.status(404).json({ success: false, message: 'The specified Transfer was not found.' });
             }
             return res.status(200).json({ success: true, message: 'Transfer found', data: transfer[0] });
         }
@@ -88,7 +88,7 @@ const ListTransfer = async (req, res, next) => {
 
         let responseData = {
             success: true,
-            message: 'Transfer List Successfully!',
+            message: 'Transfer list has been fetched Successfully.',
             data: transferResult[0]
         };
 
@@ -134,7 +134,7 @@ const getTransferById = async (req, res, next) => {
 
         res.status(200).json({
             success: true,
-            message: "Transfer Record Successfully!",
+            message: "Transfer Record Successfully",
             data: { transfer }
         });
     } catch (error) {
@@ -163,7 +163,7 @@ const deleteTransfer = async (req, res, next) => {
 
         res.status(200).json({
             success: true,
-            message: "Transfer Delete Successfully!"
+            message: "Transfer Delete Successfully"
         });
     } catch (error) {
         console.log(error);
@@ -196,7 +196,7 @@ const updateTransfer = async (req, res, next) => {
         let transferId = req.params.id;
         let [findtransfer, _] = await Transfer.findById(tenantId, transferId);
         if (!findtransfer) {
-            throw new Error("Transfer not found!")
+            throw new Error("The specified Transfer was not found.!")
         }
         await transfer.update(tenantId, transferId);
 
@@ -236,6 +236,7 @@ const updateTransfer = async (req, res, next) => {
         next(error)
     }
 };
+
 
 module.exports = {
     CreateTransfer,

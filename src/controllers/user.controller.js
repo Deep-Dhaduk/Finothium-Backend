@@ -9,7 +9,6 @@ const bcrypt = require('bcrypt')
 const emailService = require('../service/email.service');
 const { createUserSchema, updateUserSchema } = require('../validation/user.validation');
 const { getDecodeToken } = require('../middlewares/decoded');
-const { log } = require("util");
 const baseURL = process.env.API_BASE_URL;
 
 let userResultSearch = (q, userResult) => {
@@ -35,7 +34,7 @@ const checkUserLogin = async (user) => {
     if (!tenant || !tenant[0][0]) {
         return {
             success: false,
-            message: 'Tenant data not found or incomplete'
+            message: 'Tenant data is either incomplete or not found.'
         };
     }
 
@@ -43,7 +42,7 @@ const checkUserLogin = async (user) => {
     const endDate = new Date(tenant[0][0].enddate);
     const daysDifference = Math.ceil((endDate - currentDate) / (1000 * 60 * 60 * 24));
     let tenantStatus = tenant[0][0].status;
-
+    let expiryDate = tenant[0][0].enddate;
     let tenantExpire = (daysDifference < 0 || tenantStatus === 0) ? 1 : 0;
 
     if (tenant[0][0].tenantId === -1) {
@@ -55,6 +54,7 @@ const checkUserLogin = async (user) => {
         user[0].profile_image_filename = `${baseURL}${user[0].profile_image_filename}`;
     }
     const companyResult = await CompanyAccess.findAllByCompanyAccess(user[0].tenantId, user[0].id);
+    let companyName = companyResult[0][0].company_name
 
     const roleResult = await Role.findById(user[0].tenantId, user[0].roleId);
 
@@ -74,7 +74,9 @@ const checkUserLogin = async (user) => {
         tenantId: userWithCompanies.tenantId,
         roleId: userWithCompanies.roleId,
         companyId: selectedCompany.companyId,
+        companyName: companyName,
         tenantExpire: tenantExpire,
+        expiryDate: expiryDate,
         tenantDays: daysDifference
     };
 
@@ -86,7 +88,7 @@ const checkUserLogin = async (user) => {
 
     return {
         success: true,
-        message: 'Login successful',
+        message: 'User logged in Successfully.',
         userData: { ...userWithCompanies },
         token: token
     };
@@ -130,7 +132,7 @@ const CreateUser = async (req, res) => {
         if (!Array.isArray(companies)) {
             return res.status(400).json({
                 success: false,
-                message: "Companies must be an array of integers (companyId)."
+                message: "Companies must be an array of integers."
             });
         };
 
@@ -177,7 +179,7 @@ const CreateUser = async (req, res) => {
 
         res.status(200).json({
             success: true,
-            message: "User created successfully!",
+            message: "User Created Successfully",
             data: {
                 user: newUser,
                 companyAccesses: companyAccessResults
@@ -187,7 +189,7 @@ const CreateUser = async (req, res) => {
         if (error.code === 'ER_DUP_ENTRY' && (error.sqlMessage.includes('email'))) {
             return res.status(200).json({
                 success: false,
-                message: "Entry with provided email already exists"
+                message: "Entry with provided email already exists.."
             });
         }
         res.status(400).json({
@@ -212,7 +214,7 @@ const changeCompany = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: 'Company changed successfully',
+            message: 'Company changed Successfully',
             token: newToken
         });
     } catch (error) {
@@ -241,7 +243,7 @@ const findOneRec = async (req, res) => {
         let checkUser = await User.findByEmail(userEmail);
 
         if (!checkUser[0]) {
-            return res.status(404).json({ success: false, message: 'User not found' });
+            return res.status(404).json({ success: false, message: 'The specified User was not found.' });
         }
 
         const userRecord = checkUser[0];
@@ -276,7 +278,7 @@ const ListUser = async (req, res, next) => {
             const user = await User.findById(tenantId, id);
 
             if (user[0].length === 0) {
-                return res.status(404).json({ success: false, message: 'User not found' });
+                return res.status(404).json({ success: false, message: 'The specified User was not found.' });
             }
 
             return res.status(200).json({ success: true, message: 'User found', data: user[0][0] });
@@ -291,7 +293,7 @@ const ListUser = async (req, res, next) => {
 
         let responseData = {
             success: true,
-            message: 'User List Successfully!',
+            message: 'User list has been fetched Successfully.',
             data: userResult[0]
         };
 
@@ -352,7 +354,7 @@ const Activeuser = async (req, res, next) => {
             const user = await User.findById(tenantId, id);
 
             if (user[0].length === 0) {
-                return res.status(404).json({ success: false, message: 'User not found' });
+                return res.status(404).json({ success: false, message: 'The specified User was not found.' });
             }
 
             return res.status(200).json({ success: true, message: 'User found', data: user[0][0] });
@@ -367,7 +369,7 @@ const Activeuser = async (req, res, next) => {
 
         let responseData = {
             success: true,
-            message: 'User List Successfully!',
+            message: 'User list has been fetched Successfully.',
             data: userResult[0]
         };
 
@@ -424,7 +426,7 @@ const getUserById = async (req, res, next) => {
         let [user, _] = await User.findOne(tenantId, userId);
 
         if (user.length === 0) {
-            return res.status(404).json({ success: false, message: 'User not found' });
+            return res.status(404).json({ success: false, message: 'The specified User was not found.' });
         }
 
         user[0].companyNames = user[0].companyNames ? user[0].companyNames.split(',') : [];
@@ -436,7 +438,7 @@ const getUserById = async (req, res, next) => {
 
         res.status(200).json({
             success: true,
-            message: "User Record Successfully!",
+            message: "User Record Successfully",
             data: user[0]
         });
     } catch (error) {
@@ -451,7 +453,7 @@ const deleteUser = async (req, res, next) => {
         await User.delete(userId)
         res.status(200).json({
             success: true,
-            message: "User Delete Successfully!"
+            message: "User Delete Successfully"
         });
     } catch (error) {
         console.log(error);
@@ -513,7 +515,7 @@ const updateUser = async (req, res, next) => {
         if (error.code === 'ER_DUP_ENTRY' && (error.sqlMessage.includes('email'))) {
             return res.status(200).json({
                 success: false,
-                message: "Entry with provided email already exists"
+                message: "Entry with provided email already exists."
             });
         }
         res.status(400).json({
@@ -548,7 +550,7 @@ const forgotPassword = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: 'OTP sent to email for password reset'
+            message: 'OTP sent to email for password reset.'
         });
     } catch (error) {
         console.log(error);
@@ -577,7 +579,7 @@ const verifyOTPAndUpdatePassword = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: 'Password reset successful'
+            message: 'Password reset Successfully'
         });
     } catch (error) {
         console.log(error);
@@ -600,7 +602,7 @@ const changePassword = async (req, res) => {
         if (!user[0]) {
             return res.status(404).json({
                 success: false,
-                message: 'User not found'
+                message: 'The specified User was not found.'
             });
         }
 
@@ -608,14 +610,14 @@ const changePassword = async (req, res) => {
         if (!isValidPassword) {
             return res.status(401).json({
                 success: false,
-                message: 'Invalid old password'
+                message: 'The old password provided is invalid'
             });
         }
 
         if (newPassword !== confirmPassword) {
             return res.status(400).json({
                 success: false,
-                message: 'New password and confirm password do not match'
+                message: 'The New Password and Confirm Password does not match..'
             });
         }
 
@@ -624,7 +626,7 @@ const changePassword = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: 'Password change successful'
+            message: 'Password change Successfully'
         });
     } catch (error) {
         console.log(error);
@@ -647,14 +649,14 @@ const resetPassword = async (req, res) => {
         if (!user[0]) {
             return res.status(404).json({
                 success: false,
-                message: 'User not found'
+                message: 'The specified User was not found.'
             });
         };
 
         if (newPassword !== confirmPassword) {
             return res.status(400).json({
                 success: false,
-                message: 'New password and confirm password do not match'
+                message: 'The New Password and Confirm Password does not match..'
             });
         }
 
@@ -663,7 +665,7 @@ const resetPassword = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: 'Password change successful'
+            message: 'Password change Successfully'
         });
     } catch (error) {
         console.log(error);

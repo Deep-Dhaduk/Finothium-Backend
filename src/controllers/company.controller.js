@@ -45,14 +45,14 @@ const CreateCompany = async (req, res) => {
 
         res.status(200).json({
             success: true,
-            message: "Company created successfully!",
+            message: "Company Created Successfully",
             record: { company }
         });
     } catch (error) {
         if (error.code === 'ER_DUP_ENTRY' && (error.sqlMessage.includes('email'))) {
             return res.status(200).json({
                 success: false,
-                message: "Entry with provided email already exists"
+                message: "Entry with provided email already exists."
             });
         }
         res.status(500).json({
@@ -73,7 +73,7 @@ const ListCompany = async (req, res, next) => {
             const company = await Company.findById(tenantId, id);
 
             if (company[0].length === 0) {
-                return res.status(404).json({ success: false, message: 'Company not found' });
+                return res.status(404).json({ success: false, message: 'The specified Company was not found.' });
             }
 
             return res.status(200).json({ success: true, message: 'Company found', data: company[0][0] });
@@ -85,7 +85,7 @@ const ListCompany = async (req, res, next) => {
 
         let responseData = {
             success: true,
-            message: 'Company List Successfully!',
+            message: 'Company list has been fetched Successfully.',
             data: companyResult[0]
         };
 
@@ -109,7 +109,7 @@ const ActiveCompany = async (req, res, next) => {
             const company = await Company.findById(tenantId, id);
 
             if (company[0].length === 0) {
-                return res.status(404).json({ success: false, message: 'Company not found' });
+                return res.status(404).json({ success: false, message: 'The specified Company was not found.' });
             }
 
             return res.status(200).json({ success: true, message: 'Company found', data: company[0][0] });
@@ -121,7 +121,7 @@ const ActiveCompany = async (req, res, next) => {
 
         let responseData = {
             success: true,
-            message: 'Company List Successfully!',
+            message: 'Company list has been fetched Successfully.',
             data: companyResult[0]
         };
 
@@ -148,7 +148,7 @@ const getCompanyById = async (req, res, next) => {
 
         res.status(200).json({
             success: true,
-            message: "Company Record Successfully!",
+            message: "Company Record Successfully",
             data: company[0]
         });
     } catch (error) {
@@ -177,7 +177,7 @@ const deleteCompany = async (req, res, next) => {
 
         res.status(200).json({
             success: true,
-            message: "Common Delete Successfully!"
+            message: "Common Delete Successfully"
         });
     } catch (error) {
         console.log(error);
@@ -205,7 +205,7 @@ const updateCompany = async (req, res, next) => {
         let Id = req.params.id;
         let [findcompany, _] = await Company.findById(tenantId, Id);
         if (!findcompany) {
-            throw new Error("Company not found!")
+            throw new Error("The specified Company was not found.!")
         }
         await company.update(tenantId, Id)
         res.status(200).json({
@@ -217,7 +217,7 @@ const updateCompany = async (req, res, next) => {
         if (error.code === 'ER_DUP_ENTRY' && (error.sqlMessage.includes('email'))) {
             return res.status(200).json({
                 success: false,
-                message: "Entry with provided email already exists"
+                message: "Entry with provided email already exists."
             });
         }
         res.status(500).json({

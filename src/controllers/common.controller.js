@@ -1,7 +1,6 @@
 const Common = require("../models/common");
 const { createCommonSchema, updateCommonSchema } = require('../validation/common.validation');
 const { getDecodeToken } = require('../middlewares/decoded');
-const message = ("This data is in used, you can't delete it.");
 
 let commonResultSearch = (q, commonResult) => {
     if (q) {
@@ -39,7 +38,7 @@ const CreateCommon = async (req, res) => {
 
         res.status(200).json({
             success: true,
-            message: "Common create successfully!",
+            message: "Common Created Successfully",
             record: { common }
         });
     } catch (error) {
@@ -63,7 +62,7 @@ const ListCommon = async (req, res, next) => {
                 ;
 
             if (common[0].length === 0) {
-                return res.status(404).json({ success: false, message: 'Common not found' });
+                return res.status(404).json({ success: false, message: 'The specified Common was not found.' });
             }
 
             return res.status(200).json({ success: true, message: 'Common found', data: common[0][0] });
@@ -75,7 +74,7 @@ const ListCommon = async (req, res, next) => {
 
         let responseData = {
             success: true,
-            message: 'Common List Successfully!',
+            message: 'Common list has been fetched Successfully.',
             data: commonResult[0]
         };
 
@@ -99,7 +98,7 @@ const Activecommon = async (req, res, next) => {
                 ;
 
             if (common[0].length === 0) {
-                return res.status(404).json({ success: false, message: 'Common not found' });
+                return res.status(404).json({ success: false, message: 'The specified Common was not found.' });
             }
 
             return res.status(200).json({ success: true, message: 'Common found', data: common[0][0] });
@@ -111,7 +110,7 @@ const Activecommon = async (req, res, next) => {
 
         let responseData = {
             success: true,
-            message: 'Common List Successfully!',
+            message: 'Common list has been fetched Successfully.',
             data: commonResult[0]
         };
 
@@ -163,7 +162,7 @@ const getCommonById = async (req, res, next) => {
 
         res.status(200).json({
             success: true,
-            message: "Common Record Successfully!",
+            message: "Common Record Successfully",
             data: common[0]
         });
     } catch (error) {
@@ -182,14 +181,14 @@ const deleteCommon = async (req, res, next) => {
         if (!commonValidation) {
             res.status(200).json({
                 success: false,
-                message
+                message: "This Common contains Data, You can't Delete it."
             });
         }
         await Common.delete(tenantId, commonId);
 
         res.status(200).json({
             success: true,
-            message: "Common Delete Successfully!"
+            message: "Common Delete Successfully"
         });
     } catch (error) {
         console.log(error);
@@ -220,7 +219,7 @@ const updateCommon = async (req, res, next) => {
         let [findcommon, _] = await Common.findById(tenantId, Id)
             ;
         if (!findcommon) {
-            throw new Error("Common not found!")
+            throw new Error("The specified Common was not found.!")
         }
         await common.update(tenantId, Id)
 

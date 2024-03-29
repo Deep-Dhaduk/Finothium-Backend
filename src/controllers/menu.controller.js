@@ -157,7 +157,7 @@ const deleteMenu = async (req, res, next) => {
         await Menu.delete(tenantId, Id)
         res.status(200).json({
             success: true,
-            message: "Menu Delete Successfully"
+            message: "Menu Deleted Successfully"
         });
     } catch (error) {
         console.log(error);

@@ -177,7 +177,7 @@ const deleteCompany = async (req, res, next) => {
 
         res.status(200).json({
             success: true,
-            message: "Common Delete Successfully"
+            message: "Common Deleted Successfully"
         });
     } catch (error) {
         console.log(error);

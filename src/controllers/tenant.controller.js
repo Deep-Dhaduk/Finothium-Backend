@@ -260,7 +260,7 @@ const deleteTenant = async (req, res, next) => {
         await Tenant.delete(id);
         return res.status(200).json({
             success: true,
-            message: "Tenant Delete Successfully"
+            message: "Tenant Deleted Successfully"
         });
     } catch (error) {
         return res.status(200).json({

@@ -154,7 +154,7 @@ const deleteChildmenu = async (req, res, next) => {
         await Childmenu.delete(tenantId, Id)
         res.status(200).json({
             success: true,
-            message: "Childmenu Delete Successfully"
+            message: "Childmenu Deleted Successfully"
         });
     } catch (error) {
         console.log(error);

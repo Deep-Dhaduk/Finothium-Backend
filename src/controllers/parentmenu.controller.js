@@ -153,7 +153,7 @@ const deleteParentmenu = async (req, res, next) => {
 
         res.status(200).json({
             success: true,
-            message: "Parent Delete Successfully"
+            message: "Parent Deleted Successfully"
         });
     } catch (error) {
         console.log(error);

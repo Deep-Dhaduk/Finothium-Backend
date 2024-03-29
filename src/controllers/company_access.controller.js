@@ -100,7 +100,7 @@ const deleteCompanyAccess = async (req, res, next) => {
         await CompanyAccess.delete(Id)
         res.status(200).json({
             success: true,
-            message: "CompanyAccess Delete Successfully"
+            message: "CompanyAccess Deleted Successfully"
         });
     } catch (error) {
         console.log(error);

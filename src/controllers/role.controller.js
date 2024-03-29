@@ -36,7 +36,7 @@ const CreateRole = async (req, res) => {
         if (!isUnique) {
             return res.status(400).json({
                 success: false,
-                message: "Entry with provided Role Name already exists."
+                message: "Duplicate Role Name is not allowed. This Role Name is already exists."
             });
         }
 
@@ -194,7 +194,7 @@ const updateRole = async (req, res, next) => {
         if (!isUnique) {
             return res.status(400).json({
                 success: false,
-                message: "Entry with provided Role Name already exists."
+                message: "Duplicate Role Name is not allowed. This Role Name is already exists."
             });
         }
 

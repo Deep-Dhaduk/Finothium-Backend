@@ -189,7 +189,7 @@ const CreateUser = async (req, res) => {
         if (error.code === 'ER_DUP_ENTRY' && (error.sqlMessage.includes('email'))) {
             return res.status(200).json({
                 success: false,
-                message: "Entry with provided email already exists.."
+                message: "Duplicate Email is not allowed. This Email is already exists."
             });
         }
         res.status(400).json({
@@ -515,7 +515,7 @@ const updateUser = async (req, res, next) => {
         if (error.code === 'ER_DUP_ENTRY' && (error.sqlMessage.includes('email'))) {
             return res.status(200).json({
                 success: false,
-                message: "Entry with provided email already exists."
+                message: "Duplicate Email is not allowed. This Email is already exists."
             });
         }
         res.status(400).json({

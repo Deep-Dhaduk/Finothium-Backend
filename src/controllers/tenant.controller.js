@@ -70,12 +70,12 @@ const CreateTenant = async (req, res) => {
             if (error.sqlMessage.includes('email')) {
                 return res.status(200).json({
                     success: false,
-                    message: "Entry with provided email already exists."
+                    message: "Duplicate Email is not allowed. This Email is already exists."
                 });
             } else if (error.sqlMessage.includes('tenantname')) {
                 return res.status(200).json({
                     success: false,
-                    message: "Entry with provided tenant name already exists"
+                    message: "Duplicate Tenant Name is not allowed. This Tenant Name is already exists."
                 });
             }
         }
@@ -311,12 +311,12 @@ const updateTenant = async (req, res, next) => {
             if (error.sqlMessage.includes('email')) {
                 return res.status(200).json({
                     success: false,
-                    message: "Entry with provided email already exists."
+                    message: "Duplicate Email is not allowed. This Email is already exists."
                 });
             } else if (error.sqlMessage.includes('tenantname')) {
                 return res.status(200).json({
                     success: false,
-                    message: "Entry with provided tenant name already exists"
+                    message: "Duplicate Tenant Name is not allowed. This Tenant Name is already exists."
                 });
             }
         }

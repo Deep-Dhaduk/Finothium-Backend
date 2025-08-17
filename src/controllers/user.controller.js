@@ -112,7 +112,6 @@ const loginUser = async (req, res) => {
         const authenticationResult = await checkUserLogin(user);
         return res.status(200).json(authenticationResult);
     } catch (error) {
-        console.log(error);
         return res.status(401).json({
             message: error.message
         });
